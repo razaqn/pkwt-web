@@ -1,13 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LoginCompany from './pages/LoginCompany';
 import LoginAdmin from './pages/LoginAdmin';
-import { getToken } from './store/auth';
 import AppLayout from './layouts/AppLayout';
 import Dashboard from './pages/Dashboard';
 import { RequireAuth, RequireGuest } from './router/guards';
 
 function App() {
-  const isAuthed = Boolean(getToken());
   return (
     <BrowserRouter>
       <Routes>
