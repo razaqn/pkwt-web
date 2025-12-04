@@ -63,7 +63,7 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSideb
                         </span>
                     </NavLink>
 
-                    <NavLink to="/pkwtt" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
+                    <NavLink to="/daftar-kontrak" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
                         <span className="mt-0.5 text-white/90">
                             <FileText className="h-5 w-5" />
                         </span>
@@ -73,7 +73,7 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSideb
                         </span>
                     </NavLink>
 
-                    <NavLink to="/form" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
+                    <NavLink to="/perstujuan-pkwt" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
                         <span className="mt-0.5 text-white/90">
                             <CheckSquare className="h-5 w-5" />
                         </span>
