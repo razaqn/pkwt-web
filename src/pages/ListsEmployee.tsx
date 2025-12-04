@@ -1,23 +1,45 @@
-import { Users } from 'lucide-react';
+import { useState } from "react";
+import { Users } from "lucide-react";
+import EmployeeTable from "../components/EmployeeTable";
+import { dummyEmployees } from "../lib/dummyData";
+import type { Employee, PaginationState } from "../types/employeeTypes";
 
 export default function ListsEmployee() {
+    // State for pagination
+    const [pagination, setPagination] = useState<PaginationState>({
+        currentPage: 1,
+        itemsPerPage: 10,
+        totalItems: dummyEmployees.length,
+        totalPages: Math.ceil(dummyEmployees.length / 10)
+    });
+
+    // Get current employees based on pagination
+    const getCurrentEmployees = (): Employee[] => {
+        const startIndex = (pagination.currentPage - 1) * pagination.itemsPerPage;
+        const endIndex = startIndex + pagination.itemsPerPage;
+        return dummyEmployees.slice(startIndex, endIndex);
+    };
+
+    const handlePageChange = (page: number) => {
+        setPagination({
+            ...pagination,
+            currentPage: page
+        });
+    };
+
     return (
-        <div className="p-0">
-            <div className="px-6 pt-6 pb-2">
-                <p className="text-sm text-gray-500">Daftar karyawan kontrak yang terdaftar</p>
+        <div className="space-y-4 p-0">
+            <div className="flex items-center gap-3 px-6 pt-6 pb-2">
+                <Users className="w-8 h-8 text-blue-600" />
+                <h1 className="text-2xl font-bold text-gray-900">Daftar karyawan kontrak yang terdaftar</h1>
             </div>
 
-            {/* Placeholder content */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <div className="flex items-center justify-center py-12">
-                    <div className="text-center">
-                        <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                            <Users className="h-8 w-8 text-gray-400" />
-                        </div>
-                        <h3 className="text-lg font-medium text-gray-900">Daftar Karyawan Kosong</h3>
-                        <p className="text-sm text-gray-500 mt-1">Belum ada data karyawan yang tersedia</p>
-                    </div>
-                </div>
+            <div className="px-6 pb-6">
+                <EmployeeTable
+                    employees={getCurrentEmployees()}
+                    pagination={pagination}
+                    onPageChange={handlePageChange}
+                />
             </div>
         </div>
     );

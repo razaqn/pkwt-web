@@ -6,11 +6,7 @@ import {
     Users,
     FileText,
     CheckSquare,
-    Clock,
-    LayoutDashboard,
-    Building,
-    UserCheck,
-    FilePlus
+    Clock
 } from 'lucide-react';
 
 // Dummy data for statistics
