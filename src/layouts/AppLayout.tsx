@@ -4,9 +4,12 @@ import { getRole } from '../store/auth';
 import CompanySidebar from '../components/CompanySidebar';
 import AdminSidebar from '../components/AdminSidebar';
 
-type Props = { children: ReactNode };
+type Props = {
+  children: ReactNode;
+  pageTitle?: string;
+};
 
-export default function AppLayout({ children }: Props) {
+export default function AppLayout({ children, pageTitle }: Props) {
   const role = getRole();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -41,7 +44,7 @@ export default function AppLayout({ children }: Props) {
               <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden h-9 w-9 rounded-md border border-slate-200 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-slate-700"><path d="M3 6.75h18M3 12h18M3 17.25h18" /></svg>
               </button>
-              <h1 className="text-xl font-semibold text-slate-900">Overview</h1>
+              <h1 className="text-xl font-semibold text-slate-900">{pageTitle || 'Overview'}</h1>
             </div>
           </header>
           <section className="max-w-6xl mx-auto px-6 py-6">
