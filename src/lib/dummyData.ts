@@ -1,4 +1,5 @@
 import type { Employee, Contract } from '../types/employeeTypes';
+import type { Company } from '../types/companyTypes';
 
 /**
  * Dummy employee data for development and testing
@@ -585,5 +586,221 @@ export const dummyContracts: Contract[] = [
         company: 'PT Teknologi Canggih',
         startDate: '2024-05-01',
         duration: '12 bulan'
+    }
+];
+
+/**
+ * Dummy company data for development and testing
+ */
+export const dummyCompanies: Company[] = [
+    {
+        id: '1',
+        name: 'PT Maju Bersama',
+        address: 'Jl. Merdeka No. 10, RT 01/RW 02',
+        city: 'Jakarta Pusat',
+        district: 'Gambir',
+        subdistrict: 'Gambir',
+        phone: '021-12345678',
+        website: 'https://majubersama.co.id',
+        about: 'Perusahaan terkemuka di bidang perdagangan dan distribusi dengan jaringan luas di seluruh Indonesia. Berkomitmen untuk memberikan pelayanan terbaik kepada pelanggan.',
+        logo: '',
+        activePkwts: 15,
+        activePkwtts: 8
+    },
+    {
+        id: '2',
+        name: 'PT Sejahtera Abadi',
+        address: 'Jl. Sudirman No. 25, RT 03/RW 04',
+        city: 'Jakarta Selatan',
+        district: 'Kebayoran Baru',
+        subdistrict: 'Kebayoran',
+        phone: '021-23456789',
+        website: 'https://sejahteraabadi.com',
+        about: 'Perusahaan manufaktur yang bergerak di bidang produksi barang konsumen. Memiliki pabrik modern dan tenaga kerja yang terampil.',
+        logo: '',
+        activePkwts: 12,
+        activePkwtts: 10
+    },
+    {
+        id: '3',
+        name: 'PT Teknologi Canggih',
+        address: 'Jl. Gatot Subroto No. 15, RT 05/RW 06',
+        city: 'Jakarta Selatan',
+        district: 'Mampang Prapatan',
+        subdistrict: 'Mampang',
+        phone: '021-34567890',
+        website: 'https://teknologicanggih.id',
+        about: 'Perusahaan teknologi informasi yang menyediakan solusi digital untuk berbagai industri. Fokus pada pengembangan perangkat lunak dan sistem integrasi.',
+        logo: '',
+        activePkwts: 18,
+        activePkwtts: 7
+    },
+    {
+        id: '4',
+        name: 'PT Inovasi Digital',
+        address: 'Jl. Thamrin No. 8, RT 02/RW 03',
+        city: 'Jakarta Pusat',
+        district: 'Menteng',
+        subdistrict: 'Menteng',
+        phone: '021-45678901',
+        website: 'https://inovasidigital.co.id',
+        about: 'Startup teknologi yang berfokus pada pengembangan aplikasi mobile dan platform digital. Memiliki tim pengembang muda dan kreatif.',
+        logo: '',
+        activePkwts: 22,
+        activePkwtts: 5
+    },
+    {
+        id: '5',
+        name: 'PT Solusi Bisnis',
+        address: 'Jl. KH. Wahid Hasyim No. 30, RT 04/RW 05',
+        city: 'Jakarta Pusat',
+        district: 'Tanah Abang',
+        subdistrict: 'Bendungan Hilir',
+        phone: '021-56789012',
+        website: 'https://solusibisnis.com',
+        about: 'Perusahaan konsultan bisnis yang membantu perusahaan dalam mengoptimalkan operasional dan meningkatkan efisiensi. Berpengalaman di berbagai sektor industri.',
+        logo: '',
+        activePkwts: 9,
+        activePkwtts: 12
+    },
+    {
+        id: '6',
+        name: 'PT Kreasi Indonesia',
+        address: 'Jl. HR Rasuna Said No. 20, RT 06/RW 07',
+        city: 'Jakarta Selatan',
+        district: 'Setiabudi',
+        subdistrict: 'Kuningan',
+        phone: '021-67890123',
+        website: 'https://kreasiindonesia.id',
+        about: 'Perusahaan kreatif yang bergerak di bidang desain, branding, dan pemasaran digital. Membantu merek membangun identitas dan strategi pemasaran yang efektif.',
+        logo: '',
+        activePkwts: 14,
+        activePkwtts: 9
+    },
+    {
+        id: '7',
+        name: 'PT Harmoni Sejahtera',
+        address: 'Jl. MH Thamrin No. 12, RT 01/RW 02',
+        city: 'Jakarta Pusat',
+        district: 'Gambir',
+        subdistrict: 'Gambir',
+        phone: '021-78901234',
+        website: 'https://harmonisejahtera.co.id',
+        about: 'Perusahaan properti yang mengembangkan berbagai proyek perumahan dan komersial. Berkomitmen untuk menciptakan lingkungan hunian yang nyaman dan modern.',
+        logo: '',
+        activePkwts: 11,
+        activePkwtts: 6
+    },
+    {
+        id: '8',
+        name: 'PT Global Mandiri',
+        address: 'Jl. Jenderal Sudirman No. 5, RT 03/RW 04',
+        city: 'Jakarta Pusat',
+        district: 'Tanah Abang',
+        subdistrict: 'Bendungan Hilir',
+        phone: '021-89012345',
+        website: 'https://globalmandiri.com',
+        about: 'Perusahaan multinasional yang bergerak di bidang perdagangan internasional. Memiliki jaringan bisnis di berbagai negara.',
+        logo: '',
+        activePkwts: 19,
+        activePkwtts: 4
+    },
+    {
+        id: '9',
+        name: 'PT Bangun Masa Depan',
+        address: 'Jl. Gajah Mada No. 18, RT 05/RW 06',
+        city: 'Jakarta Barat',
+        district: 'Tambora',
+        subdistrict: 'Tambora',
+        phone: '021-90123456',
+        website: 'https://bangunmasadepan.id',
+        about: 'Perusahaan konstruksi yang mengerjakan berbagai proyek infrastruktur dan bangunan. Memiliki pengalaman dalam proyek skala besar.',
+        logo: '',
+        activePkwts: 7,
+        activePkwtts: 15
+    },
+    {
+        id: '10',
+        name: 'PT Sinar Harapan',
+        address: 'Jl. Hayam Wuruk No. 22, RT 02/RW 03',
+        city: 'Jakarta Barat',
+        district: 'Taman Sari',
+        subdistrict: 'Glodok',
+        phone: '021-01234567',
+        website: 'https://sinarharapan.co.id',
+        about: 'Perusahaan distribusi barang elektronik dan peralatan rumah tangga. Menyediakan berbagai produk berkualitas dengan harga kompetitif.',
+        logo: '',
+        activePkwts: 13,
+        activePkwtts: 8
+    },
+    {
+        id: '11',
+        name: 'PT Cipta Karya',
+        address: 'Jl. Diponegoro No. 14, RT 04/RW 05',
+        city: 'Bandung',
+        district: 'Cicendo',
+        subdistrict: 'Cicendo',
+        phone: '022-1234567',
+        website: 'https://ciptakarya.co.id',
+        about: 'Perusahaan manufaktur yang memproduksi berbagai komponen industri. Berkomitmen untuk kualitas dan inovasi dalam setiap produk.',
+        logo: '',
+        activePkwts: 16,
+        activePkwtts: 7
+    },
+    {
+        id: '12',
+        name: 'PT Daya Manunggal',
+        address: 'Jl. Asia Afrika No. 5, RT 01/RW 02',
+        city: 'Bandung',
+        district: 'Sumur Bandung',
+        subdistrict: 'Braga',
+        phone: '022-2345678',
+        website: 'https://dayamanunggal.com',
+        about: 'Perusahaan logistik dan pengiriman barang yang handal. Menyediakan layanan pengiriman cepat dan aman ke seluruh Indonesia.',
+        logo: '',
+        activePkwts: 8,
+        activePkwtts: 11
+    },
+    {
+        id: '13',
+        name: 'PT Sentosa Jaya',
+        address: 'Jl. Pasteur No. 33, RT 03/RW 04',
+        city: 'Bandung',
+        district: 'Sukajadi',
+        subdistrict: 'Sukawarna',
+        phone: '022-3456789',
+        website: 'https://sentosajaya.id',
+        about: 'Perusahaan ritel yang mengoperasikan berbagai toko swalayan. Menyediakan berbagai kebutuhan sehari-hari dengan harga terjangkau.',
+        logo: '',
+        activePkwts: 20,
+        activePkwtts: 6
+    },
+    {
+        id: '14',
+        name: 'PT Makmur Bersama',
+        address: 'Jl. Cihampelas No. 10, RT 05/RW 06',
+        city: 'Bandung',
+        district: 'Cihampelas',
+        subdistrict: 'Cihampelas',
+        phone: '022-4567890',
+        website: 'https://makmurbersama.com',
+        about: 'Perusahaan tekstil yang memproduksi berbagai jenis kain dan pakaian jadi. Memiliki pabrik modern dengan teknologi terbaru.',
+        logo: '',
+        activePkwts: 10,
+        activePkwtts: 9
+    },
+    {
+        id: '15',
+        name: 'PT Nusantara Sejahtera',
+        address: 'Jl. Dago No. 25, RT 02/RW 03',
+        city: 'Bandung',
+        district: 'Coblong',
+        subdistrict: 'Dago',
+        phone: '022-5678901',
+        website: 'https://nusantarasejahtera.co.id',
+        about: 'Perusahaan agribisnis yang bergerak di bidang pengolahan hasil pertanian. Memiliki berbagai produk olahan berkualitas tinggi.',
+        logo: '',
+        activePkwts: 17,
+        activePkwtts: 8
     }
 ];
