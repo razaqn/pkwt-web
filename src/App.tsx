@@ -7,6 +7,7 @@ import DashboardCompany from './components/DashboardCompany';
 import ListsEmployee from './pages/ListsEmployee';
 import ListsCompany from './pages/ListsCompany';
 import ApprovalPage from './pages/ApprovalPage';
+import ApprovalDetail from './pages/ApprovalDetail';
 import EmployeeDetail from './pages/EmployeeDetail';
 import CompanyDetail from './pages/CompanyDetail';
 import { RequireAuth, RequireGuest } from './router/guards';
@@ -34,6 +35,7 @@ function App() {
         <Route path="/daftar-perusahaan" element={<RequireAuth><AppLayout pageTitle="Lists Company"><ListsCompany /></AppLayout></RequireAuth>} />
         <Route path="/daftar-perusahaan/:id" element={<RequireAuth><AppLayout pageTitle="Detail Perusahaan"><CompanyDetail /></AppLayout></RequireAuth>} />
         <Route path="/perstujuan-pkwt" element={<RequireAuth><AppLayout pageTitle="Approval Page"><ApprovalPage /></AppLayout></RequireAuth>} />
+        <Route path="/perstujuan-pkwt/:id" element={<RequireAuth><AppLayout pageTitle="Detail Persetujuan"><ApprovalDetail /></AppLayout></RequireAuth>} />
         <Route path="/login" element={<RequireGuest><LoginCompany /></RequireGuest>} />
         <Route path="/login/admin" element={<RequireGuest><LoginAdmin /></RequireGuest>} />
         <Route path="*" element={<Navigate to="/" replace />} />

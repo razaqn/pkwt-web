@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Building2, Phone, MapPin, Globe, Info, User } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, Globe, Info } from 'lucide-react';
 import { dummyCompanies } from '../lib/dummyData';
 import type { Company } from '../types/companyTypes';
 
@@ -106,7 +106,7 @@ export default function CompanyDetail() {
                             <div className="space-y-6">
                                 <div>
                                     <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                                        <Building2 className="w-5 h-5 text-blue-600" />
+                                        <Building2 className="w-5 h-5 text-gray-400" />
                                         Informasi Perusahaan
                                     </h2>
                                     <div className="space-y-3">
@@ -129,7 +129,7 @@ export default function CompanyDetail() {
 
                                 <div>
                                     <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                                        <MapPin className="w-5 h-5 text-blue-600" />
+                                        <MapPin className="w-5 h-5 text-gray-400" />
                                         Alamat
                                     </h2>
                                     <div className="space-y-3">
@@ -157,7 +157,7 @@ export default function CompanyDetail() {
                             <div className="space-y-6">
                                 <div>
                                     <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                                        <Globe className="w-5 h-5 text-blue-600" />
+                                        <Globe className="w-5 h-5 text-gray-400" />
                                         Informasi Digital
                                     </h2>
                                     <div className="space-y-3">
@@ -168,7 +168,7 @@ export default function CompanyDetail() {
                                                     href={company.website.startsWith('http') ? company.website : `https://${company.website}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                                                    className="font-medium text-gray-400 hover:text-blue-800 hover:underline"
                                                 >
                                                     {company.website}
                                                 </a>
@@ -181,7 +181,7 @@ export default function CompanyDetail() {
 
                                 <div>
                                     <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                                        <Info className="w-5 h-5 text-blue-600" />
+                                        <Info className="w-5 h-5 text-gray-400" />
                                         Tentang Perusahaan
                                     </h2>
                                     <div className="space-y-3">
