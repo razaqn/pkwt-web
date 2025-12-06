@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Building2, MapPin, Globe, Info } from 'lucide-react';
-import { dummyCompanies } from '../lib/dummyData';
+import { ArrowLeft, Building2, MapPin, Globe, Info, Users } from 'lucide-react';
+import { dummyCompanies, dummyEmployees } from '../lib/dummyData';
 import type { Company } from '../types/companyTypes';
+import type { Employee, PaginationState } from '../types/employeeTypes';
+import EmployeeTable from '../components/EmployeeTable';
 
 export default function CompanyDetail() {
     const { id } = useParams<{ id: string }>();
@@ -197,6 +199,65 @@ export default function CompanyDetail() {
                     </div>
                 </div>
             </div>
+
+            {/* Employee List Section */}
+            <div className="px-6 pb-6 mt-6">
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                    <div className="p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <Users className="w-5 h-5 text-gray-400" />
+                            Daftar Karyawan
+                        </h2>
+                        <EmployeeList companyId={company.id} />
+                    </div>
+                </div>
+            </div>
         </div>
+    );
+}
+
+function EmployeeList({ companyId }: { companyId: string }) {
+    const [pagination, setPagination] = useState<PaginationState>({
+        currentPage: 1,
+        itemsPerPage: 5,
+        totalItems: 0,
+        totalPages: 1
+    });
+    const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
+
+    useEffect(() => {
+        // Filter employees by companyId
+        const company = dummyCompanies.find(c => c.id === companyId);
+        if (!company) return;
+
+        const employees = dummyEmployees.filter(employee => employee.company === company.name);
+        setFilteredEmployees(employees);
+        setPagination({
+            currentPage: 1,
+            itemsPerPage: 5,
+            totalItems: employees.length,
+            totalPages: Math.ceil(employees.length / 5)
+        });
+    }, [companyId]);
+
+    const getPaginatedEmployees = () => {
+        const startIndex = (pagination.currentPage - 1) * pagination.itemsPerPage;
+        const endIndex = startIndex + pagination.itemsPerPage;
+        return filteredEmployees.slice(startIndex, endIndex);
+    };
+
+    const handlePageChange = (page: number) => {
+        setPagination({
+            ...pagination,
+            currentPage: page
+        });
+    };
+
+    return (
+        <EmployeeTable
+            employees={getPaginatedEmployees()}
+            pagination={pagination}
+            onPageChange={handlePageChange}
+        />
     );
 }
