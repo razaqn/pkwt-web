@@ -5,6 +5,7 @@ import AppLayout from './layouts/AppLayout';
 import DashboardAdmin from './components/DashboardAdmin';
 import DashboardCompany from './components/DashboardCompany';
 import ListsEmployee from './pages/ListsEmployee';
+import ListsEmployeeCompany from './pages/ListsEmployeeCompany';
 import ListsCompany from './pages/ListsCompany';
 import ApprovalPage from './pages/ApprovalPage';
 import ApprovalDetail from './pages/ApprovalDetail';
@@ -30,7 +31,13 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<RequireAuth><AppLayout><DashboardRoleBased /></AppLayout></RequireAuth>} />
-        <Route path="/daftar-karyawan" element={<RequireAuth><AppLayout pageTitle="Lists Employee"><ListsEmployee /></AppLayout></RequireAuth>} />
+        <Route path="/daftar-karyawan" element={
+          <RequireAuth>
+            <AppLayout pageTitle="Lists Employee">
+              {getRole() === 'company' ? <ListsEmployeeCompany /> : <ListsEmployee />}
+            </AppLayout>
+          </RequireAuth>
+        } />
         <Route path="/daftar-karyawan/:id" element={<RequireAuth><AppLayout pageTitle="Detail Karyawan"><EmployeeDetail /></AppLayout></RequireAuth>} />
         <Route path="/daftar-perusahaan" element={<RequireAuth><AppLayout pageTitle="Lists Company"><ListsCompany /></AppLayout></RequireAuth>} />
         <Route path="/daftar-perusahaan/:id" element={<RequireAuth><AppLayout pageTitle="Detail Perusahaan"><CompanyDetail /></AppLayout></RequireAuth>} />

@@ -2,7 +2,7 @@
 
 import { NavLink, useNavigate } from 'react-router-dom';
 import { clearAuth, getRole } from '../store/auth';
-import { LayoutDashboard, FileText, Users, FilePlus, Building, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, FilePlus, Building, LogOut } from 'lucide-react';
 
 interface CompanySidebarProps {
     sidebarOpen: boolean;
@@ -53,23 +53,13 @@ export default function CompanySidebar({ sidebarOpen, setSidebarOpen }: CompanyS
                         </span>
                     </NavLink>
 
-                    <NavLink to="/pkwt" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
-                        <span className="mt-0.5 text-white/90">
-                            <FileText className="h-5 w-5" />
-                        </span>
-                        <span className="flex-1">
-                            <div className="text-sm font-medium">PKWT</div>
-                            <div className="text-[11px] text-white/70">Karyawan kontrak</div>
-                        </span>
-                    </NavLink>
-
-                    <NavLink to="/pkwtt" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
+                    <NavLink to="/daftar-karyawan" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
                         <span className="mt-0.5 text-white/90">
                             <Users className="h-5 w-5" />
                         </span>
                         <span className="flex-1">
-                            <div className="text-sm font-medium">PKWTT</div>
-                            <div className="text-[11px] text-white/70">Karyawan tetap</div>
+                            <div className="text-sm font-medium">Lists Employee</div>
+                            <div className="text-[11px] text-white/70">List PKWT/PKWTT</div>
                         </span>
                     </NavLink>
 
