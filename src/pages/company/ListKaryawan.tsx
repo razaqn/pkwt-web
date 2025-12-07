@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AlertCircle, RotateCcw } from 'lucide-react';
 import KaryawanTable from '../../components/KaryawanTable';
 import { useEmployees } from '../../hooks/useEmployees';
 import { getCompanyId } from '../../store/auth';
+import { getUserFriendlyErrorMessage } from '../../lib/errors';
 import type { Karyawan } from '../../components/KaryawanTable';
 
 type ContractType = 'PKWT' | 'PKWTT';
@@ -117,8 +119,19 @@ export default function ListKaryawan() {
 
             {/* Error State */}
             {error && (
-                <div className="rounded-lg bg-red-50 p-4 text-sm text-red-700">
-                    {error}
+                <div className="flex items-start gap-3 rounded-lg border border-red-300 bg-red-50 px-4 py-3">
+                    <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                    <div className="flex-1">
+                        <p className="text-sm font-medium text-red-800">Terjadi Kesalahan</p>
+                        <p className="text-sm text-red-700 mt-1">{getUserFriendlyErrorMessage(error)}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="mt-3 inline-flex items-center gap-1.5 rounded bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-200 transition"
+                        >
+                            <RotateCcw className="h-3.5 w-3.5" />
+                            Coba Lagi
+                        </button>
+                    </div>
                 </div>
             )}
 

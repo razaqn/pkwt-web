@@ -119,3 +119,122 @@ export async function getEmployeeDetail(
 ): Promise<GetEmployeeDetailResponse> {
   return request(`${API_BASE}/api/employees/${employeeId}/detail`);
 }
+
+// Check NIK Existence types
+export interface NIKCheckResult {
+  nik: string;
+  exists: boolean;
+  full_name: string | null;
+  address: string | null;
+  district: string | null;
+  village: string | null;
+  place_of_birth: string | null;
+  birthdate: string | null; // YYYY-MM-DD
+  is_complete: boolean;
+}
+
+export interface CheckNIKsResponse {
+  ok: boolean;
+  data: NIKCheckResult[];
+}
+
+// Check NIK existence (batch)
+export async function checkNIKs(niks: string[]): Promise<CheckNIKsResponse> {
+  return request(`${API_BASE}/api/employees/check-niks`, {
+    method: 'POST',
+    body: JSON.stringify({ niks })
+  });
+}
+
+// Save/Update Employee Data types
+export interface SaveEmployeeDataRequest {
+  full_name: string;
+  address: string;
+  district: string;
+  village: string;
+  place_of_birth: string;
+  birthdate: string; // YYYY-MM-DD
+}
+
+export interface SaveEmployeeDataResponse {
+  ok: boolean;
+  message: string;
+  data: {
+    id: string;
+    nik: string;
+    full_name: string;
+    address: string;
+    district: string;
+    village: string;
+    place_of_birth: string;
+    birthdate: string;
+    company_id: string;
+  };
+}
+
+// Save or update employee data by NIK
+export async function saveEmployeeData(
+  nik: string,
+  data: SaveEmployeeDataRequest
+): Promise<SaveEmployeeDataResponse> {
+  return request(`${API_BASE}/api/employees/${nik}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data)
+  });
+}
+
+// Contract Application types
+export interface ContractApplicationPKWTRequest {
+  contract_type: 'PKWT';
+  start_date: string; // YYYY-MM-DD
+  duration_months: number;
+  employee_niks: string[];
+}
+
+export interface ContractApplicationPKWTTRequest {
+  contract_type: 'PKWTT';
+  start_date: string; // YYYY-MM-DD
+  employee_nik: string;
+  file_name: string;
+  file_content_base64: string;
+}
+
+export interface ContractApplicationPKWTResponse {
+  ok: boolean;
+  message: string;
+  data: {
+    contract_ids: string[];
+    contract_type: 'PKWT';
+    start_date: string;
+    duration_months: number;
+    status: string;
+    employee_count: number;
+    submitted_at: string;
+    company_id: string;
+  };
+}
+
+export interface ContractApplicationPKWTTResponse {
+  ok: boolean;
+  message: string;
+  data: {
+    contract_id: string;
+    contract_type: 'PKWTT';
+    start_date: string;
+    duration_months: null;
+    status: string;
+    employee_count: number;
+    submitted_at: string;
+    company_id: string;
+  };
+}
+
+// Submit contract application (PKWT or PKWTT)
+export async function submitContractApplication(
+  data: ContractApplicationPKWTRequest | ContractApplicationPKWTTRequest
+): Promise<ContractApplicationPKWTResponse | ContractApplicationPKWTTResponse> {
+  return request(`${API_BASE}/api/contracts/applications`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+}
