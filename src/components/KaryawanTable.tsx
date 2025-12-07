@@ -16,6 +16,8 @@ interface KaryawanTableProps {
     onLihatDetail: (karyawanId: string) => void;
     onPageChange?: (page: number) => void;
     currentPage?: number;
+    onSearchChange?: (query: string) => void;
+    searchQuery?: string;
 }
 
 export default function KaryawanTable({
@@ -24,11 +26,14 @@ export default function KaryawanTable({
     onLihatDetail,
     onPageChange,
     currentPage = 1,
+    onSearchChange,
+    searchQuery = '',
 }: KaryawanTableProps) {
-    const handleSearch = useCallback(() => {
-        // Note: Search is now handled at parent level (ListKaryawan)
-        // This component receives pre-filtered data
-    }, []);
+    const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (onSearchChange) {
+            onSearchChange(e.target.value);
+        }
+    }, [onSearchChange]);
 
     const handlePreviousPage = useCallback(() => {
         if (onPageChange) {
@@ -51,6 +56,7 @@ export default function KaryawanTable({
                     type="text"
                     placeholder="Cari nama karyawan..."
                     disabled={loading}
+                    value={searchQuery}
                     onChange={handleSearch}
                     className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:cursor-not-allowed"
                 />

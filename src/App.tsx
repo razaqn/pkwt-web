@@ -5,6 +5,7 @@ import AppLayout from './layouts/AppLayout';
 import AdminDashboard from './pages/admin/Dashboard';
 import CompanyDashboard from './pages/company/Dashboard';
 import ListKaryawan from './pages/company/ListKaryawan';
+import DetailKaryawan from './pages/company/DetailKaryawan';
 import { RequireAuth, RequireGuest } from './router/guards';
 import { getRole } from './store/auth';
 
@@ -25,6 +26,7 @@ function App() {
       <Routes>
         <Route path="/" element={<RequireAuth><AppLayout><DashboardWrapper /></AppLayout></RequireAuth>} />
         <Route path="/list-karyawan" element={<RequireAuth><AppLayout><ListKaryawan /></AppLayout></RequireAuth>} />
+        <Route path="/detail-karyawan/:id" element={<RequireAuth><AppLayout><DetailKaryawan /></AppLayout></RequireAuth>} />
         <Route path="/login" element={<RequireGuest><LoginCompany /></RequireGuest>} />
         <Route path="/login/admin" element={<RequireGuest><LoginAdmin /></RequireGuest>} />
         <Route path="*" element={<Navigate to="/" replace />} />

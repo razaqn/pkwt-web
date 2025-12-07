@@ -35,6 +35,11 @@ export interface Employee {
   id: string;
   full_name: string;
   nik: string;
+  address: string | null;
+  district: string | null;
+  village: string | null;
+  place_of_birth: string | null;
+  birthdate: string | null; // YYYY-MM-DD
   company_id: string;
   current_contract_id: string | null;
   latest_contract: LatestContract;
@@ -77,4 +82,40 @@ export async function getEmployeesByContract(
   return request(
     `${API_BASE}/api/employees/by-contract?${queryParams.toString()}`
   );
+}
+
+// Employee Detail types
+export interface Contract {
+  id: string;
+  title: string;
+  start_date: string | null; // YYYY-MM-DD
+  duration_months: number | null;
+  contract_type: 'PKWT' | 'PKWTT';
+  file_id: string | null;
+}
+
+export interface EmployeeDetail {
+  id: string;
+  full_name: string;
+  nik: string;
+  address: string | null;
+  district: string | null;
+  village: string | null;
+  place_of_birth: string | null;
+  birthdate: string | null; // YYYY-MM-DD
+  birthdate_formatted: string | null; // e.g., "15 Januari 1990"
+  company_id: string;
+  current_contract_id: string | null;
+  contracts: Contract[];
+}
+
+export interface GetEmployeeDetailResponse {
+  data: EmployeeDetail;
+}
+
+// Get employee detail by ID
+export async function getEmployeeDetail(
+  employeeId: string
+): Promise<GetEmployeeDetailResponse> {
+  return request(`${API_BASE}/api/employees/${employeeId}/detail`);
 }

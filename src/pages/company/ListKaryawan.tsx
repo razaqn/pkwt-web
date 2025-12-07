@@ -15,7 +15,7 @@ function transformEmployeeToKaryawan(employee: any): Karyawan {
         id: employee.id,
         namaLengkap: employee.full_name,
         nik: employee.nik,
-        alamat: '', // API tidak provide alamat, bisa ditambahkan nanti
+        alamat: employee.address,
         kontrakSekarang: employee.latest_contract?.title || '-',
         sisaWaktuKontrak: calculateRemainingWeeks(employee.latest_contract?.start_date, employee.latest_contract?.duration_months),
     };
@@ -40,6 +40,7 @@ export default function ListKaryawan() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<ContractType>('PKWT');
     const [currentPage, setCurrentPage] = useState(1);
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Get company_id from auth context
     const companyId = getCompanyId();
@@ -50,7 +51,9 @@ export default function ListKaryawan() {
                 Error: Company ID tidak ditemukan. Silakan login ulang.
             </div>
         );
-    }    // Fetch employees based on contract type
+    }
+
+    // Fetch employees based on contract type
     const { employees, loading, error } = useEmployees({
         company_id: companyId,
         contract_type: activeTab,
@@ -64,6 +67,14 @@ export default function ListKaryawan() {
         [employees]
     );
 
+    // Filter data based on search query (client-side search)
+    const filteredData: Karyawan[] = useMemo(
+        () => tableData.filter(karyawan =>
+            karyawan.namaLengkap.toLowerCase().includes(searchQuery.toLowerCase())
+        ),
+        [tableData, searchQuery]
+    );
+
     const handleLihatDetail = (karyawanId: string) => {
         navigate(`/detail-karyawan/${karyawanId}?type=${activeTab.toLowerCase()}`);
     };
@@ -71,6 +82,7 @@ export default function ListKaryawan() {
     const handleTabChange = (tab: ContractType) => {
         setActiveTab(tab);
         setCurrentPage(1); // Reset ke halaman pertama saat ganti tab
+        setSearchQuery(''); // Reset search saat ganti tab
     };
 
     return (
@@ -112,11 +124,13 @@ export default function ListKaryawan() {
 
             {/* Tab Content */}
             <KaryawanTable
-                data={tableData}
+                data={filteredData}
                 loading={loading}
                 onLihatDetail={handleLihatDetail}
                 onPageChange={setCurrentPage}
                 currentPage={currentPage}
+                onSearchChange={setSearchQuery}
+                searchQuery={searchQuery}
             />
         </div>
     );
