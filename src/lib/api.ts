@@ -329,3 +329,27 @@ export async function getContractEmployees(
 ): Promise<GetContractEmployeesResponse> {
   return request(`${API_BASE}/api/contracts/applications/${contractId}/employees`);
 }
+
+// Company Profile types
+export interface CompanyProfileData {
+  company_name: string;
+  phone_number: string;
+  active_contracts_pkwt: number;
+  active_contracts_pkwtt: number;
+  address: string;
+  village: string | null;
+  district: string | null;
+  city: string | null;
+  website_url: string | null;
+  description: string | null;
+}
+
+export interface GetCompanyProfileResponse {
+  ok: boolean;
+  data: CompanyProfileData;
+}
+
+// Get company profile for logged-in user
+export async function getCompanyProfile(): Promise<GetCompanyProfileResponse> {
+  return request(`${API_BASE}/api/company/profile`);
+}
