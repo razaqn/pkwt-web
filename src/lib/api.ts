@@ -238,3 +238,94 @@ export async function submitContractApplication(
     body: JSON.stringify(data)
   });
 }
+
+// Contract Application Status Monitoring types
+export interface ContractApplicationBatch {
+  id: string;
+  title: string; // e.g., "PKWT-001 (3 Karyawan)" - pre-formatted from backend
+  start_date: string; // YYYY-MM-DD
+  duration_months: number | null;
+  contract_type: 'PKWT' | 'PKWTT';
+  approval_status: 'PENDING' | 'REJECTED' | 'APPROVED';
+  employee_count: number; // For batch display
+}
+
+export interface GetContractApplicationsParams {
+  company_id: string;
+  limit?: number; // Default 7
+  offset?: number; // Default 0
+  approval_status?: 'PENDING' | 'REJECTED' | 'APPROVED'; // Optional filter
+}
+
+export interface GetContractApplicationsResponse {
+  ok: boolean;
+  data: ContractApplicationBatch[];
+  pagination: {
+    limit: number;
+    offset: number;
+    total: number;
+  };
+}
+
+// Get grouped contract applications with pagination and status filter
+export async function getContractApplications(
+  params: GetContractApplicationsParams
+): Promise<GetContractApplicationsResponse> {
+  const queryParams = new URLSearchParams();
+  queryParams.append('company_id', params.company_id);
+  if (params.limit !== undefined) {
+    queryParams.append('limit', String(params.limit));
+  }
+  if (params.offset !== undefined) {
+    queryParams.append('offset', String(params.offset));
+  }
+  if (params.approval_status !== undefined) {
+    queryParams.append('approval_status', params.approval_status);
+  }
+
+  return request(
+    `${API_BASE}/api/contracts/applications?${queryParams.toString()}`
+  );
+}
+
+// Contract Detail types (for monitoring page)
+export interface ContractApplicationDetail {
+  id: string;
+  title: string;
+  start_date: string; // YYYY-MM-DD
+  duration_months: number | null;
+  contract_type: 'PKWT' | 'PKWTT';
+  approval_status: 'PENDING' | 'REJECTED' | 'APPROVED';
+  admin_comment: string | null; // Admin comment (single text)
+}
+
+export interface GetContractApplicationDetailResponse {
+  ok: boolean;
+  data: ContractApplicationDetail;
+}
+
+// Get single contract application detail with admin comment
+export async function getContractApplicationDetail(
+  contractId: string
+): Promise<GetContractApplicationDetailResponse> {
+  return request(`${API_BASE}/api/contracts/applications/${contractId}`);
+}
+
+// Contract Employees types (for detail page employee table)
+export interface ContractEmployee {
+  nik: string;
+  full_name: string;
+  data_complete: boolean; // true = Lengkap, false = Belum Lengkap
+}
+
+export interface GetContractEmployeesResponse {
+  ok: boolean;
+  data: ContractEmployee[];
+}
+
+// Get employees in a contract batch
+export async function getContractEmployees(
+  contractId: string
+): Promise<GetContractEmployeesResponse> {
+  return request(`${API_BASE}/api/contracts/applications/${contractId}/employees`);
+}

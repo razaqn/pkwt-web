@@ -2,7 +2,7 @@
 
 import { NavLink, useNavigate } from 'react-router-dom';
 import { clearAuth, getRole } from '../store/auth';
-import { LayoutDashboard, Users, FilePlus, Building, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, FilePlus, Building, LogOut, FileCheck } from 'lucide-react';
 
 interface CompanySidebarProps {
     sidebarOpen: boolean;
@@ -70,6 +70,16 @@ export default function CompanySidebar({ sidebarOpen, setSidebarOpen }: CompanyS
                         <span className="flex-1">
                             <div className="text-sm font-medium">Form Kontrak</div>
                             <div className="text-[11px] text-white/70">PKWT & PKWTT</div>
+                        </span>
+                    </NavLink>
+
+                    <NavLink to="/status-pantau" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
+                        <span className="mt-0.5 text-white/90">
+                            <FileCheck className="h-5 w-5" />
+                        </span>
+                        <span className="flex-1">
+                            <div className="text-sm font-medium">Status Pengajuan</div>
+                            <div className="text-[11px] text-white/70">Pantau pengajuan</div>
                         </span>
                     </NavLink>
 

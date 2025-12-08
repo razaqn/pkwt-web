@@ -8,6 +8,8 @@ import ListKaryawan from './pages/company/ListKaryawan';
 import DetailKaryawan from './pages/company/DetailKaryawan';
 import FormKontrak from './pages/company/FormKontrak';
 import PengajuanBerkas from './pages/company/PengajuanBerkas';
+import StatusPantau from './pages/company/StatusPantau';
+import DetailPantau from './pages/company/DetailPantau';
 import { RequireAuth, RequireGuest } from './router/guards';
 import { getRole } from './store/auth';
 
@@ -31,6 +33,8 @@ function App() {
         <Route path="/detail-karyawan/:id" element={<RequireAuth><AppLayout><DetailKaryawan /></AppLayout></RequireAuth>} />
         <Route path="/form-kontrak" element={<RequireAuth><AppLayout><FormKontrak /></AppLayout></RequireAuth>} />
         <Route path="/pengajuan-berkas" element={<RequireAuth><AppLayout><PengajuanBerkas /></AppLayout></RequireAuth>} />
+        <Route path="/status-pantau" element={<RequireAuth><AppLayout><StatusPantau /></AppLayout></RequireAuth>} />
+        <Route path="/status-pantau/:contractId" element={<RequireAuth><AppLayout><DetailPantau /></AppLayout></RequireAuth>} />
         <Route path="/login" element={<RequireGuest><LoginCompany /></RequireGuest>} />
         <Route path="/login/admin" element={<RequireGuest><LoginAdmin /></RequireGuest>} />
         <Route path="*" element={<Navigate to="/" replace />} />
