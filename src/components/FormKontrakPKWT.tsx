@@ -1,4 +1,6 @@
-import { Trash2, Upload, FileText, AlertCircle } from 'lucide-react';
+import { Trash2, Upload, FileText, AlertCircle, FileSpreadsheet, X, CheckCircle } from 'lucide-react';
+import { useState } from 'react';
+import { parseExcelFile, mapExcelRowsToPKWT, MAX_FILE_SIZE_MB as EXCEL_MAX_SIZE_MB } from '../lib/excel';
 
 const MAX_FILE_SIZE_MB = 5;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -13,6 +15,7 @@ export interface FormKontrakPKWTData {
     startDate: string;
     durasi: number;
     fileKontrak?: File | null;
+    importedData?: Record<string, any>; // NIK -> additional Excel data mapping
 }
 
 interface FormKontrakPKWTProps {
@@ -23,6 +26,11 @@ interface FormKontrakPKWTProps {
 }
 
 export default function FormKontrakPKWT({ data, onChange, errors = {}, loading = false }: FormKontrakPKWTProps) {
+    const [importError, setImportError] = useState<string | null>(null);
+    const [importSuccess, setImportSuccess] = useState<string | null>(null);
+    const [importWarnings, setImportWarnings] = useState<string[]>([]);
+    const [isImporting, setIsImporting] = useState(false);
+
     function addNIK() {
         const newNIKEntry: NIKEntry = {
             id: Date.now().toString(),
@@ -83,6 +91,65 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
         });
     }
 
+    async function handleExcelImport(file: File | null) {
+        if (!file) return;
+
+        setIsImporting(true);
+        setImportError(null);
+        setImportSuccess(null);
+        setImportWarnings([]);
+
+        try {
+            // Parse Excel file
+            const result = await parseExcelFile(file);
+
+            // Map to PKWT format and check for duplicates with existing NIKs
+            const { niks: newNIKs, importedData, duplicates } = mapExcelRowsToPKWT(result.rows, data.niks);
+
+            if (newNIKs.length === 0 && duplicates.length === 0) {
+                setImportError('Tidak ada NIK baru untuk diimpor');
+                return;
+            }
+
+            // Merge with existing NIKs
+            const updatedNIKs = [...data.niks, ...newNIKs];
+
+            // Merge imported data
+            const updatedImportedData = { ...data.importedData, ...importedData };
+
+            onChange({
+                ...data,
+                niks: updatedNIKs,
+                importedData: updatedImportedData,
+            });
+
+            // Show success message
+            let successMsg = `✓ ${newNIKs.length} NIK berhasil diimpor dari ${result.fileName}`;
+            if (duplicates.length > 0) {
+                successMsg += ` (${duplicates.length} NIK duplikat dilewati)`;
+            }
+            setImportSuccess(successMsg);
+
+            // Show warnings if any
+            if (result.warnings.length > 0) {
+                setImportWarnings(result.warnings);
+            }
+
+            // Clear success message after 5 seconds
+            setTimeout(() => setImportSuccess(null), 5000);
+        } catch (err: any) {
+            setImportError(err?.message || 'Gagal mengimpor file Excel');
+        } finally {
+            setIsImporting(false);
+        }
+    }
+
+    function clearImportMessages() {
+        setImportError(null);
+        setImportSuccess(null);
+        setImportWarnings([]);
+    }
+
     return (
         <div className="space-y-6">
             {/* NIK Section */}
@@ -92,6 +159,93 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                     <span className="text-red-500 ml-1">*</span>
                     <span className="text-xs text-slate-500 ml-2">(Dapat lebih dari satu)</span>
                 </label>
+
+                {/* Excel Import Section */}
+                <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <FileSpreadsheet className="h-4 w-4 text-blue-600" />
+                            <span className="text-sm font-medium text-blue-900">Import dari Excel</span>
+                        </div>
+                        <input
+                            type="file"
+                            accept=".xlsx,.xls,.csv"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0] || null;
+                                if (file) {
+                                    handleExcelImport(file);
+                                    e.target.value = ''; // Reset input
+                                }
+                            }}
+                            disabled={loading || isImporting}
+                            className="hidden"
+                            id="excelInput"
+                        />
+                        <label
+                            htmlFor="excelInput"
+                            className={`inline-flex items-center gap-2 rounded-md border border-blue-300 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-50 transition cursor-pointer ${loading || isImporting ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
+                        >
+                            <Upload className="h-4 w-4" />
+                            {isImporting ? 'Mengimpor...' : 'Pilih File'}
+                        </label>
+                    </div>
+                    <p className="text-xs text-blue-700">
+                        📄 File Excel (.xlsx, .xls, .csv) dengan kolom "NIK" (wajib). Max {EXCEL_MAX_SIZE_MB}MB, 500 baris. Data diproses di browser Anda.
+                    </p>
+                </div>
+
+                {/* Import Success Message */}
+                {importSuccess && (
+                    <div className="flex items-start gap-2 rounded-lg bg-green-50 border border-green-200 p-3">
+                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                            <p className="text-sm text-green-700">{importSuccess}</p>
+                        </div>
+                        <button
+                            onClick={clearImportMessages}
+                            type="button"
+                            className="text-green-600 hover:text-green-800"
+                        >
+                            <X className="h-4 w-4" />
+                        </button>
+                    </div>
+                )}
+
+                {/* Import Error Message */}
+                {importError && (
+                    <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 p-3">
+                        <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                            <p className="text-sm text-red-700">{importError}</p>
+                        </div>
+                        <button
+                            onClick={clearImportMessages}
+                            type="button"
+                            className="text-red-600 hover:text-red-800"
+                        >
+                            <X className="h-4 w-4" />
+                        </button>
+                    </div>
+                )}
+
+                {/* Import Warnings */}
+                {importWarnings.length > 0 && (
+                    <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-3 space-y-1">
+                        <div className="flex items-center gap-2">
+                            <AlertCircle className="h-4 w-4 text-yellow-600" />
+                            <span className="text-sm font-medium text-yellow-900">Peringatan Import:</span>
+                        </div>
+                        <ul className="text-xs text-yellow-700 list-disc list-inside space-y-0.5">
+                            {importWarnings.slice(0, 5).map((warning, idx) => (
+                                <li key={idx}>{warning}</li>
+                            ))}
+                            {importWarnings.length > 5 && (
+                                <li className="italic">...dan {importWarnings.length - 5} peringatan lainnya</li>
+                            )}
+                        </ul>
+                    </div>
+                )}
 
                 <div className="space-y-2">
                     {data.niks.length === 0 ? (

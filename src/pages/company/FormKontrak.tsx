@@ -108,6 +108,7 @@ export default function FormKontrak() {
                     startDate: pkwtData.startDate,
                     duration: pkwtData.durasi,
                     fileKontrak: pkwtData.fileKontrak,
+                    importedData: pkwtData.importedData || {},
                 },
             });
         } catch (err: any) {
@@ -145,6 +146,7 @@ export default function FormKontrak() {
                     startDate: pkwttData.startDate,
                     duration: null, // PKWTT has no duration
                     fileKontrak: pkwttData.fileKontrak,
+                    importedData: pkwttData.importedData || {},
                 },
             });
         } catch (err: any) {

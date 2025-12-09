@@ -13,6 +13,7 @@ interface ContractData {
     startDate: string;
     duration: number | null;
     fileKontrak?: File | null;
+    importedData?: Record<string, any>; // NIK -> imported Excel data mapping
 }
 
 /**
@@ -45,7 +46,30 @@ export function useContractSubmission(contractData: ContractData | null) {
 
             try {
                 const response = await checkNIKs(contractData.niks);
-                const nikData = response.data.map(mapNIKResultToData);
+
+                // Map backend data
+                const nikData = response.data.map(result => {
+                    const backendData = mapNIKResultToData(result);
+
+                    // Merge with imported data (backend wins, Excel supplements empty fields)
+                    if (contractData.importedData && contractData.importedData[result.nik]) {
+                        const imported = contractData.importedData[result.nik];
+
+                        return {
+                            ...backendData,
+                            // Use imported data only if backend field is null
+                            fullName: backendData.fullName || imported.fullName || null,
+                            address: backendData.address || imported.address || null,
+                            district: backendData.district || imported.district || null,
+                            village: backendData.village || imported.village || null,
+                            placeOfBirth: backendData.placeOfBirth || imported.placeOfBirth || null,
+                            birthdate: backendData.birthdate || imported.birthdate || null,
+                        };
+                    }
+
+                    return backendData;
+                });
+
                 setNikDataList(nikData);
             } catch (err: any) {
                 setError(err?.message || 'Gagal mengecek data NIK');
