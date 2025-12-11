@@ -4,6 +4,8 @@ import LoginAdmin from './pages/LoginAdmin';
 import AppLayout from './layouts/AppLayout';
 import AdminDashboard from './pages/admin/Dashboard';
 import CompanyDashboard from './pages/company/Dashboard';
+import ListEmployees from './pages/admin/ListEmployees';
+import AdminDetailKaryawan from './pages/admin/DetailKaryawan';
 import ListKaryawan from './pages/company/ListKaryawan';
 import DetailKaryawan from './pages/company/DetailKaryawan';
 import FormKontrak from './pages/company/FormKontrak';
@@ -30,6 +32,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<RequireAuth><AppLayout><DashboardWrapper /></AppLayout></RequireAuth>} />
+        <Route path="/admin/list-employees" element={<RequireAuth><AppLayout><ListEmployees /></AppLayout></RequireAuth>} />
+        <Route path="/admin/detail-karyawan/:id" element={<RequireAuth><AppLayout><AdminDetailKaryawan /></AppLayout></RequireAuth>} />
         <Route path="/list-karyawan" element={<RequireAuth><AppLayout><ListKaryawan /></AppLayout></RequireAuth>} />
         <Route path="/detail-karyawan/:id" element={<RequireAuth><AppLayout><DetailKaryawan /></AppLayout></RequireAuth>} />
         <Route path="/form-kontrak" element={<RequireAuth><AppLayout><FormKontrak /></AppLayout></RequireAuth>} />

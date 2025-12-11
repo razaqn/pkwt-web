@@ -84,6 +84,34 @@ export async function getEmployeesByContract(
   );
 }
 
+// Admin-wide employee listing (no company_id filter)
+export interface GetAllEmployeesParams {
+  contract_type: 'PKWT' | 'PKWTT';
+  approved?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
+export async function getAllEmployeesByContract(
+  params: GetAllEmployeesParams
+): Promise<GetEmployeesByContractResponse> {
+  const queryParams = new URLSearchParams();
+  queryParams.append('contract_type', params.contract_type);
+  if (params.approved !== undefined) {
+    queryParams.append('approved', String(params.approved));
+  }
+  if (params.limit !== undefined) {
+    queryParams.append('limit', String(params.limit));
+  }
+  if (params.offset !== undefined) {
+    queryParams.append('offset', String(params.offset));
+  }
+
+  return request(
+    `${API_BASE}/api/admin/employees/by-contract?${queryParams.toString()}`
+  );
+}
+
 // Employee Detail types
 export interface Contract {
   id: string;
@@ -92,6 +120,7 @@ export interface Contract {
   duration_months: number | null;
   contract_type: 'PKWT' | 'PKWTT';
   file_id: string | null;
+  company_name: string; // Company name for contract history
 }
 
 export interface EmployeeDetail {

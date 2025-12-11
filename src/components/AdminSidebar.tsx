@@ -53,7 +53,7 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSideb
                         </span>
                     </NavLink>
 
-                    <NavLink to="/pkwt" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
+                    <NavLink to="/admin/list-employees" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
                         <span className="mt-0.5 text-white/90">
                             <Users className="h-5 w-5" />
                         </span>
@@ -68,8 +68,8 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSideb
                             <FileText className="h-5 w-5" />
                         </span>
                         <span className="flex-1">
-                            <div className="text-sm font-medium">Lists Contract</div>
-                            <div className="text-[11px] text-white/70">Daftar kontrak</div>
+                            <div className="text-sm font-medium">Lists Company</div>
+                            <div className="text-[11px] text-white/70">Daftar perusahaan</div>
                         </span>
                     </NavLink>
 
