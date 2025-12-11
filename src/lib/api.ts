@@ -239,6 +239,56 @@ export async function submitContractApplication(
   });
 }
 
+// Draft Contract types
+export interface SaveDraftRequest {
+  contract_type: 'PKWT' | 'PKWTT';
+  start_date: string; // YYYY-MM-DD
+  duration_months: number | null;
+  employee_niks: string[]; // Array of NIKs
+}
+
+export interface SaveDraftResponse {
+  ok: boolean;
+  message: string;
+  data: {
+    id: string; // Draft contract ID
+    contract_type: 'PKWT' | 'PKWTT';
+    start_date: string;
+    duration_months: number | null;
+    employee_count: number;
+    employee_niks: string[];
+    is_draft: true;
+  };
+}
+
+export interface DraftContractDetail {
+  id: string;
+  contract_type: 'PKWT' | 'PKWTT';
+  start_date: string;
+  duration_months: number | null;
+  employee_niks: string[];
+}
+
+// Save or update draft contract
+export async function saveDraftContract(data: SaveDraftRequest): Promise<SaveDraftResponse> {
+  return request(`${API_BASE}/api/contracts/drafts`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+}
+
+// Get draft contract detail
+export async function getDraftContractDetail(draftId: string): Promise<{ ok: boolean; data: DraftContractDetail }> {
+  return request(`${API_BASE}/api/contracts/drafts/${draftId}`);
+}
+
+// Delete draft contract
+export async function deleteDraftContract(draftId: string): Promise<{ ok: boolean; message: string }> {
+  return request(`${API_BASE}/api/contracts/drafts/${draftId}`, {
+    method: 'DELETE'
+  });
+}
+
 // Contract Application Status Monitoring types
 export interface ContractApplicationBatch {
   id: string;
@@ -246,15 +296,17 @@ export interface ContractApplicationBatch {
   start_date: string; // YYYY-MM-DD
   duration_months: number | null;
   contract_type: 'PKWT' | 'PKWTT';
-  approval_status: 'PENDING' | 'REJECTED' | 'APPROVED';
+  approval_status: 'PENDING' | 'REJECTED' | 'APPROVED' | null; // null for drafts
   employee_count: number; // For batch display
+  is_draft?: boolean; // Indicates if this is a draft
 }
 
 export interface GetContractApplicationsParams {
   company_id: string;
   limit?: number; // Default 7
   offset?: number; // Default 0
-  approval_status?: 'PENDING' | 'REJECTED' | 'APPROVED'; // Optional filter
+  approval_status?: 'PENDING' | 'REJECTED' | 'APPROVED' | null; // Optional filter
+  is_draft?: boolean; // Optional: filter drafts only
 }
 
 export interface GetContractApplicationsResponse {
@@ -279,8 +331,11 @@ export async function getContractApplications(
   if (params.offset !== undefined) {
     queryParams.append('offset', String(params.offset));
   }
-  if (params.approval_status !== undefined) {
+  if (params.approval_status !== undefined && params.approval_status !== null) {
     queryParams.append('approval_status', params.approval_status);
+  }
+  if (params.is_draft !== undefined) {
+    queryParams.append('is_draft', String(params.is_draft));
   }
 
   return request(

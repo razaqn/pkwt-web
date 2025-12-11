@@ -5,7 +5,7 @@ import {
 } from '../lib/api';
 import { getCompanyId } from '../store/auth';
 
-type ApprovalStatus = 'PENDING' | 'REJECTED' | 'APPROVED' | null;
+type ApprovalStatus = 'PENDING' | 'REJECTED' | 'APPROVED' | 'DRAFT' | null;
 
 export interface UseContractListReturn {
     contracts: ContractApplicationBatch[];
@@ -46,11 +46,15 @@ export function useContractList(): UseContractListReturn {
             try {
                 const offset = (currentPage - 1) * LIMIT_PER_PAGE;
 
+                const is_draft = statusFilter === 'DRAFT' ? true : undefined;
+                const approval_status = statusFilter === 'DRAFT' ? undefined : (statusFilter || undefined);
+
                 const response = await getContractApplications({
                     company_id: companyId!,
                     limit: LIMIT_PER_PAGE,
                     offset,
-                    approval_status: statusFilter || undefined,
+                    approval_status,
+                    is_draft,
                 });
 
                 if (isMounted) {

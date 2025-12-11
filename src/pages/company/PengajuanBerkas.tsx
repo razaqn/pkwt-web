@@ -32,12 +32,14 @@ export default function PengajuanBerkas() {
         error,
         saveNIKData,
         submitContract,
+        saveDraft,
         allDataComplete,
     } = useContractSubmission(contractData);
 
     // Local UI state
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedNIK, setSelectedNIK] = useState<string | null>(null);
+    const [draftId, setDraftId] = useState<string | null>(null);
     const [fileKontrak, setFileKontrak] = useState<File | null>(contractData?.fileKontrak || null);
     const [fileSizeError, setFileSizeError] = useState<string | null>(null);
 
@@ -82,6 +84,16 @@ export default function PengajuanBerkas() {
         const success = await submitContract(fileKontrak);
         if (success) {
             alert('Pengajuan berkas berhasil dikirim!');
+        }
+    }
+
+    async function handleSaveDraft() {
+        const newDraftId = await saveDraft();
+        if (newDraftId) {
+            setDraftId(newDraftId);
+            // Show success message
+            const successMsg = draftId ? 'Draf berhasil diperbarui!' : 'Draf berhasil disimpan!';
+            alert(successMsg); // Replace with toast notification if available
         }
     }
 
@@ -297,6 +309,14 @@ export default function PengajuanBerkas() {
 
             {/* Action Buttons */}
             <div className="flex gap-3 pt-6 border-t border-slate-200">
+                <button
+                    onClick={handleSaveDraft}
+                    disabled={submitLoading}
+                    className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-6 py-2.5 font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition"
+                >
+                    <FileText className="h-4 w-4" />
+                    {draftId ? 'Perbarui Draf' : 'Simpan Draf'}
+                </button>
                 <button
                     onClick={handleSubmitContract}
                     disabled={!allDataComplete || submitLoading || contractStatus === 'pending'}

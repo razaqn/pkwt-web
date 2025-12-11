@@ -12,7 +12,7 @@ import {
     parseDateFlexible,
     validateNIKFormat,
     normalizeNIKValueForTest,
-} from './excel';
+} from '../src/lib/excel';
 
 // ==================== Test Fixtures ====================
 

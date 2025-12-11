@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useCallback, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import FormKontrakPKWT, { type FormKontrakPKWTData } from '../../components/FormKontrakPKWT';
 import FormKontrakPKWTT, { type FormKontrakPKWTTData } from '../../components/FormKontrakPKWTT';
-import { checkNIKs } from '../../lib/api';
+import { checkNIKs, getDraftContractDetail } from '../../lib/api';
 
 const MAX_FILE_SIZE_MB = 5;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -19,9 +19,13 @@ interface FormErrors {
 
 export default function FormKontrak() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const draftId = searchParams.get('draftId');
+
     const [activeTab, setActiveTab] = useState<ContractType>('PKWT');
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<FormErrors>({});
+    const [draftLoading, setDraftLoading] = useState(!!draftId); // Show loading if draftId exists
 
     const [pkwtData, setPkwtData] = useState<FormKontrakPKWTData>({
         niks: [],
@@ -34,6 +38,49 @@ export default function FormKontrak() {
         startDate: '',
         fileKontrak: null,
     });
+
+    // Load draft data on mount if draftId provided
+    useEffect(() => {
+        if (!draftId) {
+            setDraftLoading(false);
+            return;
+        }
+
+        async function loadDraft() {
+            try {
+                const response = await getDraftContractDetail(draftId as string);
+                const draft = response.data;
+
+                // Pre-fill form based on contract type
+                if (draft.contract_type === 'PKWT') {
+                    setActiveTab('PKWT');
+                    setPkwtData({
+                        niks: draft.employee_niks.map((nik: string) => ({
+                            id: crypto.randomUUID(),
+                            nik
+                        })),
+                        startDate: draft.start_date,
+                        durasi: draft.duration_months || 0,
+                    });
+                } else {
+                    setActiveTab('PKWTT');
+                    setPkwttData({
+                        nik: draft.employee_niks[0] || '',
+                        startDate: draft.start_date,
+                        fileKontrak: null, // File cannot be pre-filled
+                    });
+                }
+            } catch (err: any) {
+                setErrors({
+                    submit: err?.message || 'Gagal memuat draft',
+                });
+            } finally {
+                setDraftLoading(false);
+            }
+        }
+
+        loadDraft();
+    }, [draftId]);
 
     const validatePKWT = useCallback((): boolean => {
         const newErrors: FormErrors = {};
@@ -160,82 +207,100 @@ export default function FormKontrak() {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div>
-                <h1 className="text-2xl font-bold text-slate-900">Form Kontrak</h1>
-                <p className="mt-1 text-slate-600">Tambahkan karyawan dan daftarkan kontrak baru</p>
-            </div>
-
-            {/* Error Alert */}
-            {errors.submit && (
-                <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3">
-                    <p className="text-sm text-red-800">{errors.submit}</p>
-                </div>
+            {/* Loading State */}
+            {draftLoading && (
+                <>
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900">Memuat Draft...</h1>
+                        <p className="mt-1 text-slate-600">Mengambil data draft Anda</p>
+                    </div>
+                    <div className="flex items-center justify-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    </div>
+                </>
             )}
 
-            {/* Tabs */}
-            <div className="flex gap-2 border-b border-slate-200">
-                <button
-                    onClick={() => setActiveTab('PKWT')}
-                    className={`px-4 py-3 font-medium text-sm transition border-b-2 ${activeTab === 'PKWT'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-slate-600 hover:text-slate-900'
-                        }`}
-                >
-                    PKWT
-                </button>
-                <button
-                    onClick={() => setActiveTab('PKWTT')}
-                    className={`px-4 py-3 font-medium text-sm transition border-b-2 ${activeTab === 'PKWTT'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-slate-600 hover:text-slate-900'
-                        }`}
-                >
-                    PKWTT
-                </button>
-            </div>
-
             {/* Form Content */}
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <form onSubmit={activeTab === 'PKWT' ? handleSubmitPKWT : handleSubmitPKWTT} className="space-y-6">
-                    {activeTab === 'PKWT' && (
-                        <FormKontrakPKWT
-                            data={pkwtData}
-                            onChange={setPkwtData}
-                            errors={errors}
-                            loading={loading}
-                        />
+            {!draftLoading && (
+                <>
+                    {/* Header */}
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900">Form Kontrak</h1>
+                        <p className="mt-1 text-slate-600">{draftId ? 'Lanjutkan draft kontrak' : 'Tambahkan karyawan dan daftarkan kontrak baru'}</p>
+                    </div>
+
+                    {/* Error Alert */}
+                    {errors.submit && (
+                        <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3">
+                            <p className="text-sm text-red-800">{errors.submit}</p>
+                        </div>
                     )}
 
-                    {activeTab === 'PKWTT' && (
-                        <FormKontrakPKWTT
-                            data={pkwttData}
-                            onChange={setPkwttData}
-                            errors={errors}
-                            loading={loading}
-                        />
-                    )}
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-3 pt-6 border-t border-slate-200">
+                    {/* Tabs */}
+                    <div className="flex gap-2 border-b border-slate-200">
                         <button
-                            type="submit"
-                            disabled={loading}
-                            className="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition"
+                            onClick={() => setActiveTab('PKWT')}
+                            className={`px-4 py-3 font-medium text-sm transition border-b-2 ${activeTab === 'PKWT'
+                                ? 'border-blue-500 text-blue-600'
+                                : 'border-transparent text-slate-600 hover:text-slate-900'
+                                }`}
                         >
-                            {loading ? 'Memproses...' : 'Lanjut ke Pengajuan'}
+                            PKWT
                         </button>
                         <button
-                            type="button"
-                            onClick={() => navigate('/list-karyawan')}
-                            disabled={loading}
-                            className="rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition"
+                            onClick={() => setActiveTab('PKWTT')}
+                            className={`px-4 py-3 font-medium text-sm transition border-b-2 ${activeTab === 'PKWTT'
+                                ? 'border-blue-500 text-blue-600'
+                                : 'border-transparent text-slate-600 hover:text-slate-900'
+                                }`}
                         >
-                            Batal
+                            PKWTT
                         </button>
                     </div>
-                </form>
-            </div>
+
+                    {/* Form Content */}
+                    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                        <form onSubmit={activeTab === 'PKWT' ? handleSubmitPKWT : handleSubmitPKWTT} className="space-y-6">
+                            {activeTab === 'PKWT' && (
+                                <FormKontrakPKWT
+                                    data={pkwtData}
+                                    onChange={setPkwtData}
+                                    errors={errors}
+                                    loading={loading}
+                                />
+                            )}
+
+                            {activeTab === 'PKWTT' && (
+                                <FormKontrakPKWTT
+                                    data={pkwttData}
+                                    onChange={setPkwttData}
+                                    errors={errors}
+                                    loading={loading}
+                                />
+                            )}
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3 pt-6 border-t border-slate-200">
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition"
+                                >
+                                    {loading ? 'Memproses...' : 'Lanjut ke Pengajuan'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => navigate('/list-karyawan')}
+                                    disabled={loading}
+                                    className="rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition"
+                                >
+                                    Batal
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

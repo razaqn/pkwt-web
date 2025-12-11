@@ -6,8 +6,11 @@ import {
     Loader,
     Eye,
     RotateCcw,
+    Edit,
+    Trash2,
 } from 'lucide-react';
 import { useContractList } from '../../hooks/useContractList';
+import { deleteDraftContract } from '../../lib/api';
 
 export default function StatusPantau() {
     const navigate = useNavigate();
@@ -26,13 +29,27 @@ export default function StatusPantau() {
         PENDING: 'bg-yellow-100 text-yellow-800',
         APPROVED: 'bg-green-100 text-green-800',
         REJECTED: 'bg-red-100 text-red-800',
+        DRAFT: 'bg-slate-100 text-slate-800',
     };
 
     const statusLabels = {
         PENDING: 'Menunggu',
         APPROVED: 'Disetujui',
         REJECTED: 'Ditolak',
+        DRAFT: 'Draft',
     };
+
+    async function handleDeleteDraft(draftId: string) {
+        if (!window.confirm('Yakin ingin menghapus draft ini?')) return;
+
+        try {
+            await deleteDraftContract(draftId);
+            // Refresh list
+            window.location.reload();
+        } catch (err: any) {
+            alert('Gagal menghapus draft: ' + err.message);
+        }
+    }
 
     if (error && !loading) {
         return (
@@ -76,10 +93,14 @@ export default function StatusPantau() {
                 <select
                     id="status-filter"
                     value={statusFilter || 'ALL'}
-                    onChange={(e) => setStatusFilter(e.target.value === 'ALL' ? null : e.target.value as any)}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        setStatusFilter(value === 'ALL' ? null : (value === 'DRAFT' ? 'DRAFT' : value as any));
+                    }}
                     className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                     <option value="ALL">Semua Status</option>
+                    <option value="DRAFT">Draft</option>
                     <option value="PENDING">Menunggu</option>
                     <option value="APPROVED">Disetujui</option>
                     <option value="REJECTED">Ditolak</option>
@@ -157,21 +178,40 @@ export default function StatusPantau() {
                                             <span
                                                 className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${statusBadgeStyles[
                                                     contract.approval_status as keyof typeof statusBadgeStyles
-                                                ]
+                                                ] || 'bg-slate-100 text-slate-800'
                                                     }`}
                                             >
                                                 <span className="h-1.5 w-1.5 rounded-full bg-current"></span>
-                                                {statusLabels[contract.approval_status]}
+                                                {contract.approval_status ? statusLabels[contract.approval_status as keyof typeof statusLabels] : 'Draft'}
                                             </span>
                                         </td>
                                         <td className="px-4 py-4">
-                                            <button
-                                                onClick={() => navigate(`/status-pantau/${contract.id}`)}
-                                                className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700"
-                                            >
-                                                <Eye className="h-4 w-4" />
-                                                Lihat Detail
-                                            </button>
+                                            {contract.is_draft ? (
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => navigate(`/form-kontrak?draftId=${contract.id}`)}
+                                                        className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700"
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                        Lanjutkan
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteDraft(contract.id)}
+                                                        className="inline-flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                        Hapus
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => navigate(`/status-pantau/${contract.id}`)}
+                                                    className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700"
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                    Lihat Detail
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}

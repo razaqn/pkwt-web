@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { checkNIKs, saveEmployeeData, submitContractApplication } from '../lib/api';
+import { checkNIKs, saveEmployeeData, submitContractApplication, saveDraftContract, type SaveDraftRequest } from '../lib/api';
 import { fileToBase64, mapNIKResultToData, mapEmployeeResponseToData, type NIKData } from '../lib/utils';
 import type { KelengkapanDataForm } from '../components/ModalKelengkapanData';
 
@@ -14,6 +14,7 @@ interface ContractData {
     duration: number | null;
     fileKontrak?: File | null;
     importedData?: Record<string, any>; // NIK -> imported Excel data mapping
+    draftId?: string; // For updating existing draft
 }
 
 /**
@@ -115,6 +116,28 @@ export function useContractSubmission(contractData: ContractData | null) {
         }
     }, []);
 
+    // Save draft contract
+    const saveDraft = useCallback(async () => {
+        if (!contractData) return null;
+
+        setError(null);
+
+        try {
+            const draftPayload: SaveDraftRequest = {
+                contract_type: contractData.contractType,
+                start_date: contractData.startDate,
+                duration_months: contractData.duration || 0,
+                employee_niks: contractData.niks,
+            };
+
+            const response = await saveDraftContract(draftPayload);
+            return response.data.id; // Return draft ID for subsequent saves
+        } catch (err: any) {
+            setError(err?.message || 'Gagal menyimpan draf');
+            return null;
+        }
+    }, [contractData]);
+
     // Submit contract application
     const submitContract = useCallback(async (pkwtFile?: File | null) => {
         if (!contractData) return false;
@@ -196,6 +219,7 @@ export function useContractSubmission(contractData: ContractData | null) {
         error,
         saveNIKData,
         submitContract,
+        saveDraft,
         allDataComplete: nikDataList.every(data => data.isComplete),
     };
 }
