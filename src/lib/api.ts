@@ -390,6 +390,57 @@ export async function getContractEmployees(
   return request(`${API_BASE}/api/contracts/applications/${contractId}/employees`);
 }
 
+// Dashboard summary & notifications types
+export interface DashboardNotification {
+  id: string;
+  contract_id: string;
+  status: 'APPROVED' | 'REJECTED';
+  title: string;
+  updated_at: string;
+  is_read: boolean;
+}
+
+export interface DashboardExpiringEmployee {
+  nik: string;
+  name: string;
+  end_date: string;
+  days_until_expiry: number;
+}
+
+export interface DashboardSummary {
+  active_employees: {
+    pkwt: number;
+    pkwtt: number;
+    total: number;
+  };
+  expiring_soon: DashboardExpiringEmployee[];
+  notifications: {
+    items: DashboardNotification[];
+    total_unread: number;
+  };
+}
+
+export interface DashboardSummaryResponse {
+  ok: boolean;
+  data: DashboardSummary;
+}
+
+export async function getDashboardSummary(): Promise<DashboardSummaryResponse> {
+  return request(`${API_BASE}/api/company/dashboard-summary`);
+}
+
+export async function markNotificationAsRead(notificationId: string): Promise<{ ok: boolean }> {
+  return request(`${API_BASE}/api/company/notifications/${notificationId}/read`, {
+    method: 'PATCH'
+  });
+}
+
+export async function markAllNotificationsAsRead(): Promise<{ ok: boolean }> {
+  return request(`${API_BASE}/api/company/notifications/mark-all-read`, {
+    method: 'PATCH'
+  });
+}
+
 // Company Profile types
 export interface CompanyProfileData {
   company_name: string;

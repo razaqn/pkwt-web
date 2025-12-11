@@ -43,7 +43,9 @@ export interface NIKData {
     birthdate: string | null;
     ktpFileUrl: string | null; // URL to KTP image
     isComplete: boolean;
-}/**
+}
+
+/**
  * Convert API NIK result to frontend NIKData format
  */
 export function mapNIKResultToData(result: NIKCheckResult): NIKData {
@@ -87,4 +89,62 @@ export function mapEmployeeResponseToData(data: EmployeeDataResponse): Omit<NIKD
         ktpFileUrl: data.ktp_file_url,
         isComplete: true,
     };
+}
+
+/**
+ * Format timestamp into relative time in Bahasa Indonesia
+ */
+export function formatRelativeTime(input: string | number | Date): string {
+    const date = new Date(input);
+    const now = new Date();
+
+    if (Number.isNaN(date.getTime())) {
+        return '';
+    }
+
+    const diffMs = now.getTime() - date.getTime();
+    const diffSeconds = Math.max(0, Math.floor(diffMs / 1000));
+
+    if (diffSeconds < 60) return 'Baru saja';
+
+    const diffMinutes = Math.floor(diffSeconds / 60);
+    if (diffMinutes < 60) return `${diffMinutes} menit lalu`;
+
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) return `${diffHours} jam lalu`;
+
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return 'Kemarin';
+    return `${diffDays} hari lalu`;
+}
+
+/**
+ * Build countdown label and color class for contract expiry
+ * Backend sends contracts with days_until_expiry between -3 and 30
+ */
+export function getCountdownStatus(daysUntilExpiry: number): { label: string; colorClass: string } {
+    const abs = Math.abs(daysUntilExpiry);
+
+    let label = '';
+    if (daysUntilExpiry < 0) {
+        label = abs === 1 ? 'Lewat 1 hari' : `Lewat ${abs} hari`;
+    } else if (daysUntilExpiry === 0) {
+        label = 'Hari ini';
+    } else if (daysUntilExpiry === 1) {
+        label = 'Besok';
+    } else {
+        label = `${daysUntilExpiry} hari lagi`;
+    }
+
+    // Color logic: red for expired, yellow for ≤7 days, amber for 8-14, slate for >14
+    let colorClass = 'text-slate-600';
+    if (daysUntilExpiry < 0) {
+        colorClass = 'text-red-600';
+    } else if (daysUntilExpiry <= 7) {
+        colorClass = 'text-yellow-600';
+    } else if (daysUntilExpiry <= 14) {
+        colorClass = 'text-amber-600';
+    }
+
+    return { label, colorClass };
 }
