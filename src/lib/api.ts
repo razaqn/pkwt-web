@@ -130,6 +130,7 @@ export interface NIKCheckResult {
   village: string | null;
   place_of_birth: string | null;
   birthdate: string | null; // YYYY-MM-DD
+  ktp_file_url: string | null; // URL to uploaded KTP image
   is_complete: boolean;
 }
 
@@ -154,11 +155,12 @@ export interface SaveEmployeeDataRequest {
   village: string;
   place_of_birth: string;
   birthdate: string; // YYYY-MM-DD
+  ktp_file_name?: string; // Optional: filename of KTP image
+  ktp_file_content_base64?: string; // Optional: base64 encoded image (jpg/jpeg/png, max 5MB)
 }
 
 export interface SaveEmployeeDataResponse {
-  ok: boolean;
-  message: string;
+  message: string; // "Employee updated" or "Employee created"
   data: {
     id: string;
     nik: string;
@@ -168,7 +170,10 @@ export interface SaveEmployeeDataResponse {
     village: string;
     place_of_birth: string;
     birthdate: string;
+    ktp_file_url: string | null; // URL to uploaded KTP
     company_id: string;
+    created_at?: string; // timestamp
+    updated_at?: string; // timestamp
   };
 }
 

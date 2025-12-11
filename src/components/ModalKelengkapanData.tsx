@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X, Upload, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export interface KelengkapanDataForm {
@@ -8,6 +8,7 @@ export interface KelengkapanDataForm {
     village: string;
     placeOfBirth: string;
     birthdate: string;
+    ktpFile?: File | null; // KTP image file (jpg/jpeg/png)
 }
 
 interface ModalKelengkapanDataProps {
@@ -16,6 +17,7 @@ interface ModalKelengkapanDataProps {
     onSave: (data: KelengkapanDataForm) => void;
     nik: string;
     initialData?: KelengkapanDataForm;
+    ktpFileUrl?: string | null; // URL to existing KTP image
     loading?: boolean;
 }
 
@@ -25,6 +27,7 @@ export default function ModalKelengkapanData({
     onSave,
     nik,
     initialData,
+    ktpFileUrl,
     loading = false
 }: ModalKelengkapanDataProps) {
     const [formData, setFormData] = useState<KelengkapanDataForm>({
@@ -34,14 +37,24 @@ export default function ModalKelengkapanData({
         village: '',
         placeOfBirth: '',
         birthdate: '',
+        ktpFile: null,
     });
 
-    const [errors, setErrors] = useState<Partial<Record<keyof KelengkapanDataForm, string>>>({});
+    const [errors, setErrors] = useState<Partial<Record<keyof Omit<KelengkapanDataForm, 'ktpFile'>, string>>>({});
+    const [ktpError, setKtpError] = useState<string | null>(null);
 
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
-                setFormData(initialData);
+                setFormData({
+                    fullName: initialData.fullName,
+                    address: initialData.address,
+                    district: initialData.district,
+                    village: initialData.village,
+                    placeOfBirth: initialData.placeOfBirth,
+                    birthdate: initialData.birthdate,
+                    ktpFile: initialData.ktpFile || null,
+                });
             } else {
                 setFormData({
                     fullName: '',
@@ -50,13 +63,15 @@ export default function ModalKelengkapanData({
                     village: '',
                     placeOfBirth: '',
                     birthdate: '',
+                    ktpFile: null,
                 });
             }
             setErrors({});
+            setKtpError(null);
         }
     }, [isOpen, initialData]);
 
-    function handleChange(field: keyof KelengkapanDataForm, value: string) {
+    function handleChange(field: keyof Omit<KelengkapanDataForm, 'ktpFile'>, value: string) {
         setFormData(prev => ({ ...prev, [field]: value }));
         // Clear error for this field
         if (errors[field]) {
@@ -64,8 +79,34 @@ export default function ModalKelengkapanData({
         }
     }
 
+    function handleKtpFileChange(file: File | null) {
+        setKtpError(null);
+
+        if (!file) {
+            setFormData(prev => ({ ...prev, ktpFile: null }));
+            return;
+        }
+
+        // Validasi tipe file
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        if (!validTypes.includes(file.type)) {
+            setKtpError('Format file harus JPG, JPEG, atau PNG');
+            return;
+        }
+
+        // Validasi ukuran (max 5MB)
+        const maxSizeBytes = 5 * 1024 * 1024;
+        if (file.size > maxSizeBytes) {
+            const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
+            setKtpError(`File terlalu besar. Maksimal 5MB, file Anda ${fileSizeMB}MB`);
+            return;
+        }
+
+        setFormData(prev => ({ ...prev, ktpFile: file }));
+    }
+
     function validate(): boolean {
-        const newErrors: Partial<Record<keyof KelengkapanDataForm, string>> = {};
+        const newErrors: Partial<Record<keyof Omit<KelengkapanDataForm, 'ktpFile'>, string>> = {};
 
         if (!formData.fullName.trim()) {
             newErrors.fullName = 'Nama lengkap harus diisi';
@@ -226,6 +267,73 @@ export default function ModalKelengkapanData({
                             />
                             {errors.birthdate && <p className="text-sm text-red-500">{errors.birthdate}</p>}
                         </div>
+                    </div>
+
+                    {/* Upload KTP */}
+                    <div className="space-y-2">
+                        <label htmlFor="ktpFile" className="block">
+                            <span className="text-sm font-medium text-slate-700">Upload KTP (Foto/Scan)</span>
+                            <span className="text-red-500 ml-1">*</span>
+                            <span className="text-xs text-slate-500 ml-2">(JPG/JPEG/PNG, Maksimal 5MB)</span>
+                        </label>
+
+                        <div className="relative">
+                            <input
+                                id="ktpFile"
+                                type="file"
+                                accept=".jpg,.jpeg,.png,image/jpeg,image/jpg,image/png"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0] || null;
+                                    handleKtpFileChange(file);
+                                }}
+                                disabled={loading}
+                                className="hidden"
+                            />
+
+                            <label
+                                htmlFor="ktpFile"
+                                className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 cursor-pointer hover:bg-slate-100 hover:border-blue-400 transition disabled:opacity-50"
+                            >
+                                <Upload className="h-5 w-5 text-slate-500" />
+                                <div className="text-center">
+                                    <span className="text-sm font-medium text-slate-700">Pilih file KTP</span>
+                                    <span className="text-xs text-slate-500 block">atau drag & drop</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        {ktpError && (
+                            <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+                                <span className="text-xs text-red-600 font-medium">⚠</span>
+                                <p className="text-sm text-red-700">{ktpError}</p>
+                            </div>
+                        )}
+
+                        {formData.ktpFile ? (
+                            <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-3 py-2">
+                                <FileText className="h-4 w-4 text-green-600" />
+                                <div className="flex-1">
+                                    <span className="text-sm text-green-700 block">{formData.ktpFile.name}</span>
+                                    <span className="text-xs text-green-600">{(formData.ktpFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => handleKtpFileChange(null)}
+                                    disabled={loading}
+                                    className="text-xs text-green-600 hover:text-green-800 font-medium"
+                                >
+                                    Hapus
+                                </button>
+                            </div>
+                        ) : ktpFileUrl ? (
+                            <div className="flex items-center gap-2 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2">
+                                <FileText className="h-4 w-4 text-blue-600" />
+                                <div className="flex-1">
+                                    <span className="text-sm text-blue-700 block">KTP sudah diunggah sebelumnya</span>
+                                    <span className="text-xs text-blue-600">Klik pilih file untuk mengganti</span>
+                                </div>
+                            </div>
+                        ) : null}
                     </div>
 
                     {/* Action Buttons */}

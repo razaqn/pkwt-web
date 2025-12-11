@@ -29,6 +29,7 @@ export interface NIKCheckResult {
     village: string | null;
     place_of_birth: string | null;
     birthdate: string | null;
+    ktp_file_url: string | null;
     is_complete: boolean;
 }
 
@@ -40,10 +41,9 @@ export interface NIKData {
     village: string | null;
     placeOfBirth: string | null;
     birthdate: string | null;
+    ktpFileUrl: string | null; // URL to KTP image
     isComplete: boolean;
-}
-
-/**
+}/**
  * Convert API NIK result to frontend NIKData format
  */
 export function mapNIKResultToData(result: NIKCheckResult): NIKData {
@@ -55,6 +55,7 @@ export function mapNIKResultToData(result: NIKCheckResult): NIKData {
         village: result.village,
         placeOfBirth: result.place_of_birth,
         birthdate: result.birthdate,
+        ktpFileUrl: result.ktp_file_url,
         isComplete: result.is_complete,
     };
 }
@@ -71,6 +72,7 @@ export interface EmployeeDataResponse {
     village: string;
     place_of_birth: string;
     birthdate: string;
+    ktp_file_url: string | null;
     company_id: string;
 }
 
@@ -82,6 +84,7 @@ export function mapEmployeeResponseToData(data: EmployeeDataResponse): Omit<NIKD
         village: data.village,
         placeOfBirth: data.place_of_birth,
         birthdate: data.birthdate,
+        ktpFileUrl: data.ktp_file_url,
         isComplete: true,
     };
 }

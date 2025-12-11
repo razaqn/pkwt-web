@@ -89,20 +89,34 @@ export function useContractSubmission(contractData: ContractData | null) {
         setError(null);
 
         try {
-            const response = await saveEmployeeData(nik, {
+            // Prepare base payload
+            const payload: any = {
                 full_name: formData.fullName,
                 address: formData.address,
                 district: formData.district,
                 village: formData.village,
                 place_of_birth: formData.placeOfBirth,
                 birthdate: formData.birthdate,
-            });
+            };
+
+            // If KTP file provided, convert to base64 and include in payload
+            if (formData.ktpFile) {
+                const fileBase64 = await fileToBase64(formData.ktpFile);
+                payload.ktp_file_name = formData.ktpFile.name;
+                payload.ktp_file_content_base64 = fileBase64;
+            }
+
+            const response = await saveEmployeeData(nik, payload);
 
             // Update local state with saved data
             setNikDataList(prev =>
                 prev.map(item =>
                     item.nik === nik
-                        ? { nik, ...mapEmployeeResponseToData(response.data) }
+                        ? {
+                            nik,
+                            ...mapEmployeeResponseToData(response.data),
+                            ktpFileUrl: response.data.ktp_file_url,
+                        }
                         : item
                 )
             );

@@ -110,6 +110,7 @@ export default function PengajuanBerkas() {
             village: selectedNIKData.village || '',
             placeOfBirth: selectedNIKData.placeOfBirth || '',
             birthdate: selectedNIKData.birthdate || '',
+            ktpFile: null, // File state handled separately in modal
         }
         : undefined;
 
@@ -344,6 +345,7 @@ export default function PengajuanBerkas() {
                 onSave={handleSaveNIKData}
                 nik={selectedNIK || ''}
                 initialData={initialModalData}
+                ktpFileUrl={selectedNIKData?.ktpFileUrl || null}
                 loading={loading}
             />
         </div>

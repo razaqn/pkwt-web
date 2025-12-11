@@ -1,15 +1,5 @@
-import { Edit } from 'lucide-react';
-
-export interface NIKData {
-    nik: string;
-    fullName: string | null;
-    address: string | null;
-    district: string | null;
-    village: string | null;
-    placeOfBirth: string | null;
-    birthdate: string | null;
-    isComplete: boolean;
-}
+import { Edit, FileImage } from 'lucide-react';
+import type { NIKData } from '../lib/utils';
 
 interface TabelNIKPengajuanProps {
     data: NIKData[];
@@ -36,6 +26,7 @@ export default function TabelNIKPengajuan({ data, onEdit, loading = false }: Tab
                             <th className="px-4 py-3 text-left font-medium text-slate-700">NIK</th>
                             <th className="px-4 py-3 text-left font-medium text-slate-700">Nama Lengkap</th>
                             <th className="px-4 py-3 text-left font-medium text-slate-700">Alamat</th>
+                            <th className="px-4 py-3 text-center font-medium text-slate-700">KTP</th>
                             <th className="px-4 py-3 text-left font-medium text-slate-700">Status</th>
                             <th className="px-4 py-3 text-center font-medium text-slate-700">Aksi</th>
                         </tr>
@@ -59,6 +50,17 @@ export default function TabelNIKPengajuan({ data, onEdit, loading = false }: Tab
                                         <span className="line-clamp-2">{item.address}</span>
                                     ) : (
                                         <span className="text-slate-400 italic">Belum diisi</span>
+                                    )}
+                                </td>
+                                <td className="px-4 py-3 text-center">
+                                    {item.ktpFileUrl ? (
+                                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100">
+                                            <FileImage className="h-3.5 w-3.5 text-green-600" />
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-100">
+                                            <FileImage className="h-3.5 w-3.5 text-yellow-600" />
+                                        </span>
                                     )}
                                 </td>
                                 <td className="px-4 py-3">
