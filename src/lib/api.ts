@@ -493,3 +493,57 @@ export interface GetCompanyProfileResponse {
 export async function getCompanyProfile(): Promise<GetCompanyProfileResponse> {
   return request(`${API_BASE}/api/company/profile`);
 }
+
+// Company Listing types (Admin)
+export interface Company {
+  id: string;
+  company_name: string;
+  phone_number: string;
+  address: string;
+  village: string | null;
+  district: string | null;
+  active_contracts_pkwt: number;
+  active_contracts_pkwtt: number;
+}
+
+export interface GetAllCompaniesParams {
+  limit?: number;
+  offset?: number;
+  search?: string;
+}
+
+export interface GetAllCompaniesResponse {
+  data: Company[];
+  pagination: {
+    limit: number;
+    offset: number;
+    total: number;
+  };
+}
+
+// Get all companies (admin only)
+export async function getAllCompanies(
+  params: GetAllCompaniesParams
+): Promise<GetAllCompaniesResponse> {
+  const queryParams = new URLSearchParams();
+  if (params.limit !== undefined) {
+    queryParams.append('limit', String(params.limit));
+  }
+  if (params.offset !== undefined) {
+    queryParams.append('offset', String(params.offset));
+  }
+  if (params.search !== undefined && params.search.trim()) {
+    queryParams.append('search', params.search);
+  }
+
+  return request(
+    `${API_BASE}/api/admin/companies?${queryParams.toString()}`
+  );
+}
+
+// Get specific company detail by ID (admin only)
+export async function getCompanyDetailById(
+  companyId: string
+): Promise<GetCompanyProfileResponse> {
+  return request(`${API_BASE}/api/admin/companies/${companyId}`);
+}
