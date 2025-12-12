@@ -45,7 +45,11 @@ export function useContractDetail(
                 ]);
 
                 if (isMounted) {
-                    setContract(detailResponse.data);
+                    // Handle nested response structure
+                    const contractData = 'contract' in detailResponse.data
+                        ? detailResponse.data.contract
+                        : detailResponse.data;
+                    setContract(contractData);
                     setEmployees(employeesResponse.data);
                 }
             } catch (err: any) {
