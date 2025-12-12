@@ -73,8 +73,13 @@ export default function DetailPantau() {
         );
     }
 
+    const statusKey = contract.approval_status?.toUpperCase() as keyof typeof statusBadgeStyles;
     const statusInfo =
-        statusBadgeStyles[contract.approval_status as keyof typeof statusBadgeStyles];
+        statusBadgeStyles[statusKey] || {
+            bg: 'bg-gray-100',
+            text: 'text-gray-800',
+            label: contract.approval_status || 'Unknown',
+        };
 
     return (
         <div className="space-y-6">

@@ -223,6 +223,8 @@ export interface ContractApplicationPKWTRequest {
   start_date: string; // YYYY-MM-DD
   duration_months: number;
   employee_niks: string[];
+  file_name: string; // PDF file name for batch contract
+  file_content_base64: string; // Base64 encoded PDF file
 }
 
 export interface ContractApplicationPKWTTRequest {
@@ -390,14 +392,31 @@ export interface ContractApplicationDetail {
 
 export interface GetContractApplicationDetailResponse {
   ok: boolean;
-  data: ContractApplicationDetail;
+  data: ContractApplicationDetail | {
+    contract: ContractApplicationDetail;
+    company: any;
+    employees: any[];
+  };
 }
 
 // Get single contract application detail with admin comment
 export async function getContractApplicationDetail(
   contractId: string
 ): Promise<GetContractApplicationDetailResponse> {
-  return request(`${API_BASE}/api/contracts/applications/${contractId}`);
+  const response = await request<GetContractApplicationDetailResponse>(
+    `${API_BASE}/api/contracts/applications/${contractId}`
+  );
+
+  // Handle nested response (PKWT returns { contract, company, employees })
+  if ('contract' in response.data) {
+    return {
+      ok: response.ok,
+      data: response.data.contract
+    };
+  }
+
+  // Handle flat response (PKWTT returns direct contract data)
+  return response;
 }
 
 // Contract Employees types (for detail page employee table)
@@ -546,4 +565,129 @@ export async function getCompanyDetailById(
   companyId: string
 ): Promise<GetCompanyProfileResponse> {
   return request(`${API_BASE}/api/admin/companies/${companyId}`);
+}
+
+// Approval types
+export interface ApprovalListItem {
+  id: string;
+  title: string;
+  company_name: string;
+  contract_type: 'PKWT' | 'PKWTT';
+  employee_count: number;
+  start_date: string; // YYYY-MM-DD
+  duration_months: number | null;
+  submitted_at: string; // YYYY-MM-DD or ISO timestamp
+  application_status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  file_approval_status: 'PENDING' | 'APPROVED' | 'REJECTED' | null;
+  approval_status: 'PENDING' | 'APPROVED' | 'REJECTED'; // Unified status (prefers file_approval_status)
+}
+
+export interface ApprovalEmployee {
+  id: string;
+  nik: string;
+  full_name: string;
+  address: string | null;
+  birthdate: string | null; // YYYY-MM-DD
+  previous_contract_count: number;
+}
+
+export interface ApprovalDetail {
+  contract: {
+    id: string;
+    title: string;
+    contract_type: 'PKWT' | 'PKWTT';
+    start_date: string; // YYYY-MM-DD
+    duration_months: number | null;
+    submitted_at: string;
+    application_status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    file_approval_status: 'PENDING' | 'APPROVED' | 'REJECTED' | null;
+    approval_status: 'PENDING' | 'APPROVED' | 'REJECTED'; // Unified status (prefers file_approval_status)
+    admin_comment: string | null;
+    submission_notes: string | null;
+    file_url: string | null;
+  };
+  company: {
+    id: string;
+    company_name: string;
+    phone_number: string;
+    address: string;
+  };
+  employees: ApprovalEmployee[];
+}
+
+export interface GetApprovalListParams {
+  limit?: number;
+  offset?: number;
+  search?: string;
+  status?: 'PENDING' | 'APPROVED' | 'REJECTED';
+}
+
+export interface GetApprovalListResponse {
+  data: ApprovalListItem[];
+  pagination: {
+    limit: number;
+    offset: number;
+    total: number;
+  };
+}
+
+// Get all pending contract applications for approval (admin only)
+export async function getApprovalList(
+  params: GetApprovalListParams
+): Promise<GetApprovalListResponse> {
+  const queryParams = new URLSearchParams();
+  if (params.limit !== undefined) {
+    queryParams.append('limit', String(params.limit));
+  }
+  if (params.offset !== undefined) {
+    queryParams.append('offset', String(params.offset));
+  }
+  if (params.search !== undefined && params.search.trim()) {
+    queryParams.append('search', params.search);
+  }
+  if (params.status !== undefined) {
+    queryParams.append('status', params.status);
+  }
+
+  return request(
+    `${API_BASE}/api/admin/contracts/approvals?${queryParams.toString()}`
+  );
+}
+
+// Get approval detail with full contract, company, and employee data (admin only)
+export async function getApprovalDetail(
+  contractId: string
+): Promise<ApprovalDetail> {
+  const response = await request(
+    `${API_BASE}/api/admin/contracts/approvals/${contractId}`
+  );
+  return response.data;
+}
+
+// Approve contract application (admin only)
+export async function approveContract(
+  contractId: string,
+  comment?: string
+): Promise<{ ok: boolean; message: string }> {
+  return request(
+    `${API_BASE}/api/admin/contracts/approvals/${contractId}/approve`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ comment: comment || '' }),
+    }
+  );
+}
+
+// Reject contract application (admin only)
+export async function rejectContract(
+  contractId: string,
+  comment: string
+): Promise<{ ok: boolean; message: string }> {
+  return request(
+    `${API_BASE}/api/admin/contracts/approvals/${contractId}/reject`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ comment }),
+    }
+  );
 }
