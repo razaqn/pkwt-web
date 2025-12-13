@@ -691,3 +691,49 @@ export async function rejectContract(
     }
   );
 }
+
+// Admin Dashboard Overview types
+export interface AdminDashboardMetrics {
+  total_employees: {
+    value: number;
+    change_percentage: number;
+  };
+  active_contracts: {
+    value: number;
+    change_percentage: number;
+  };
+  pending_approvals: {
+    value: number;
+    change_percentage: number;
+  };
+  contracts_expiring_soon: {
+    value: number;
+    change_percentage: number;
+  };
+}
+
+export interface ContractStatusDistribution {
+  pkwt: number;
+  pkwtt: number;
+}
+
+export interface NewContractsTrend {
+  labels: string[];
+  values: number[];
+}
+
+export interface AdminDashboardOverview {
+  metrics: AdminDashboardMetrics;
+  contract_status_distribution: ContractStatusDistribution;
+  new_contracts_trend: NewContractsTrend;
+}
+
+export interface GetAdminDashboardOverviewResponse {
+  ok: boolean;
+  data: AdminDashboardOverview;
+}
+
+// Get admin dashboard overview (admin only)
+export async function getAdminDashboardOverview(): Promise<GetAdminDashboardOverviewResponse> {
+  return request(`${API_BASE}/api/admin/dashboard/overview`);
+}
