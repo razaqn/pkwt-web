@@ -1,4 +1,4 @@
-import { Upload, X, AlertCircle, FileText, FileSpreadsheet, CheckCircle } from 'lucide-react';
+import { Upload, X, AlertCircle, FileText, FileSpreadsheet, CheckCircle, Download } from 'lucide-react';
 import { useState } from 'react';
 import { parseExcelFile, mapExcelRowsToPKWTT, MAX_FILE_SIZE_MB as EXCEL_MAX_SIZE_MB } from '../lib/excel';
 
@@ -140,28 +140,38 @@ export default function FormKontrakPKWTT({ data, onChange, errors = {}, loading 
                             <FileSpreadsheet className="h-4 w-4 text-blue-600" />
                             <span className="text-sm font-medium text-blue-900">Import dari Excel</span>
                         </div>
-                        <input
-                            type="file"
-                            accept=".xlsx,.xls,.csv"
-                            onChange={(e) => {
-                                const file = e.target.files?.[0] || null;
-                                if (file) {
-                                    handleExcelImport(file);
-                                    e.target.value = ''; // Reset input
-                                }
-                            }}
-                            disabled={loading || isImporting}
-                            className="hidden"
-                            id="excelInputPKWTT"
-                        />
-                        <label
-                            htmlFor="excelInputPKWTT"
-                            className={`inline-flex items-center gap-2 rounded-md border border-blue-300 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-50 transition cursor-pointer ${loading || isImporting ? 'opacity-50 cursor-not-allowed' : ''
-                                }`}
-                        >
-                            <Upload className="h-4 w-4" />
-                            {isImporting ? 'Mengimpor...' : 'Pilih File'}
-                        </label>
+                        <div className="flex items-center gap-2">
+                            <a
+                                href="/templates/template-import-pkwtt.xlsx"
+                                download
+                                className="inline-flex items-center gap-2 rounded-md border border-blue-300 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-50 transition cursor-pointer"
+                            >
+                                <Download className="h-4 w-4" />
+                                Template
+                            </a>
+                            <input
+                                type="file"
+                                accept=".xlsx,.xls,.csv"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0] || null;
+                                    if (file) {
+                                        handleExcelImport(file);
+                                        e.target.value = ''; // Reset input
+                                    }
+                                }}
+                                disabled={loading || isImporting}
+                                className="hidden"
+                                id="excelInputPKWTT"
+                            />
+                            <label
+                                htmlFor="excelInputPKWTT"
+                                className={`inline-flex items-center gap-2 rounded-md border border-blue-300 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-50 transition cursor-pointer ${loading || isImporting ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
+                            >
+                                <Upload className="h-4 w-4" />
+                                {isImporting ? 'Mengimpor...' : 'Pilih File'}
+                            </label>
+                        </div>
                     </div>
                     <p className="text-xs text-blue-700">
                         📄 File Excel (.xlsx, .xls, .csv) dengan kolom "NIK" (wajib). Hanya baris pertama yang digunakan. Max {EXCEL_MAX_SIZE_MB}MB.
