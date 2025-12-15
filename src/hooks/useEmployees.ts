@@ -11,6 +11,7 @@ interface UseEmployeesResult {
         limit: number;
         offset: number;
     };
+    refetch: () => void;
 }
 
 export function useEmployees(
@@ -24,6 +25,7 @@ export function useEmployees(
         limit: params.limit || 50,
         offset: params.offset || 0,
     });
+    const [refreshKey, setRefreshKey] = useState(0);
 
     useEffect(() => {
         let isMounted = true;
@@ -54,7 +56,11 @@ export function useEmployees(
         return () => {
             isMounted = false;
         };
-    }, [params.company_id, params.contract_type, params.approved, params.limit, params.offset]);
+    }, [params.company_id, params.contract_type, params.approved, params.limit, params.offset, refreshKey]);
 
-    return { employees, loading, error, pagination };
+    const refetch = () => {
+        setRefreshKey((v) => v + 1);
+    };
+
+    return { employees, loading, error, pagination, refetch };
 }

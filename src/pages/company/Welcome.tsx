@@ -22,9 +22,9 @@ export default function Welcome() {
 
     if (error) {
         return (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-6">
-                <h3 className="text-lg font-semibold text-red-800">Error</h3>
-                <p className="mt-1 text-sm text-red-600">{error}</p>
+            <div className="rounded-xl border border-red-200 bg-red-50 p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-red-800">Terjadi Kesalahan</h3>
+                <p className="mt-1 text-sm text-red-700">{error}</p>
             </div>
         );
     }
@@ -33,19 +33,22 @@ export default function Welcome() {
         <div className="space-y-6">
             {/* Hero Header */}
             {config.hero.enabled && (
-                <div className="rounded-xl border bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 p-8 shadow-lg text-white">
+                <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-[#419823] via-[#2f7d1a] to-[#1f6a14] p-8 shadow-sm text-white">
                     <div className="flex items-center gap-4 mb-4">
-                        <div className="h-16 w-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
+                        <div className="h-16 w-16 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center ring-1 ring-white/20">
                             <BookOpen className="h-10 w-10 text-white" />
                         </div>
                         <div>
                             <h1 className="text-3xl font-bold mb-2">{config.hero.title}</h1>
-                            <p className="text-blue-100 text-base">{config.hero.subtitle}</p>
+                            <p className="text-white/85 text-base">{config.hero.subtitle}</p>
                         </div>
                     </div>
                     <p className="text-white/90 text-sm leading-relaxed max-w-3xl">
                         {config.hero.description}
                     </p>
+                    <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#F4D348] px-3 py-1 text-xs font-semibold text-slate-900">
+                        Panduan • PKWT • E-PKWT
+                    </div>
                 </div>
             )}
 
@@ -57,20 +60,20 @@ export default function Welcome() {
 
             {/* Footer CTA */}
             {config.footerCTA.enabled && (
-                <div className="rounded-xl border bg-gradient-to-br from-slate-50 to-slate-100 p-6 shadow-sm text-center">
+                <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm text-center">
                     <p className="text-slate-600 text-sm mb-4">
                         {config.footerCTA.text}
                     </p>
                     <div className="flex gap-3 justify-center flex-wrap">
                         <a
                             href={config.footerCTA.button1Link}
-                            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow hover:bg-blue-700 transition"
+                            className="inline-flex items-center gap-2 rounded-lg bg-[#419823] px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#2f7d1a] transition"
                         >
                             {config.footerCTA.button1Text}
                         </a>
                         <a
                             href={config.footerCTA.button2Link}
-                            className="inline-flex items-center gap-2 rounded-lg bg-slate-600 px-6 py-3 text-sm font-semibold text-white shadow hover:bg-slate-700 transition"
+                            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-[#F4D348] px-6 py-3 text-sm font-semibold text-slate-900 shadow-sm hover:bg-[#f2cc27] transition"
                         >
                             {config.footerCTA.button2Text}
                         </a>

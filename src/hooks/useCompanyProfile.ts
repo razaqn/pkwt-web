@@ -43,6 +43,11 @@ export function useCompanyProfile() {
     const [profile, setProfile] = useState<CompanyProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    function refetch() {
+        setRefreshKey((k) => k + 1);
+    }
 
     useEffect(() => {
         let isMounted = true;
@@ -74,7 +79,7 @@ export function useCompanyProfile() {
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [refreshKey]);
 
-    return { profile, loading, error };
+    return { profile, loading, error, refetch };
 }

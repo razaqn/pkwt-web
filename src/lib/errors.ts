@@ -16,7 +16,9 @@ export function extractErrorMessage(raw: string): string {
             const msgs = z.issues.map((i: any) => `${i?.path?.[0] ?? 'field'}: ${i?.message ?? 'invalid'}`);
             return msgs.join('\n');
           }
-        } catch { }
+        } catch {
+          // Ignore invalid embedded JSON in validation error string.
+        }
       }
       return e;
     }

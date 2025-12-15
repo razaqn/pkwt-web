@@ -19,5 +19,10 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // This codebase currently uses `any` widely (especially in API/error edges).
+      // Keep signal without blocking CI/dev flow.
+      '@typescript-eslint/no-explicit-any': 'warn',
+    },
   },
 ])

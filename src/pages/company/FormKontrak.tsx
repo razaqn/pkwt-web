@@ -211,7 +211,7 @@ export default function FormKontrak() {
             {/* Loading State */}
             {draftLoading && (
                 <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl p-8 shadow-2xl flex flex-col items-center gap-4">
+                    <div className="bg-white rounded-xl p-8 shadow-2xl flex flex-col items-center gap-4 border border-slate-200">
                         <MoonLoader size={48} color="#419823" />
                         <p className="text-slate-700 font-medium">Memuat draft kontrak...</p>
                     </div>
@@ -222,43 +222,74 @@ export default function FormKontrak() {
             {!draftLoading && (
                 <>
                     {/* Header */}
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Formulir Kontrak</h1>
-                        <p className="mt-1 text-slate-600">Buat kontrak PKWT atau PKWTT</p>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                            <p className="text-sm font-semibold text-primary">Kontrak</p>
+                            <div className="mt-1 flex flex-wrap items-center gap-2">
+                                <h1 className="text-2xl font-bold tracking-tight text-slate-900">Formulir Kontrak</h1>
+                                {draftId && (
+                                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary ring-1 ring-inset ring-primary/20">
+                                        Mode Draft
+                                    </span>
+                                )}
+                            </div>
+                            <p className="mt-1 text-sm text-slate-600">Buat kontrak PKWT atau PKWTT, lalu lanjutkan ke tahap pengajuan.</p>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => navigate('/status-pantau')}
+                            className="inline-flex items-center justify-center rounded-lg border border-primary/30 bg-white px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
+                        >
+                            Lihat Status Pantau
+                        </button>
                     </div>
 
                     {/* Error Alert */}
                     {errors.submit && (
-                        <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3">
+                        <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 shadow-sm">
                             <p className="text-sm text-red-800">{errors.submit}</p>
                         </div>
                     )}
 
                     {/* Tabs */}
-                    <div className="flex gap-2 border-b border-slate-200">
-                        <button
-                            onClick={() => setActiveTab('PKWT')}
-                            className={`px-4 py-3 font-medium text-sm transition border-b-2 ${activeTab === 'PKWT'
-                                ? 'border-blue-500 text-blue-600'
-                                : 'border-transparent text-slate-600 hover:text-slate-900'
-                                }`}
-                        >
-                            PKWT
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('PKWTT')}
-                            className={`px-4 py-3 font-medium text-sm transition border-b-2 ${activeTab === 'PKWTT'
-                                ? 'border-blue-500 text-blue-600'
-                                : 'border-transparent text-slate-600 hover:text-slate-900'
-                                }`}
-                        >
-                            PKWTT
-                        </button>
+                    <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('PKWT')}
+                                className={
+                                    activeTab === 'PKWT'
+                                        ? 'rounded-lg bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary ring-1 ring-inset ring-primary/20'
+                                        : 'rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50'
+                                }
+                            >
+                                PKWT
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('PKWTT')}
+                                className={
+                                    activeTab === 'PKWTT'
+                                        ? 'rounded-lg bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary ring-1 ring-inset ring-primary/20'
+                                        : 'rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50'
+                                }
+                            >
+                                PKWTT
+                            </button>
+                        </div>
                     </div>
 
                     {/* Form Content */}
-                    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                        <form onSubmit={activeTab === 'PKWT' ? handleSubmitPKWT : handleSubmitPKWTT} className="space-y-6">
+                    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                        <div className="border-b border-slate-200 bg-gradient-to-r from-primary/10 via-white to-secondary/20 px-6 py-5">
+                            <p className="text-sm font-semibold text-slate-900">
+                                {activeTab === 'PKWT' ? 'PKWT (Banyak Karyawan)' : 'PKWTT (Satu Karyawan)'}
+                            </p>
+                            <p className="mt-1 text-sm text-slate-600">Lengkapi data di bawah, lalu lanjutkan ke tahap pengajuan berkas.</p>
+                        </div>
+
+                        <form onSubmit={activeTab === 'PKWT' ? handleSubmitPKWT : handleSubmitPKWTT} className="space-y-6 px-6 py-6">
                             {activeTab === 'PKWT' && (
                                 <FormKontrakPKWT
                                     data={pkwtData}
@@ -278,20 +309,20 @@ export default function FormKontrak() {
                             )}
 
                             {/* Action Buttons */}
-                            <div className="flex gap-3 pt-6 border-t border-slate-200">
+                            <div className="flex flex-col-reverse gap-3 pt-6 border-t border-slate-200 sm:flex-row sm:items-center sm:justify-between">
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition flex items-center justify-center gap-2"
+                                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-secondary px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition-colors hover:bg-secondary/90 disabled:opacity-50 sm:w-auto"
                                 >
-                                    {loading && <ClipLoader size={16} color="#ffffff" />}
+                                    {loading && <ClipLoader size={16} color="#1F2937" />}
                                     {loading ? 'Memproses...' : 'Lanjut ke Pengajuan'}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => navigate('/list-karyawan')}
                                     disabled={loading}
-                                    className="rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition"
+                                    className="inline-flex w-full items-center justify-center rounded-lg border border-primary/30 bg-white px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5 disabled:opacity-50 sm:w-auto"
                                 >
                                     Batal
                                 </button>

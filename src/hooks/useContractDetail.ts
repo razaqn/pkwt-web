@@ -12,6 +12,7 @@ export interface UseContractDetailReturn {
     comment: string | null;
     loading: boolean;
     error: string | null;
+    refetch: () => void;
 }
 
 export function useContractDetail(
@@ -23,6 +24,11 @@ export function useContractDetail(
     const [employees, setEmployees] = useState<ContractEmployee[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    function refetch() {
+        setRefreshKey((k) => k + 1);
+    }
 
     useEffect(() => {
         if (!contractId) {
@@ -68,7 +74,7 @@ export function useContractDetail(
         return () => {
             isMounted = false;
         };
-    }, [contractId]);
+    }, [contractId, refreshKey]);
 
     return {
         contract,
@@ -76,5 +82,6 @@ export function useContractDetail(
         comment: contract?.admin_comment || null,
         loading,
         error,
+        refetch,
     };
 }

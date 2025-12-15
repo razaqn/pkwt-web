@@ -26,10 +26,10 @@ export function NotificationCenterCard({
     onViewAll,
 }: NotificationCenterCardProps) {
     return (
-        <div className="h-96 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
+        <div className="flex h-96 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-primary/10 via-white to-secondary/20 px-5 py-4">
                 <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-sm ring-1 ring-primary/20">
                         <Bell className="h-4 w-4 text-white" />
                     </div>
                     <div>
@@ -40,14 +40,14 @@ export function NotificationCenterCard({
                 {totalUnread > 0 && (
                     <button
                         onClick={onMarkAllRead}
-                        className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                        className="rounded-md px-2 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 hover:text-primary"
                     >
                         Tandai Semua Dibaca
                     </button>
                 )}
             </div>
 
-            <div className="space-y-2 overflow-y-auto p-4" style={{ maxHeight: 'calc(24rem - 9rem)' }}>
+            <div className="flex-1 space-y-2 overflow-y-auto p-4">
                 {loading && <CardSkeleton />}
 
                 {!loading && error && (
@@ -75,22 +75,22 @@ export function NotificationCenterCard({
                         <button
                             key={item.id}
                             onClick={() => onClickItem(item.id, item.contract_id)}
-                            className={`flex w-full items-start gap-3 rounded-lg border px-3 py-3 text-left transition-colors ${!item.is_read
-                                    ? 'border-blue-200 bg-blue-50 hover:bg-blue-100'
-                                    : 'border-slate-200 bg-white hover:bg-slate-50'
+                            className={`flex w-full items-start gap-3 rounded-xl border px-3 py-3 text-left transition-colors ${!item.is_read
+                                ? 'border-primary/25 bg-primary/5 hover:bg-primary/10'
+                                : 'border-slate-200 bg-white hover:bg-slate-50'
                                 }`}
                         >
                             <div className="flex h-2 w-2 shrink-0 mt-1.5">
                                 {!item.is_read && (
-                                    <span className="inline-block h-2 w-2 rounded-full bg-blue-600" />
+                                    <span className="inline-block h-2 w-2 rounded-full bg-primary" />
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="mb-1 flex items-center gap-2">
                                     <span
                                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${item.status === 'APPROVED'
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-red-100 text-red-800'
+                                            ? 'bg-primary/15 text-primary'
+                                            : 'bg-red-100 text-red-800'
                                             }`}
                                     >
                                         {item.status === 'APPROVED' ? 'Disetujui' : 'Ditolak'}
@@ -107,7 +107,7 @@ export function NotificationCenterCard({
             <div className="border-t border-slate-200 px-4 py-3">
                 <button
                     onClick={onViewAll}
-                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-primary/30 bg-white px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
                 >
                     Lihat Semua
                 </button>

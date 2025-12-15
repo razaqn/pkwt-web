@@ -152,7 +152,7 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {/* NIK Section */}
             <div className="space-y-3">
                 <label className="block">
@@ -162,17 +162,17 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                 </label>
 
                 {/* Excel Import Section */}
-                <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 space-y-2">
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <FileSpreadsheet className="h-4 w-4 text-blue-600" />
-                            <span className="text-sm font-medium text-blue-900">Import dari Excel</span>
+                            <FileSpreadsheet className="h-4 w-4 text-primary" />
+                            <span className="text-sm font-semibold text-slate-900">Import dari Excel</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <a
                                 href="/templates/template-import-pkwt.xlsx"
                                 download
-                                className="inline-flex items-center gap-2 rounded-md border border-blue-300 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-50 transition cursor-pointer"
+                                className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-white px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/5 transition cursor-pointer"
                             >
                                 <Download className="h-4 w-4" />
                                 Template
@@ -193,7 +193,7 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                             />
                             <label
                                 htmlFor="excelInput"
-                                className={`inline-flex items-center gap-2 rounded-md border border-blue-300 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-50 transition cursor-pointer ${loading || isImporting ? 'opacity-50 cursor-not-allowed' : ''
+                                className={`inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-white px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/5 transition cursor-pointer ${loading || isImporting ? 'opacity-50 cursor-not-allowed' : ''
                                     }`}
                             >
                                 {isImporting && <ClipLoader size={14} color="#419823" />}
@@ -202,8 +202,8 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                             </label>
                         </div>
                     </div>
-                    <p className="text-xs text-blue-700">
-                        📄 File Excel (.xlsx, .xls, .csv) dengan kolom "NIK" (wajib). Max {EXCEL_MAX_SIZE_MB}MB, 500 baris. Data diproses di browser Anda.
+                    <p className="text-xs text-slate-700">
+                        File Excel (.xlsx, .xls, .csv) dengan kolom "NIK" (wajib). Max {EXCEL_MAX_SIZE_MB}MB, 500 baris. Data diproses di browser Anda.
                     </p>
                 </div>
 
@@ -243,12 +243,12 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
 
                 {/* Import Warnings */}
                 {importWarnings.length > 0 && (
-                    <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-3 space-y-1">
+                    <div className="rounded-xl bg-secondary/20 border border-secondary/40 p-4 space-y-1">
                         <div className="flex items-center gap-2">
-                            <AlertCircle className="h-4 w-4 text-yellow-600" />
-                            <span className="text-sm font-medium text-yellow-900">Peringatan Import:</span>
+                            <AlertCircle className="h-4 w-4 text-slate-800" />
+                            <span className="text-sm font-semibold text-slate-900">Peringatan Import:</span>
                         </div>
-                        <ul className="text-xs text-yellow-700 list-disc list-inside space-y-0.5">
+                        <ul className="text-xs text-slate-700 list-disc list-inside space-y-0.5">
                             {importWarnings.slice(0, 5).map((warning, idx) => (
                                 <li key={idx}>{warning}</li>
                             ))}
@@ -271,7 +271,7 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                                     onChange={(e) => updateNIK(entry.id, e.target.value)}
                                     placeholder="Masukkan NIK"
                                     disabled={loading}
-                                    className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500"
+                                    className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
                                 />
                                 <button
                                     onClick={() => removeNIK(entry.id)}
@@ -291,7 +291,7 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                     onClick={addNIK}
                     disabled={loading}
                     type="button"
-                    className="text-sm font-medium text-blue-600 hover:text-blue-700 disabled:opacity-50 transition"
+                    className="text-sm font-semibold text-primary hover:text-primary disabled:opacity-50 transition"
                 >
                     + Tambah NIK
                 </button>
@@ -311,7 +311,7 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                     value={data.startDate}
                     onChange={(e) => updateStartDate(e.target.value)}
                     disabled={loading}
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
                 />
                 {errors.startDate && <p className="text-sm text-red-500">{errors.startDate}</p>}
             </div>
@@ -332,7 +332,7 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                         placeholder="Contoh: 12"
                         disabled={loading}
                         min="1"
-                        className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500"
+                        className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
                     />
                     <span className="text-sm text-slate-600">bulan</span>
                 </div>
@@ -372,7 +372,7 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
 
                     <label
                         htmlFor="fileInput"
-                        className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 cursor-pointer hover:bg-slate-100 hover:border-blue-400 transition disabled:opacity-50"
+                        className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 cursor-pointer hover:bg-primary/5 hover:border-primary/40 transition disabled:opacity-50"
                     >
                         <Upload className="h-5 w-5 text-slate-500" />
                         <div className="text-center">
@@ -383,11 +383,11 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                 </div>
 
                 {data.fileKontrak && (
-                    <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-3 py-2">
-                        <FileText className="h-4 w-4 text-green-600" />
+                    <div className="flex items-center gap-2 rounded-xl bg-primary/5 border border-primary/20 px-4 py-3">
+                        <FileText className="h-4 w-4 text-primary" />
                         <div className="flex-1">
-                            <p className="text-sm text-green-700">{data.fileKontrak.name}</p>
-                            <p className="text-xs text-green-600">
+                            <p className="text-sm font-medium text-slate-900">{data.fileKontrak.name}</p>
+                            <p className="text-xs text-slate-600">
                                 {(data.fileKontrak.size / 1024 / 1024).toFixed(2)} MB
                             </p>
                         </div>
@@ -395,7 +395,7 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                             type="button"
                             onClick={() => handleFileChange(null)}
                             disabled={loading}
-                            className="text-xs text-green-600 hover:text-green-800 font-medium"
+                            className="text-xs font-semibold text-primary hover:text-primary"
                         >
                             Hapus
                         </button>

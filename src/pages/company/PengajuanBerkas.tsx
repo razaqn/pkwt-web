@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Calendar, Users, Clock, AlertCircle, Send, Upload, FileText } from 'lucide-react';
+import { Calendar, Users, Clock, AlertCircle, Send, Upload, FileText, ArrowLeft } from 'lucide-react';
 import TabelNIKPengajuan from '../../components/TabelNIKPengajuan';
 import ModalKelengkapanData, { type KelengkapanDataForm } from '../../components/ModalKelengkapanData';
 import { useContractSubmission } from '../../hooks/useContractSubmission';
@@ -17,6 +17,8 @@ interface ContractData {
     startDate: string;
     duration: number | null;
     fileKontrak?: File | null;
+    importedData?: Record<string, any>;
+    draftId?: string;
 }
 
 export default function PengajuanBerkas() {
@@ -40,9 +42,24 @@ export default function PengajuanBerkas() {
     // Local UI state
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedNIK, setSelectedNIK] = useState<string | null>(null);
-    const [draftId, setDraftId] = useState<string | null>(null);
+    const [draftId, setDraftId] = useState<string | null>(contractData?.draftId ?? null);
     const [fileKontrak, setFileKontrak] = useState<File | null>(contractData?.fileKontrak || null);
     const [fileSizeError, setFileSizeError] = useState<string | null>(null);
+
+    const allEmployeesCount = contractData?.niks?.length ?? 0;
+
+    const contractStartDateLabel = (() => {
+        if (!contractData?.startDate) return '-';
+        try {
+            return new Date(contractData.startDate).toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+            });
+        } catch {
+            return contractData.startDate;
+        }
+    })();
 
     function handleEditNIK(nik: string) {
         setSelectedNIK(nik);
@@ -92,14 +109,30 @@ export default function PengajuanBerkas() {
         const newDraftId = await saveDraft();
         if (newDraftId) {
             setDraftId(newDraftId);
-            // Show success message
-            const successMsg = draftId ? 'Draf berhasil diperbarui!' : 'Draf berhasil disimpan!';
-            alert(successMsg); // Replace with toast notification if available
+            alert('Draf berhasil disimpan!'); // Replace with toast notification if available
         }
     }
 
     if (!contractData) {
-        return null; // Will redirect in useEffect
+        return (
+            <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+                <div className="flex flex-col items-center justify-center gap-4 text-center">
+                    <MoonLoader size={40} color="#419823" />
+                    <div>
+                        <p className="text-sm font-semibold text-slate-900">Mengalihkan ke Form Kontrak…</p>
+                        <p className="mt-1 text-sm text-slate-600">Data pengajuan tidak ditemukan. Biasanya terjadi jika halaman di-refresh.</p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => navigate('/form-kontrak')}
+                        className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary/30 bg-white px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                        Kembali ke Form Kontrak
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     const selectedNIKData = nikDataList.find(d => d.nik === selectedNIK);
@@ -115,17 +148,34 @@ export default function PengajuanBerkas() {
         }
         : undefined;
 
+    const fileRequiredMissing =
+        (contractData.contractType === 'PKWT' && !fileKontrak) ||
+        (contractData.contractType === 'PKWTT' && !contractData.fileKontrak);
+
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div>
-                <h1 className="text-2xl font-bold text-slate-900">Pengajuan Berkas Kontrak</h1>
-                <p className="mt-1 text-slate-600">Lengkapi data karyawan sebelum mengajukan kontrak</p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p className="text-sm font-semibold text-primary">Kontrak</p>
+                    <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">Pengajuan Berkas</h1>
+                    <p className="mt-1 text-sm text-slate-600">Lengkapi data karyawan, lalu ajukan kontrak untuk verifikasi.</p>
+                </div>
+
+                <button
+                    type="button"
+                    onClick={() => navigate('/form-kontrak')}
+                    disabled={submitLoading}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary/30 bg-white px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5 disabled:opacity-50"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    Kembali
+                </button>
             </div>
 
             {/* Error Alert */}
             {error && (
-                <div className="flex items-start gap-3 rounded-lg border border-red-300 bg-red-50 px-4 py-3">
+                <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-5 py-4 shadow-sm">
                     <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
                     <div className="flex-1">
                         <p className="text-sm font-medium text-red-800">Terjadi Kesalahan</p>
@@ -135,90 +185,92 @@ export default function PengajuanBerkas() {
             )}
 
             {/* Contract Info Card */}
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-slate-900 mb-4">Informasi Kontrak</h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {/* Jenis Kontrak */}
-                    <div>
-                        <div className="text-sm text-slate-600 mb-1">Jenis Kontrak</div>
-                        <div className="flex items-center gap-2">
-                            <div
-                                className={`rounded-lg px-3 py-1.5 text-sm font-medium ${contractData.contractType === 'PKWT'
-                                    ? 'bg-blue-100 text-blue-800'
-                                    : 'bg-purple-100 text-purple-800'
-                                    }`}
-                            >
-                                {contractData.contractType}
-                            </div>
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                <div className="border-b border-slate-200 bg-gradient-to-r from-primary/10 via-white to-secondary/20 px-6 py-5">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <p className="text-sm font-semibold text-slate-900">Informasi Kontrak</p>
+                            <p className="mt-1 text-sm text-slate-600">Ringkasan pengajuan sebelum dikirim.</p>
                         </div>
-                    </div>
 
-                    {/* Jumlah Orang / Nama */}
-                    <div>
-                        <div className="text-sm text-slate-600 mb-1">
-                            {contractData.contractType === 'PKWT' ? 'Jumlah Karyawan' : 'Karyawan'}
-                        </div>
-                        <div className="flex items-center gap-2 text-slate-900">
-                            <Users className="h-4 w-4 text-slate-500" />
-                            <span className="font-medium">
-                                {contractData.contractType === 'PKWT'
-                                    ? `${contractData.niks.length} Orang`
-                                    : nikDataList[0]?.fullName || contractData.niks[0]}
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Durasi */}
-                    <div>
-                        <div className="text-sm text-slate-600 mb-1">Durasi</div>
-                        <div className="flex items-center gap-2 text-slate-900">
-                            <Clock className="h-4 w-4 text-slate-500" />
-                            <span className="font-medium">
-                                {contractData.duration ? `${contractData.duration} Bulan` : '-'}
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Tanggal Mulai */}
-                    <div>
-                        <div className="text-sm text-slate-600 mb-1">Tanggal Mulai</div>
-                        <div className="flex items-center gap-2 text-slate-900">
-                            <Calendar className="h-4 w-4 text-slate-500" />
-                            <span className="font-medium">
-                                {new Date(contractData.startDate).toLocaleDateString('id-ID', {
-                                    day: 'numeric',
-                                    month: 'long',
-                                    year: 'numeric',
-                                })}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Status */}
-                {contractStatus && (
-                    <div className="mt-6 pt-6 border-t border-slate-200">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-slate-600">Status:</span>
+                        {contractStatus && (
                             <span
-                                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${contractStatus === 'pending'
-                                    ? 'bg-yellow-100 text-yellow-800'
+                                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${contractStatus === 'pending'
+                                    ? 'bg-secondary/30 text-slate-900 ring-1 ring-inset ring-secondary/40'
                                     : contractStatus === 'approved'
                                         ? 'bg-green-100 text-green-800'
                                         : contractStatus === 'rejected'
                                             ? 'bg-red-100 text-red-800'
-                                            : 'bg-slate-100 text-slate-800'
+                                            : 'bg-primary/10 text-primary ring-1 ring-inset ring-primary/20'
                                     }`}
                             >
+                                <span className="h-1.5 w-1.5 rounded-full bg-current" />
                                 {contractStatus === 'pending' && 'Menunggu Persetujuan'}
                                 {contractStatus === 'approved' && 'Disetujui'}
                                 {contractStatus === 'rejected' && 'Ditolak'}
                                 {contractStatus === 'draft' && 'Draft'}
                             </span>
+                        )}
+                    </div>
+                </div>
+
+                <div className="px-6 py-6">
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {/* Jenis Kontrak */}
+                        <div>
+                            <div className="text-sm text-slate-600 mb-1">Jenis Kontrak</div>
+                            <div className="flex items-center gap-2">
+                                <div
+                                    className={`rounded-lg px-3 py-1.5 text-sm font-medium ${contractData.contractType === 'PKWT'
+                                        ? 'bg-primary/10 text-primary ring-1 ring-inset ring-primary/20'
+                                        : 'bg-secondary/30 text-slate-900 ring-1 ring-inset ring-secondary/40'
+                                        }`}
+                                >
+                                    {contractData.contractType}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Jumlah Orang / Nama */}
+                        <div>
+                            <div className="text-sm text-slate-600 mb-1">
+                                {contractData.contractType === 'PKWT' ? 'Jumlah Karyawan' : 'Karyawan'}
+                            </div>
+                            <div className="flex items-center gap-2 text-slate-900">
+                                <Users className="h-4 w-4 text-slate-500" />
+                                <span className="font-medium">
+                                    {contractData.contractType === 'PKWT'
+                                        ? `${allEmployeesCount} Orang`
+                                        : nikDataList[0]?.fullName || contractData.niks[0]}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Durasi */}
+                        <div>
+                            <div className="text-sm text-slate-600 mb-1">Durasi</div>
+                            <div className="flex items-center gap-2 text-slate-900">
+                                <Clock className="h-4 w-4 text-slate-500" />
+                                <span className="font-medium">
+                                    {contractData.duration ? `${contractData.duration} Bulan` : contractData.contractType === 'PKWTT' ? 'Tetap' : '-'}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Tanggal Mulai */}
+                        <div>
+                            <div className="text-sm text-slate-600 mb-1">Tanggal Mulai</div>
+                            <div className="flex items-center gap-2 text-slate-900">
+                                <Calendar className="h-4 w-4 text-slate-500" />
+                                <span className="font-medium">
+                                    {contractStartDateLabel}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                )}
+
+                </div>
             </div>
 
             {/* Tabel NIK */}
@@ -267,7 +319,7 @@ export default function PengajuanBerkas() {
 
                                 <label
                                     htmlFor="fileInputPengajuan"
-                                    className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 cursor-pointer hover:bg-slate-100 hover:border-blue-400 transition disabled:opacity-50"
+                                    className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 cursor-pointer transition hover:border-primary/60 hover:bg-primary/5 disabled:opacity-50"
                                 >
                                     <Upload className="h-5 w-5 text-slate-500" />
                                     <div className="text-center">
@@ -310,29 +362,31 @@ export default function PengajuanBerkas() {
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-3 pt-6 border-t border-slate-200">
-                <button
-                    onClick={handleSaveDraft}
-                    disabled={submitLoading}
-                    className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-6 py-2.5 font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition"
-                >
-                    {submitLoading && <ClipLoader size={14} color="#419823" />}
-                    <FileText className="h-4 w-4" />
-                    {draftId ? 'Perbarui Draf' : 'Simpan Draf'}
-                </button>
-                <button
-                    onClick={handleSubmitContract}
-                    disabled={!allDataComplete || submitLoading || contractStatus === 'pending'}
-                    className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                >
-                    {submitLoading && <ClipLoader size={14} color="#ffffff" />}
-                    <Send className="h-4 w-4" />
-                    {submitLoading ? 'Mengirim...' : 'Ajukan Berkas'}
-                </button>
+            <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row">
+                    <button
+                        onClick={handleSaveDraft}
+                        disabled={submitLoading}
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-primary/30 bg-white px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5 disabled:opacity-50 sm:w-auto"
+                    >
+                        {submitLoading && <ClipLoader size={14} color="#419823" />}
+                        <FileText className="h-4 w-4" />
+                        {draftId ? 'Simpan Ulang Draf' : 'Simpan Draf'}
+                    </button>
+                    <button
+                        onClick={handleSubmitContract}
+                        disabled={!allDataComplete || fileRequiredMissing || submitLoading || contractStatus === 'pending'}
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                    >
+                        {submitLoading && <ClipLoader size={14} color="#ffffff" />}
+                        <Send className="h-4 w-4" />
+                        {submitLoading ? 'Mengirim...' : 'Ajukan Berkas'}
+                    </button>
+                </div>
                 <button
                     onClick={() => navigate('/form-kontrak')}
                     disabled={submitLoading}
-                    className="rounded-lg border border-slate-300 bg-white px-6 py-2.5 font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition"
+                    className="inline-flex w-full items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 sm:w-auto"
                 >
                     Kembali
                 </button>

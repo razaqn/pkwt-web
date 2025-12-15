@@ -12,9 +12,9 @@ interface ActiveEmployeesCardProps {
 
 export function ActiveEmployeesCard({ total, pkwt, pkwtt, loading, error, onRefetch }: ActiveEmployeesCardProps) {
     return (
-        <div className="h-96 rounded-lg border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600">
+        <div className="h-96 rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+            <div className="flex items-center gap-3 border-b border-slate-200 bg-gradient-to-r from-primary/10 via-white to-secondary/20 px-5 py-4">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-sm ring-1 ring-primary/20">
                     <Users className="h-4 w-4 text-white" />
                 </div>
                 <div>
@@ -22,7 +22,7 @@ export function ActiveEmployeesCard({ total, pkwt, pkwtt, loading, error, onRefe
                     <p className="text-xs text-slate-500">Total kontrak aktif</p>
                 </div>
             </div>
-            <div className="p-6">
+            <div className="p-5">
                 {loading && <CardSkeleton />}
 
                 {!loading && error && (
@@ -45,14 +45,14 @@ export function ActiveEmployeesCard({ total, pkwt, pkwtt, loading, error, onRefe
                             <p className="mt-2 text-sm text-slate-600">Total Karyawan</p>
                         </div>
                         <div className="grid grid-cols-2 gap-3 text-left">
-                            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
                                 <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">PKWT</div>
-                                <div className="mt-1 text-2xl font-bold text-blue-600">{pkwt}</div>
+                                <div className="mt-1 text-2xl font-bold text-primary">{pkwt}</div>
                                 <div className="mt-1 text-xs text-slate-500">Kontrak Waktu Tertentu</div>
                             </div>
-                            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                            <div className="rounded-xl border border-secondary/40 bg-secondary/20 p-4">
                                 <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">PKWTT</div>
-                                <div className="mt-1 text-2xl font-bold text-purple-600">{pkwtt}</div>
+                                <div className="mt-1 text-2xl font-bold text-slate-900">{pkwtt}</div>
                                 <div className="mt-1 text-xs text-slate-500">Kontrak Waktu Tidak Tertentu</div>
                             </div>
                         </div>

@@ -63,7 +63,7 @@ export default function Config() {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-lg bg-[#419823] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#2f7d1a] disabled:opacity-50"
                 >
                     {saving ? (
                         <>
@@ -97,7 +97,7 @@ export default function Config() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition ${activeTab === tab.id
-                                    ? 'bg-blue-600 text-white'
+                                    ? 'bg-[#419823] text-white'
                                     : 'text-slate-600 hover:bg-slate-100'
                                     }`}
                             >
@@ -132,7 +132,7 @@ export default function Config() {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-lg bg-[#419823] px-6 py-3 font-medium text-white shadow-sm hover:bg-[#2f7d1a] disabled:opacity-50"
                 >
                     {saving ? (
                         <>

@@ -15,9 +15,9 @@ export function ExpiringSoonCard({ items, loading, error, onRefetch }: ExpiringS
     const sorted = [...items].sort((a, b) => a.days_until_expiry - b.days_until_expiry);
 
     return (
-        <div className="flex h-96 flex-col rounded-lg border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-600">
+        <div className="flex h-96 flex-col rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+            <div className="flex items-center gap-3 border-b border-slate-200 bg-gradient-to-r from-secondary/30 via-white to-primary/10 px-5 py-4">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary shadow-sm ring-1 ring-secondary/30">
                     <AlertTriangle className="h-4 w-4 text-white" />
                 </div>
                 <div>
@@ -59,11 +59,11 @@ export function ExpiringSoonCard({ items, loading, error, onRefetch }: ExpiringS
                             return (
                                 <div
                                     key={item.nik}
-                                    className={`rounded-lg border px-3 py-3 transition-colors ${isExpired
-                                            ? 'border-red-200 bg-red-50 hover:bg-red-100'
-                                            : isUrgent
-                                                ? 'border-yellow-200 bg-yellow-50 hover:bg-yellow-100'
-                                                : 'border-slate-200 bg-white hover:bg-slate-50'
+                                    className={`rounded-xl border px-3 py-3 transition-colors ${isExpired
+                                        ? 'border-red-200 bg-red-50 hover:bg-red-100'
+                                        : isUrgent
+                                            ? 'border-secondary/40 bg-secondary/20 hover:bg-secondary/30'
+                                            : 'border-slate-200 bg-white hover:bg-slate-50'
                                         }`}
                                 >
                                     <div className="flex items-center justify-between gap-3">
@@ -73,10 +73,10 @@ export function ExpiringSoonCard({ items, loading, error, onRefetch }: ExpiringS
                                         </div>
                                         <div
                                             className={`shrink-0 rounded-md px-2.5 py-1 text-xs font-bold ${isExpired
-                                                    ? 'bg-red-100'
-                                                    : isUrgent
-                                                        ? 'bg-yellow-100'
-                                                        : 'bg-slate-100'
+                                                ? 'bg-red-100'
+                                                : isUrgent
+                                                    ? 'bg-secondary/40'
+                                                    : 'bg-slate-100'
                                                 }`}
                                         >
                                             <span className={colorClass}>{label}</span>

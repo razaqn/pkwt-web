@@ -33,7 +33,7 @@ export default function LoginAdmin() {
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#f3f8ff] via-[#e8eef7] to-[#dbe7f2] flex items-center justify-center px-4">
       <div className="w-full max-w-xl">
-        <h1 className="text-center text-3xl font-bold tracking-tight text-indigo-700">Masuk Admin DISNAKER</h1>
+        <h1 className="text-center text-3xl font-bold tracking-tight text-primary">Masuk Admin DISNAKER</h1>
         <p className="mt-2 text-center text-slate-600">Akses administrasi verifikasi kontrak</p>
         <div className="mt-6 mx-auto w-full max-w-md rounded-2xl bg-white shadow-xl border border-slate-200">
           <div className="p-6">
@@ -44,7 +44,7 @@ export default function LoginAdmin() {
                   <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5"><path d="M2.25 6.75A2.25 2.25 0 014.5 4.5h15a2.25 2.25 0 012.25 2.25v.418a2.25 2.25 0 01-.993 1.874l-7.5 5a2.25 2.25 0 01-2.514 0l-7.5-5A2.25 2.25 0 012.25 7.168V6.75z" /><path d="M2.25 9.428v7.822A2.25 2.25 0 004.5 19.5h15a2.25 2.25 0 002.25-2.25V9.428l-6.933 4.622a3.75 3.75 0 01-4.184 0L2.25 9.428z" /></svg>
                   </span>
-                  <input type="email" className="w-full h-10 rounded-lg border border-slate-200 pl-10 pr-3 text-sm placeholder-slate-400 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600" placeholder="nama@disnaker.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  <input type="email" className="w-full h-10 rounded-lg border border-slate-200 pl-10 pr-3 text-sm placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary" placeholder="nama@disnaker.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </div>
               </div>
               <div>
@@ -53,11 +53,11 @@ export default function LoginAdmin() {
                   <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5"><path d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a2.25 2.25 0 00-2.25 2.25v6A2.25 2.25 0 006.75 20.25h10.5A2.25 2.25 0 0019.5 18V12a2.25 2.25 0 00-2.25-2.25v-3A5.25 5.25 0 0012 1.5zM8.25 6.75a3.75 3.75 0 117.5 0v3h-7.5v-3z" /></svg>
                   </span>
-                  <input type="password" className="w-full h-10 rounded-lg border border-slate-200 pl-10 pr-3 text-sm placeholder-slate-400 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600" placeholder="Masukkan kata sandi" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  <input type="password" className="w-full h-10 rounded-lg border border-slate-200 pl-10 pr-3 text-sm placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary" placeholder="Masukkan kata sandi" value={password} onChange={(e) => setPassword(e.target.value)} required />
                 </div>
               </div>
               {error && <div className="text-sm text-red-600">{error}</div>}
-              <button type="submit" disabled={loading} className="w-full h-10 rounded-md bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-500 disabled:opacity-50 flex items-center justify-center gap-2">{loading && <ClipLoader size={16} color="#ffffff" />}{loading ? 'Memproses...' : 'Masuk Admin'}</button>
+              <button type="submit" disabled={loading} className="w-full h-10 rounded-md bg-secondary text-slate-900 text-sm font-medium hover:bg-secondary/90 disabled:opacity-50 flex items-center justify-center gap-2">{loading && <ClipLoader size={16} color="#1F2937" />}{loading ? 'Memproses...' : 'Masuk Admin'}</button>
             </form>
           </div>
         </div>

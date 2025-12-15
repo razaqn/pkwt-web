@@ -73,19 +73,19 @@ function getIconComponent(iconName: string): LucideIcon {
 
 export function KonsultasiSection({ config }: KonsultasiSectionProps) {
     return (
-        <div className="rounded-xl border bg-gradient-to-br from-cyan-50 via-white to-cyan-50 p-6 shadow-sm">
-            <div className="mb-6 bg-gradient-to-r from-cyan-600 to-cyan-500 -mx-6 -mt-6 p-6 rounded-t-xl text-white">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-6 bg-gradient-to-r from-[#419823] to-[#2f7d1a] -mx-6 -mt-6 p-6 rounded-t-xl text-white">
                 <h2 className="text-2xl font-bold mb-2">{config.title}</h2>
-                <p className="text-cyan-100 text-sm">{config.subtitle}</p>
+                <p className="text-white/85 text-sm">{config.subtitle}</p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
                 {/* Layanan Konsultasi */}
                 {config.cards.layananKonsultasi.enabled && (
-                    <div className="bg-white rounded-xl border border-purple-100 p-5 shadow-sm">
+                    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                         <div className="flex items-center gap-2 mb-4">
-                            <div className="h-8 w-8 rounded-lg bg-purple-100 flex items-center justify-center">
-                                <Lightbulb className="h-5 w-5 text-purple-600" />
+                            <div className="h-8 w-8 rounded-lg bg-[#419823]/10 flex items-center justify-center">
+                                <Lightbulb className="h-5 w-5 text-[#419823]" />
                             </div>
                             <h3 className="font-semibold text-slate-800">{config.cards.layananKonsultasi.title}</h3>
                         </div>
@@ -95,7 +95,7 @@ export function KonsultasiSection({ config }: KonsultasiSectionProps) {
                                     const listItem = item as ListItem;
                                     return (
                                         <li key={item.id} className="flex items-start gap-3">
-                                            <div className="mt-1 h-6 w-6 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
+                                            <div className="mt-1 h-6 w-6 rounded-full bg-[#419823] flex items-center justify-center flex-shrink-0">
                                                 <span className="text-white text-xs font-semibold">{index + 1}</span>
                                             </div>
                                             <span className="text-slate-700 text-sm">{listItem.text}</span>
@@ -111,10 +111,10 @@ export function KonsultasiSection({ config }: KonsultasiSectionProps) {
 
                 {/* Hubungi Kami - Dynamic Contacts */}
                 {config.cards.hubungiKami.enabled && (
-                    <div className="bg-white rounded-xl border border-cyan-100 p-5 shadow-sm">
+                    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                         <div className="flex items-center gap-2 mb-4">
-                            <div className="h-8 w-8 rounded-lg bg-cyan-100 flex items-center justify-center">
-                                <Phone className="h-5 w-5 text-cyan-600" />
+                            <div className="h-8 w-8 rounded-lg bg-[#F4D348]/25 flex items-center justify-center">
+                                <Phone className="h-5 w-5 text-slate-900" />
                             </div>
                             <h3 className="font-semibold text-slate-800">{config.cards.hubungiKami.title}</h3>
                         </div>
@@ -148,7 +148,7 @@ export function KonsultasiSection({ config }: KonsultasiSectionProps) {
                         )}
 
                         {config.cards.hubungiKami.buttonEnabled && (
-                            <button className="mt-6 w-full rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-3 text-sm font-semibold text-white shadow-lg hover:from-cyan-600 hover:to-blue-600 transition-all">
+                            <button className="mt-6 w-full rounded-lg bg-[#419823] px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#2f7d1a] transition-all">
                                 {config.cards.hubungiKami.buttonText}
                             </button>
                         )}

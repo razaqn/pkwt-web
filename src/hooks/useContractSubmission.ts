@@ -27,7 +27,7 @@ export function useContractSubmission(contractData: ContractData | null) {
     const navigate = useNavigate();
 
     const [nikDataList, setNikDataList] = useState<NIKData[]>([]);
-    const [contractStatus, setContractStatus] = useState<ContractStatus>(null);
+    const [contractStatus, setContractStatus] = useState<ContractStatus>(contractData?.draftId ? 'draft' : null);
     const [loading, setLoading] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -145,6 +145,7 @@ export function useContractSubmission(contractData: ContractData | null) {
             };
 
             const response = await saveDraftContract(draftPayload);
+            setContractStatus('draft');
             return response.data.id; // Return draft ID for subsequent saves
         } catch (err: any) {
             setError(err?.message || 'Gagal menyimpan draf');

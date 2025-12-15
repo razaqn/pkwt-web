@@ -10,14 +10,15 @@ interface TabelNIKPengajuanProps {
 export default function TabelNIKPengajuan({ data, onEdit, loading = false }: TabelNIKPengajuanProps) {
     if (data.length === 0) {
         return (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-8 text-center">
-                <p className="text-slate-600">Tidak ada data NIK</p>
+            <div className="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+                <p className="text-sm font-semibold text-slate-900">Tidak ada data NIK</p>
+                <p className="mt-1 text-sm text-slate-600">Silakan kembali dan tambahkan NIK terlebih dahulu.</p>
             </div>
         );
     }
 
     return (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                     <thead className="border-b border-slate-200 bg-slate-50">
@@ -80,7 +81,7 @@ export default function TabelNIKPengajuan({ data, onEdit, loading = false }: Tab
                                     <button
                                         onClick={() => onEdit(item.nik)}
                                         disabled={loading}
-                                        className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition"
+                                        className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-50"
                                     >
                                         <Edit className="h-3.5 w-3.5" />
                                         {item.isComplete ? 'Edit' : 'Lengkapi'}

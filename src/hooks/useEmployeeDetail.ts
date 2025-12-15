@@ -6,12 +6,18 @@ interface UseEmployeeDetailResult {
     data: EmployeeDetail | null;
     loading: boolean;
     error: string | null;
+    refetch: () => void;
 }
 
 export function useEmployeeDetail(employeeId: string | undefined): UseEmployeeDetailResult {
     const [data, setData] = useState<EmployeeDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    function refetch() {
+        setRefreshKey((k) => k + 1);
+    }
 
     useEffect(() => {
         if (!employeeId) {
@@ -44,7 +50,7 @@ export function useEmployeeDetail(employeeId: string | undefined): UseEmployeeDe
 
         fetchEmployeeDetail();
         return () => { isMounted = false; };
-    }, [employeeId]);
+    }, [employeeId, refreshKey]);
 
-    return { data, loading, error };
+    return { data, loading, error, refetch };
 }

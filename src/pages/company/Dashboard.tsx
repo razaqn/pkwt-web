@@ -32,47 +32,71 @@ export default function CompanyDashboard() {
     };
 
     return (
-        <div className="grid gap-6">
+        <div className="space-y-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p className="text-sm font-semibold text-primary">Overview</p>
+                    <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">Ringkasan Perusahaan</h2>
+                    <p className="mt-1 text-sm text-slate-600">Pantau notifikasi, karyawan aktif, dan kontrak yang mendekati habis.</p>
+                </div>
+                <button
+                    onClick={() => navigate('/form-kontrak')}
+                    className="inline-flex items-center justify-center rounded-lg bg-secondary px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition-colors hover:bg-secondary/90 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                    Buat Kontrak Baru
+                </button>
+            </div>
+
             {showWelcome && (
-                <div className="rounded-xl border bg-white p-6 shadow-sm">
-                    <p className="text-lg font-semibold text-slate-800">Selamat Datang di E-PKWT!</p>
-                    <p className="mt-1 text-slate-600">Mulai dengan menambahkan karyawan dan membuat kontrak baru.</p>
-                    <button
-                        onClick={() => navigate('/form-kontrak')}
-                        className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700"
-                    >
-                        Buat Kontrak Baru
-                    </button>
+                <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                    <div className="bg-gradient-to-r from-primary/10 via-white to-secondary/20 px-6 py-5">
+                        <p className="text-lg font-semibold text-slate-900">Selamat Datang di E-PKWT!</p>
+                        <p className="mt-1 text-sm text-slate-600">Mulai dengan menambahkan karyawan dan membuat kontrak baru.</p>
+                    </div>
+                    <div className="px-6 py-5">
+                        <button
+                            onClick={() => navigate('/form-kontrak')}
+                            className="inline-flex items-center justify-center rounded-lg bg-secondary px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition-colors hover:bg-secondary/90 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        >
+                            Buat Kontrak Baru
+                        </button>
+                    </div>
                 </div>
             )}
 
-            <div className="grid gap-6 md:grid-cols-3">
-                <NotificationCenterCard
-                    notifications={notificationItems}
-                    totalUnread={totalUnread}
-                    loading={loading}
-                    error={error}
-                    onRefetch={() => void refetch()}
-                    onMarkAllRead={() => void markAllAsRead()}
-                    onClickItem={(id, contractId) => void handleNotificationClick(id, contractId)}
-                    onViewAll={() => navigate('/status-pantau')}
-                />
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-12">
+                <div className="md:col-span-2 lg:col-span-5">
+                    <NotificationCenterCard
+                        notifications={notificationItems}
+                        totalUnread={totalUnread}
+                        loading={loading}
+                        error={error}
+                        onRefetch={() => void refetch()}
+                        onMarkAllRead={() => void markAllAsRead()}
+                        onClickItem={(id, contractId) => void handleNotificationClick(id, contractId)}
+                        onViewAll={() => navigate('/status-pantau')}
+                    />
+                </div>
 
-                <ActiveEmployeesCard
-                    total={totalActiveEmployees}
-                    pkwt={pkwt}
-                    pkwtt={pkwtt}
-                    loading={loading}
-                    error={error}
-                    onRefetch={() => void refetch()}
-                />
+                <div className="lg:col-span-3">
+                    <ActiveEmployeesCard
+                        total={totalActiveEmployees}
+                        pkwt={pkwt}
+                        pkwtt={pkwtt}
+                        loading={loading}
+                        error={error}
+                        onRefetch={() => void refetch()}
+                    />
+                </div>
 
-                <ExpiringSoonCard
-                    items={expiringSoon}
-                    loading={loading}
-                    error={error}
-                    onRefetch={() => void refetch()}
-                />
+                <div className="lg:col-span-4">
+                    <ExpiringSoonCard
+                        items={expiringSoon}
+                        loading={loading}
+                        error={error}
+                        onRefetch={() => void refetch()}
+                    />
+                </div>
             </div>
         </div>
     );

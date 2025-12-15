@@ -101,7 +101,8 @@ function findColumnName(
 function normalizeNIKValue(nikValue: any, cellText?: string): string {
     if (nikValue === null || nikValue === undefined) return '';
 
-    const useText = (text: string | undefined | null) => {
+    // NOTE: avoid naming helpers with `use*` to prevent React Hooks lint false-positives.
+    const parseText = (text: string | undefined | null) => {
         if (!text) return null;
         const trimmed = text.trim();
         if (!trimmed) return null;
@@ -116,7 +117,7 @@ function normalizeNIKValue(nikValue: any, cellText?: string): string {
     };
 
     // If we have formatted text from the cell, try to use it first (most accurate)
-    const fromCellText = useText(cellText);
+    const fromCellText = parseText(cellText);
     if (fromCellText) return fromCellText;
 
     // If value is already a number, avoid scientific notation
