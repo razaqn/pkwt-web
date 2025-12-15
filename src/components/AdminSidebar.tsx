@@ -26,16 +26,8 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSideb
             {/* Sidebar Container */}
             <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-40 w-64 md:w-56 transform transition bg-primary text-slate-100 flex flex-col`}>
                 {/* Header Sidebar */}
-                <div className="px-4 py-5">
-                    <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-lg bg-white/10 ring-1 ring-white/15 flex items-center justify-center">
-                            <LayoutDashboard className="h-5 w-5 text-white/90" />
-                        </div>
-                        <div>
-                            <div className="text-sm font-semibold tracking-wide">E-PKWT</div>
-                            <div className="text-[11px] text-white/70">DISNAKER Paser</div>
-                        </div>
-                    </div>
+                <div className="px-4 py-5 flex justify-center">
+                    <img src="/adikara-logo.png" alt="Adikara Logo" className="h-20 w-auto" />
                 </div>
 
                 {/* Divider */}

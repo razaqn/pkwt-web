@@ -48,11 +48,14 @@ export default function ListEmployees() {
     const [searchQuery, setSearchQuery] = useState('');
 
     // Fetch employees based on contract type (admin-wide, no company filter)
-    const { employees, loading, error } = useAllEmployees({
+    const { employees, loading, error, pagination } = useAllEmployees({
         contract_type: activeTab,
         limit: ITEMS_PER_PAGE,
         offset: (currentPage - 1) * ITEMS_PER_PAGE,
     });
+
+    const totalItems = pagination.total;
+    const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
 
     // Transform API data to table format
     const tableData: AdminKaryawan[] = useMemo(
@@ -82,31 +85,40 @@ export default function ListEmployees() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div>
-                <h1 className="text-2xl font-bold text-slate-900">List Karyawan</h1>
-                <p className="mt-1 text-slate-600">Data karyawan PKWT dan PKWTT dari semua perusahaan</p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p className="text-sm font-semibold text-primary">Overview</p>
+                    <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">List Karyawan</h1>
+                    <p className="mt-1 text-sm text-slate-600">Data karyawan PKWT dan PKWTT dari semua perusahaan.</p>
+                </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-4 border-b border-slate-200">
-                <button
-                    onClick={() => handleTabChange('PKWT')}
-                    className={`px-4 py-3 font-medium border-b-2 transition ${activeTab === 'PKWT'
-                        ? 'border-blue-600 text-blue-600'
-                        : 'border-transparent text-slate-600 hover:text-slate-900'
-                        }`}
-                >
-                    PKWT
-                </button>
-                <button
-                    onClick={() => handleTabChange('PKWTT')}
-                    className={`px-4 py-3 font-medium border-b-2 transition ${activeTab === 'PKWTT'
-                        ? 'border-blue-600 text-blue-600'
-                        : 'border-transparent text-slate-600 hover:text-slate-900'
-                        }`}
-                >
-                    PKWTT
-                </button>
+            <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
+                <div className="grid grid-cols-2 gap-2">
+                    <button
+                        type="button"
+                        onClick={() => handleTabChange('PKWT')}
+                        className={
+                            activeTab === 'PKWT'
+                                ? 'rounded-lg bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary ring-1 ring-inset ring-primary/20'
+                                : 'rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50'
+                        }
+                    >
+                        PKWT
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => handleTabChange('PKWTT')}
+                        className={
+                            activeTab === 'PKWTT'
+                                ? 'rounded-lg bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary ring-1 ring-inset ring-primary/20'
+                                : 'rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50'
+                        }
+                    >
+                        PKWTT
+                    </button>
+                </div>
             </div>
 
             {/* Error State */}
@@ -134,6 +146,8 @@ export default function ListEmployees() {
                 onLihatDetail={handleLihatDetail}
                 onPageChange={setCurrentPage}
                 currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
                 onSearchChange={setSearchQuery}
                 searchQuery={searchQuery}
             />

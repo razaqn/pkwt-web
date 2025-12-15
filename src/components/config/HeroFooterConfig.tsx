@@ -23,7 +23,7 @@ export default function HeroFooterConfig({ config, onChange }: HeroFooterConfigP
     return (
         <div className="space-y-6">
             {/* Hero Section */}
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-slate-800">Hero Section</h3>
                     <label className="flex items-center gap-2">
@@ -31,7 +31,7 @@ export default function HeroFooterConfig({ config, onChange }: HeroFooterConfigP
                             type="checkbox"
                             checked={config.hero.enabled}
                             onChange={(e) => updateHero('enabled', e.target.checked)}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                         />
                         <span className="text-sm text-slate-600">Aktif</span>
                     </label>
@@ -46,7 +46,7 @@ export default function HeroFooterConfig({ config, onChange }: HeroFooterConfigP
                             type="text"
                             value={config.hero.title}
                             onChange={(e) => updateHero('title', e.target.value)}
-                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                             placeholder="Panduan E-PKWT"
                         />
                     </div>
@@ -59,7 +59,7 @@ export default function HeroFooterConfig({ config, onChange }: HeroFooterConfigP
                             type="text"
                             value={config.hero.subtitle}
                             onChange={(e) => updateHero('subtitle', e.target.value)}
-                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                             placeholder="Sistem Elektronik Perjanjian Kerja Waktu Tertentu"
                         />
                     </div>
@@ -72,7 +72,7 @@ export default function HeroFooterConfig({ config, onChange }: HeroFooterConfigP
                             value={config.hero.description}
                             onChange={(e) => updateHero('description', e.target.value)}
                             rows={3}
-                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                             placeholder="Selamat datang di sistem E-PKWT..."
                         />
                     </div>
@@ -80,7 +80,7 @@ export default function HeroFooterConfig({ config, onChange }: HeroFooterConfigP
             </div>
 
             {/* Footer CTA Section */}
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-slate-800">Footer CTA</h3>
                     <label className="flex items-center gap-2">
@@ -88,7 +88,7 @@ export default function HeroFooterConfig({ config, onChange }: HeroFooterConfigP
                             type="checkbox"
                             checked={config.footerCTA.enabled}
                             onChange={(e) => updateFooterCTA('enabled', e.target.checked)}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                         />
                         <span className="text-sm text-slate-600">Aktif</span>
                     </label>
@@ -103,7 +103,7 @@ export default function HeroFooterConfig({ config, onChange }: HeroFooterConfigP
                             type="text"
                             value={config.footerCTA.text}
                             onChange={(e) => updateFooterCTA('text', e.target.value)}
-                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                             placeholder="Sudah memahami panduan di atas?"
                         />
                     </div>
@@ -117,7 +117,7 @@ export default function HeroFooterConfig({ config, onChange }: HeroFooterConfigP
                                 type="text"
                                 value={config.footerCTA.button1Text}
                                 onChange={(e) => updateFooterCTA('button1Text', e.target.value)}
-                                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                                 placeholder="Buat Kontrak Baru"
                             />
                         </div>
@@ -130,7 +130,7 @@ export default function HeroFooterConfig({ config, onChange }: HeroFooterConfigP
                                 type="text"
                                 value={config.footerCTA.button1Link}
                                 onChange={(e) => updateFooterCTA('button1Link', e.target.value)}
-                                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                                 placeholder="/form-kontrak"
                             />
                         </div>
@@ -145,7 +145,7 @@ export default function HeroFooterConfig({ config, onChange }: HeroFooterConfigP
                                 type="text"
                                 value={config.footerCTA.button2Text}
                                 onChange={(e) => updateFooterCTA('button2Text', e.target.value)}
-                                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                                 placeholder="Lihat Daftar Karyawan"
                             />
                         </div>
@@ -158,7 +158,7 @@ export default function HeroFooterConfig({ config, onChange }: HeroFooterConfigP
                                 type="text"
                                 value={config.footerCTA.button2Link}
                                 onChange={(e) => updateFooterCTA('button2Link', e.target.value)}
-                                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                                 placeholder="/list-karyawan"
                             />
                         </div>

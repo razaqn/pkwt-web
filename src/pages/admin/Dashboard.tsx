@@ -1,5 +1,6 @@
-import { Users, FileText, Clock, AlertCircle, RefreshCw } from 'lucide-react';
-import { ClipLoader } from 'react-spinners';
+import { Users, FileText, Clock, AlertCircle, RefreshCw, ArrowRight } from 'lucide-react';
+import { MoonLoader } from 'react-spinners';
+import { Link } from 'react-router-dom';
 import AdminMetricCard from '../../components/dashboard/AdminMetricCard';
 import EmployeeContractStatusChart from '../../components/dashboard/EmployeeContractStatusChart';
 import NewContractsChart from '../../components/dashboard/NewContractsChart';
@@ -11,9 +12,9 @@ export default function AdminDashboard() {
     // Loading state
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[400px]">
-                <ClipLoader size={40} color="#1F4E8C" />
-                <p className="mt-4 text-slate-600">Memuat data dashboard...</p>
+            <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+                <MoonLoader size={48} color="#419823" />
+                <p className="font-medium text-slate-700">Memuat data dashboard...</p>
             </div>
         );
     }
@@ -58,14 +59,51 @@ export default function AdminDashboard() {
 
     return (
         <div className="space-y-6">
+            {/* Hero */}
+            <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-r from-[#419823] via-[#2f7d1a] to-[#1f6a14] p-6 text-white shadow-sm">
+                <div className="absolute -right-20 -top-24 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
+                <div className="absolute -left-24 -bottom-28 h-64 w-64 rounded-full bg-black/10 blur-2xl" />
+
+                <div className="relative">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold ring-1 ring-white/20">
+                                Overview • Admin
+                            </div>
+                            <h1 className="mt-3 text-2xl font-semibold tracking-tight">Dashboard Admin</h1>
+                            <p className="mt-1 text-white/85">
+                                Ringkasan aktivitas kontrak, persetujuan, dan data karyawan.
+                            </p>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                            <Link
+                                to="/admin/approvals"
+                                className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:bg-white/95"
+                            >
+                                Lihat Pengajuan
+                                <ArrowRight className="h-4 w-4" />
+                            </Link>
+                            <Link
+                                to="/admin/config"
+                                className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15"
+                            >
+                                Pengaturan
+                                <ArrowRight className="h-4 w-4" />
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Metric Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <AdminMetricCard
                     title="Total Employees"
                     value={formatNumber(data.metrics.total_employees.value)}
                     icon={Users}
-                    iconBgColor="bg-blue-100"
-                    iconColor="text-blue-600"
+                    iconBgColor="bg-primary/10"
+                    iconColor="text-primary"
                     trend={{
                         value: data.metrics.total_employees.change_percentage,
                         isPositive: data.metrics.total_employees.change_percentage >= 0
@@ -75,8 +113,8 @@ export default function AdminDashboard() {
                     title="Active Contracts"
                     value={formatNumber(data.metrics.active_contracts.value)}
                     icon={FileText}
-                    iconBgColor="bg-green-100"
-                    iconColor="text-green-600"
+                    iconBgColor="bg-secondary/25"
+                    iconColor="text-slate-900"
                     trend={{
                         value: data.metrics.active_contracts.change_percentage,
                         isPositive: data.metrics.active_contracts.change_percentage >= 0
@@ -86,8 +124,8 @@ export default function AdminDashboard() {
                     title="Pending Approvals"
                     value={formatNumber(data.metrics.pending_approvals.value)}
                     icon={Clock}
-                    iconBgColor="bg-yellow-100"
-                    iconColor="text-yellow-600"
+                    iconBgColor="bg-slate-100"
+                    iconColor="text-slate-700"
                     trend={{
                         value: data.metrics.pending_approvals.change_percentage,
                         isPositive: data.metrics.pending_approvals.change_percentage >= 0
@@ -97,7 +135,7 @@ export default function AdminDashboard() {
                     title="Contracts Expiring Soon"
                     value={formatNumber(data.metrics.contracts_expiring_soon.value)}
                     icon={AlertCircle}
-                    iconBgColor="bg-red-100"
+                    iconBgColor="bg-red-50"
                     iconColor="text-red-600"
                     trend={{
                         value: data.metrics.contracts_expiring_soon.change_percentage,

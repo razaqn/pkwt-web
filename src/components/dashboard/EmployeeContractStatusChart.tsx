@@ -17,7 +17,9 @@ interface ContractStatusChartProps {
 }
 
 export default function EmployeeContractStatusChart({ data }: ContractStatusChartProps) {
-    // Mock data - will be replaced with API data
+    const BRAND_PRIMARY = '#419823';
+    const BRAND_SECONDARY = '#F4D348';
+
     const mockData = data || {
         pkwt: 45,
         pkwtt: 55
@@ -29,10 +31,11 @@ export default function EmployeeContractStatusChart({ data }: ContractStatusChar
             {
                 data: [mockData.pkwt, mockData.pkwtt],
                 backgroundColor: [
-                    '#3B82F6', // Blue for PKWT
-                    '#06B6D4', // Cyan for PKWTT
+                    BRAND_PRIMARY,
+                    BRAND_SECONDARY,
                 ],
-                borderWidth: 0,
+                borderColor: '#ffffff',
+                borderWidth: 2,
             },
         ],
     };
@@ -78,9 +81,21 @@ export default function EmployeeContractStatusChart({ data }: ContractStatusChar
     };
 
     return (
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Distribusi Tipe Kontrak</h3>
-            <div style={{ height: '280px' }}>
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-primary/10 via-white to-secondary/20 px-5 py-4">
+                <h3 className="text-sm font-semibold text-slate-900">Distribusi Tipe Kontrak</h3>
+                <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-slate-600">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: BRAND_PRIMARY }} />
+                        PKWT
+                    </span>
+                    <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: BRAND_SECONDARY }} />
+                        PKWTT
+                    </span>
+                </div>
+            </div>
+            <div className="p-5" style={{ height: '280px' }}>
                 <Pie data={chartData} options={options} />
             </div>
         </div>

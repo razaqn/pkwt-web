@@ -112,13 +112,13 @@ export default function ApprovalDetail() {
             <div className="space-y-6">
                 <button
                     onClick={() => navigate('/admin/approvals')}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 transition-colors hover:text-blue-700"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5 rounded-lg px-3 py-2"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Kembali
                 </button>
 
-                <div className="flex items-start gap-3 rounded-lg border border-red-300 bg-red-50 px-4 py-3">
+                <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-5 py-4 shadow-sm">
                     <AlertCircle className="mt-0.5 h-5 w-5 text-red-600" />
                     <div className="flex-1">
                         <p className="text-sm font-medium text-red-800">
@@ -129,7 +129,7 @@ export default function ApprovalDetail() {
                         </p>
                         <button
                             onClick={() => refetch()}
-                            className="mt-3 inline-flex items-center gap-1.5 rounded bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-200"
+                            className="mt-3 inline-flex items-center gap-2 rounded-lg bg-red-100 px-3 py-2 text-xs font-semibold text-red-700 transition-colors hover:bg-red-200"
                         >
                             <RotateCcw className="h-3.5 w-3.5" />
                             Coba Lagi
@@ -147,7 +147,7 @@ export default function ApprovalDetail() {
             {/* Back Button */}
             <button
                 onClick={() => navigate('/admin/approvals')}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 transition-colors hover:text-blue-700"
+                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
             >
                 <ArrowLeft className="h-4 w-4" />
                 Kembali
@@ -155,17 +155,17 @@ export default function ApprovalDetail() {
 
             {/* Success Message */}
             {successMessage && (
-                <div className="flex items-start gap-3 rounded-lg border border-green-300 bg-green-50 px-4 py-3">
-                    <CheckCircle className="mt-0.5 h-5 w-5 text-green-600" />
+                <div className="flex items-start gap-3 rounded-xl border border-primary/25 bg-primary/5 px-5 py-4 shadow-sm">
+                    <CheckCircle className="mt-0.5 h-5 w-5 text-primary" />
                     <div className="flex-1">
-                        <p className="text-sm font-medium text-green-800">{successMessage}</p>
+                        <p className="text-sm font-semibold text-slate-900">{successMessage}</p>
                     </div>
                 </div>
             )}
 
             {/* Error Message */}
             {errorMessage && (
-                <div className="flex items-start gap-3 rounded-lg border border-red-300 bg-red-50 px-4 py-3">
+                <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-5 py-4 shadow-sm">
                     <AlertCircle className="mt-0.5 h-5 w-5 text-red-600" />
                     <div className="flex-1">
                         <p className="text-sm font-medium text-red-800">Terjadi Kesalahan</p>
@@ -175,169 +175,192 @@ export default function ApprovalDetail() {
             )}
 
             {/* Header Card */}
-            <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900">
-                            {company.company_name}
-                        </h1>
-                        <p className="mt-1 text-sm text-slate-600">
-                            Permohonan {contract.contract_type} -{' '}
-                            {formatDuration(contract.duration_months, contract.contract_type)}
-                        </p>
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                <div className="border-b border-slate-200 bg-gradient-to-r from-primary/10 via-white to-secondary/20 px-6 py-5">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight text-slate-900">{company.company_name}</h1>
+                            <p className="mt-1 text-sm text-slate-600">
+                                Permohonan {contract.contract_type} - {formatDuration(contract.duration_months, contract.contract_type)}
+                            </p>
 
-                        {/* Status Badges */}
-                        <div className="mt-3 flex flex-wrap items-center gap-2">
-                            <span
-                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${contract.application_status?.toUpperCase() === 'PENDING'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : contract.application_status?.toUpperCase() === 'APPROVED'
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-red-100 text-red-800'
-                                    }`}
-                            >
-                                <span className="h-1.5 w-1.5 rounded-full bg-current"></span>
-                                Aplikasi: {contract.application_status?.toUpperCase() === 'PENDING'
-                                    ? 'Menunggu'
-                                    : contract.application_status?.toUpperCase() === 'APPROVED'
-                                        ? 'Disetujui'
-                                        : 'Ditolak'}
-                            </span>
-
-                            {contract.file_approval_status && (
+                            {/* Status Badges */}
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
                                 <span
-                                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${contract.file_approval_status?.toUpperCase() === 'PENDING'
-                                        ? 'bg-yellow-100 text-yellow-800'
-                                        : contract.file_approval_status?.toUpperCase() === 'APPROVED'
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'bg-red-100 text-red-800'
+                                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${contract.application_status?.toUpperCase() === 'PENDING'
+                                        ? 'bg-secondary/25 text-slate-900 ring-secondary/40'
+                                        : contract.application_status?.toUpperCase() === 'APPROVED'
+                                            ? 'bg-primary/10 text-primary ring-primary/20'
+                                            : 'bg-red-50 text-red-700 ring-red-200'
                                         }`}
                                 >
                                     <span className="h-1.5 w-1.5 rounded-full bg-current"></span>
-                                    File: {contract.file_approval_status?.toUpperCase() === 'PENDING'
+                                    Aplikasi: {contract.application_status?.toUpperCase() === 'PENDING'
                                         ? 'Menunggu'
-                                        : contract.file_approval_status?.toUpperCase() === 'APPROVED'
+                                        : contract.application_status?.toUpperCase() === 'APPROVED'
                                             ? 'Disetujui'
                                             : 'Ditolak'}
                                 </span>
+
+                                {contract.file_approval_status && (
+                                    <span
+                                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${contract.file_approval_status?.toUpperCase() === 'PENDING'
+                                            ? 'bg-secondary/25 text-slate-900 ring-secondary/40'
+                                            : contract.file_approval_status?.toUpperCase() === 'APPROVED'
+                                                ? 'bg-primary/10 text-primary ring-primary/20'
+                                                : 'bg-red-50 text-red-700 ring-red-200'
+                                            }`}
+                                    >
+                                        <span className="h-1.5 w-1.5 rounded-full bg-current"></span>
+                                        File: {contract.file_approval_status?.toUpperCase() === 'PENDING'
+                                            ? 'Menunggu'
+                                            : contract.file_approval_status?.toUpperCase() === 'APPROVED'
+                                                ? 'Disetujui'
+                                                : 'Ditolak'}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-wrap gap-2">
+                            {contract.file_url && (
+                                <button
+                                    onClick={handleDownload}
+                                    className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                                >
+                                    <Download className="h-4 w-4" />
+                                    Unduh Dokumen
+                                </button>
                             )}
+                            <button
+                                onClick={() => handleOpenModal('approve')}
+                                disabled={contract.application_status?.toUpperCase() !== 'PENDING'}
+                                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <CheckCircle className="h-4 w-4" />
+                                Setujui
+                            </button>
+                            <button
+                                onClick={() => handleOpenModal('reject')}
+                                disabled={contract.application_status?.toUpperCase() !== 'PENDING'}
+                                className="inline-flex items-center gap-2 rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <XCircle className="h-4 w-4" />
+                                Tolak
+                            </button>
                         </div>
                     </div>
+                </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-wrap gap-2">
-                        {contract.file_url && (
-                            <button
-                                onClick={handleDownload}
-                                className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
-                            >
-                                <Download className="h-4 w-4" />
-                                Unduh Dokumen
-                            </button>
-                        )}
-                        <button
-                            onClick={() => handleOpenModal('approve')}
-                            disabled={contract.application_status?.toUpperCase() !== 'PENDING'}
-                            className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            <CheckCircle className="h-4 w-4" />
-                            Setujui
-                        </button>
-                        <button
-                            onClick={() => handleOpenModal('reject')}
-                            disabled={contract.application_status?.toUpperCase() !== 'PENDING'}
-                            className="inline-flex items-center gap-2 rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            <XCircle className="h-4 w-4" />
-                            Tolak
-                        </button>
+                <div className="p-6">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                        <div className="hidden" />
                     </div>
                 </div>
             </div>
 
             {/* Detail Card */}
-            <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 className="mb-4 text-lg font-semibold text-slate-900">
-                    Detail Permohonan
-                </h2>
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                <div className="border-b border-slate-200 bg-gradient-to-r from-primary/10 via-white to-secondary/20 px-6 py-5">
+                    <h2 className="text-sm font-semibold text-slate-900">Detail Permohonan</h2>
+                </div>
 
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-                            <FileText className="h-5 w-5 text-blue-600" />
+                <div className="p-6">
+
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <div className="flex items-start gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/10">
+                                <FileText className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-500">Jenis PKWT</p>
+                                <p className="mt-0.5 font-medium text-slate-900">
+                                    {contract.contract_type}
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Jenis PKWT</p>
-                            <p className="mt-0.5 font-medium text-slate-900">
-                                {contract.contract_type}
-                            </p>
+
+                        <div className="flex items-start gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/25 ring-1 ring-secondary/20">
+                                <Clock className="h-5 w-5 text-slate-900" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-500">Durasi Kontrak</p>
+                                <p className="mt-0.5 font-medium text-slate-900">
+                                    {formatDuration(contract.duration_months, contract.contract_type)}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/10">
+                                <Users className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-500">Jumlah Karyawan</p>
+                                <p className="mt-0.5 font-medium text-slate-900">
+                                    {employees.length}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 ring-1 ring-slate-200">
+                                <Calendar className="h-5 w-5 text-slate-700" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-500">Tanggal Pengajuan</p>
+                                <p className="mt-0.5 font-medium text-slate-900">
+                                    {formatDate(contract.submitted_at)}
+                                </p>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50">
-                            <Clock className="h-5 w-5 text-purple-600" />
-                        </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Durasi Kontrak</p>
-                            <p className="mt-0.5 font-medium text-slate-900">
-                                {formatDuration(contract.duration_months, contract.contract_type)}
-                            </p>
-                        </div>
-                    </div>
+                    {/* Notes & Comment */}
+                    <div className="mt-6 border-t border-slate-200 pt-6">
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="rounded-xl border border-slate-200 bg-white">
+                                <div className="border-b border-slate-200 bg-gradient-to-r from-primary/10 via-white to-secondary/20 px-4 py-3">
+                                    <p className="text-sm font-semibold text-slate-900">Catatan Pengajuan</p>
+                                    <p className="mt-0.5 text-xs text-slate-600">Catatan dari perusahaan saat mengajukan.</p>
+                                </div>
+                                <div className="p-4">
+                                    <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                        <p className="whitespace-pre-wrap text-sm text-slate-700">
+                                            {contract.submission_notes || 'Tidak ada catatan pengajuan.'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
 
-                    <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
-                            <Users className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Jumlah Karyawan</p>
-                            <p className="mt-0.5 font-medium text-slate-900">
-                                {employees.length}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50">
-                            <Calendar className="h-5 w-5 text-orange-600" />
-                        </div>
-                        <div>
-                            <p className="text-xs text-slate-500">Tanggal Pengajuan</p>
-                            <p className="mt-0.5 font-medium text-slate-900">
-                                {formatDate(contract.submitted_at)}
-                            </p>
+                            <div className="rounded-xl border border-slate-200 bg-white">
+                                <div className="border-b border-slate-200 bg-gradient-to-r from-primary/10 via-white to-secondary/20 px-4 py-3">
+                                    <p className="text-sm font-semibold text-slate-900">Komentar Admin</p>
+                                    <p className="mt-0.5 text-xs text-slate-600">Catatan yang tersimpan untuk pengajuan ini.</p>
+                                </div>
+                                <div className="p-4">
+                                    <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                        <p className="whitespace-pre-wrap text-sm text-slate-700">
+                                            {contract.admin_comment || 'Belum ada komentar admin.'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                {/* Submission Notes */}
-                {contract.submission_notes && (
-                    <div className="mt-4 border-t border-slate-200 pt-4">
-                        <p className="text-xs text-slate-500">Catatan Pengajuan</p>
-                        <p className="mt-1 text-sm text-slate-700">
-                            {contract.submission_notes}
-                        </p>
-                    </div>
-                )}
-
-                {/* Admin Comment */}
-                {contract.admin_comment && (
-                    <div className="mt-4 border-t border-slate-200 pt-4">
-                        <p className="text-xs text-slate-500">Komentar Admin</p>
-                        <p className="mt-1 text-sm text-slate-700">
-                            {contract.admin_comment}
-                        </p>
-                    </div>
-                )}
             </div>
 
             {/* Employee Table */}
-            <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 className="mb-4 text-lg font-semibold text-slate-900">
-                    Karyawan Terkait
-                </h2>
-                <ApprovalEmployeeTable employees={employees} />
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                <div className="border-b border-slate-200 bg-gradient-to-r from-primary/10 via-white to-secondary/20 px-6 py-5">
+                    <h2 className="text-sm font-semibold text-slate-900">Karyawan Terkait</h2>
+                </div>
+                <div className="p-6">
+                    <ApprovalEmployeeTable employees={employees} />
+                </div>
             </div>
 
             {/* Approval Action Modal */}

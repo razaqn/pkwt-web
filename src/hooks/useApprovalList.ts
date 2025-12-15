@@ -10,6 +10,7 @@ interface UseApprovalListResult {
     error: string | null;
     currentPage: number;
     totalPages: number;
+    totalCount: number;
     searchQuery: string;
     setSearchQuery: (query: string) => void;
     goToPage: (page: number) => void;
@@ -65,7 +66,7 @@ export function useApprovalList(): UseApprovalListResult {
         };
     }, [currentPage, searchQuery]);
 
-    const totalPages = Math.ceil(totalCount / LIMIT_PER_PAGE);
+    const totalPages = Math.max(1, Math.ceil(totalCount / LIMIT_PER_PAGE));
 
     const goToPage = (page: number) => {
         if (page >= 1 && page <= totalPages) {
@@ -84,6 +85,7 @@ export function useApprovalList(): UseApprovalListResult {
         error,
         currentPage,
         totalPages,
+        totalCount,
         searchQuery,
         setSearchQuery: handleSetSearchQuery,
         goToPage,

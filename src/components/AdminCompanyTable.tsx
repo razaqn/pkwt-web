@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import type { Company } from '../lib/api';
 import { ClipLoader } from 'react-spinners';
 
@@ -9,6 +9,8 @@ interface AdminCompanyTableProps {
     onLihatDetail: (companyId: string) => void;
     onPageChange?: (page: number) => void;
     currentPage?: number;
+    totalPages?: number;
+    totalItems?: number;
     onSearchChange?: (query: string) => void;
     searchQuery?: string;
 }
@@ -19,6 +21,8 @@ export default function AdminCompanyTable({
     onLihatDetail,
     onPageChange,
     currentPage = 1,
+    totalPages = 1,
+    totalItems,
     onSearchChange,
     searchQuery = '',
 }: AdminCompanyTableProps) {
@@ -40,6 +44,9 @@ export default function AdminCompanyTable({
         }
     }, [currentPage, onPageChange]);
 
+    const canGoPrev = currentPage > 1 && !loading;
+    const canGoNext = currentPage < totalPages && !loading;
+
     const formatAddress = (company: Company): string => {
         const parts = [company.address];
         if (company.village) parts.push(company.village);
@@ -49,88 +56,116 @@ export default function AdminCompanyTable({
 
     return (
         <div className="space-y-4">
-            {/* Search Field */}
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input
-                    type="text"
-                    placeholder="Cari nama perusahaan..."
-                    disabled={loading}
-                    value={searchQuery}
-                    onChange={handleSearch}
-                    className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:cursor-not-allowed"
-                />
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    {/* Search Field */}
+                    <div className="relative w-full md:max-w-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="Cari nama perusahaan..."
+                            disabled={loading}
+                            value={searchQuery}
+                            onChange={handleSearch}
+                            className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-4 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:cursor-not-allowed"
+                        />
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3 md:justify-end">
+                        <div className="text-sm text-slate-600">
+                            {typeof totalItems === 'number' ? (
+                                <span>
+                                    Total <span className="font-semibold text-slate-900">{totalItems.toLocaleString('id-ID')}</span>
+                                </span>
+                            ) : (
+                                <span>
+                                    Menampilkan <span className="font-semibold text-slate-900">{data.length}</span>
+                                </span>
+                            )}
+                        </div>
+                        <div className="inline-flex items-center rounded-lg bg-primary/5 px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-inset ring-primary/10">
+                            Halaman {currentPage} / {totalPages}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto rounded-lg border border-slate-200">
-                <table className="w-full text-sm">
-                    <thead>
-                        <tr className="border-b border-slate-200 bg-slate-50">
-                            <th className="px-4 py-3 text-left font-semibold text-slate-700">Nama Perusahaan</th>
-                            <th className="px-4 py-3 text-left font-semibold text-slate-700">Alamat</th>
-                            <th className="px-4 py-3 text-left font-semibold text-slate-700">Total Kontrak</th>
-                            <th className="px-4 py-3 text-left font-semibold text-slate-700">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
-                            <tr>
-                                <td colSpan={4} className="px-4 py-8 text-center">
-                                    <div className="flex items-center justify-center gap-3">
-                                        <ClipLoader size={20} color="#419823" />
-                                        <span className="text-slate-600 font-medium">Memuat data perusahaan...</span>
-                                    </div>
-                                </td>
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-slate-200 bg-gradient-to-r from-primary/10 via-white to-secondary/20">
+                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">Nama Perusahaan</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">Alamat</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">Total Kontrak</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">Aksi</th>
                             </tr>
-                        ) : data.length > 0 ? (
-                            data.map((company) => (
-                                <tr key={company.id} className="border-b border-slate-200 hover:bg-slate-50 transition">
-                                    <td className="px-4 py-3 text-slate-900 font-medium">{company.company_name}</td>
-                                    <td className="px-4 py-3 text-slate-600">{formatAddress(company)}</td>
-                                    <td className="px-4 py-3 text-slate-600 font-medium">
-                                        {company.active_contracts_pkwt + company.active_contracts_pkwtt}
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <button
-                                            onClick={() => onLihatDetail(company.id)}
-                                            className="inline-flex items-center justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 transition"
-                                        >
-                                            Lihat Detail
-                                        </button>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={4} className="px-4 py-16 text-center">
+                                        <div className="flex items-center justify-center gap-3">
+                                            <ClipLoader size={20} color="#419823" />
+                                            <span className="text-slate-600 font-medium">Memuat data perusahaan...</span>
+                                        </div>
                                     </td>
                                 </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
-                                    Belum ada perusahaan terdaftar
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+                            ) : data.length > 0 ? (
+                                data.map((company) => (
+                                    <tr key={company.id} className="hover:bg-slate-50 transition-colors">
+                                        <td className="px-4 py-3 font-medium text-slate-900">{company.company_name}</td>
+                                        <td className="px-4 py-3 text-slate-700">
+                                            <span className="line-clamp-2">{formatAddress(company)}</span>
+                                        </td>
+                                        <td className="px-4 py-3 text-slate-700 font-semibold">
+                                            {(company.active_contracts_pkwt + company.active_contracts_pkwtt).toLocaleString('id-ID')}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <button
+                                                onClick={() => onLihatDetail(company.id)}
+                                                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/5"
+                                            >
+                                                <Eye className="h-4 w-4" />
+                                                Lihat Detail
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={4} className="px-4 py-16 text-center text-slate-500">
+                                        Belum ada perusahaan terdaftar
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Pagination */}
             {data.length > 0 && (
                 <div className="flex items-center justify-between pt-4">
                     <div className="text-sm text-slate-600">
-                        Menampilkan {data.length} data
+                        {typeof totalItems === 'number'
+                            ? `Menampilkan ${data.length} dari ${totalItems.toLocaleString('id-ID')} data`
+                            : `Menampilkan ${data.length} data`}
                     </div>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handlePreviousPage}
-                            disabled={currentPage === 1 || loading}
-                            className="flex items-center justify-center h-9 w-9 rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                            disabled={!canGoPrev}
+                            className="flex h-9 w-9 items-center justify-center rounded-md border border-primary/30 text-slate-700 hover:bg-primary/5 disabled:opacity-50 disabled:cursor-not-allowed transition"
                         >
                             <ChevronLeft className="h-4 w-4" />
                         </button>
-                        <div className="text-sm text-slate-600">Halaman {currentPage}</div>
+                        <div className="text-sm text-slate-700">Halaman {currentPage} / {totalPages}</div>
                         <button
                             onClick={handleNextPage}
-                            disabled={loading}
-                            className="flex items-center justify-center h-9 w-9 rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                            disabled={!canGoNext}
+                            className="flex h-9 w-9 items-center justify-center rounded-md border border-primary/30 text-slate-700 hover:bg-primary/5 disabled:opacity-50 disabled:cursor-not-allowed transition"
                         >
                             <ChevronRight className="h-4 w-4" />
                         </button>

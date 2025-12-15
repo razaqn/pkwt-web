@@ -52,44 +52,46 @@ export default function Config() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Welcome Page Config</h1>
-                    <p className="mt-1 text-sm text-slate-600">
-                        Kelola konten halaman panduan untuk pengguna perusahaan
-                    </p>
-                </div>
+            <div className="rounded-xl border border-slate-200 bg-gradient-to-r from-primary/10 via-white to-secondary/25 p-6 shadow-sm">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900">Welcome Page Config</h1>
+                        <p className="mt-1 text-sm text-slate-600">
+                            Kelola konten halaman panduan untuk pengguna perusahaan
+                        </p>
+                    </div>
 
-                <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="flex items-center gap-2 rounded-lg bg-[#419823] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#2f7d1a] disabled:opacity-50"
-                >
-                    {saving ? (
-                        <>
-                            <ClipLoader size={14} color="#ffffff" />
-                            Menyimpan...
-                        </>
-                    ) : (
-                        <>
-                            <Save className="h-4 w-4" />
-                            Simpan Perubahan
-                        </>
-                    )}
-                </button>
+                    <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-secondary px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition-colors hover:bg-secondary/90 focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        {saving ? (
+                            <>
+                                <ClipLoader size={14} color="#0f172a" />
+                                Menyimpan...
+                            </>
+                        ) : (
+                            <>
+                                <Save className="h-4 w-4" />
+                                Simpan Perubahan
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
 
             {/* Success Message */}
             {saveSuccess && (
-                <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-                    <p className="text-sm font-medium text-green-800">
+                <div className="rounded-lg border border-primary/20 bg-primary/10 p-4">
+                    <p className="text-sm font-semibold text-primary">
                         ✓ Konfigurasi berhasil disimpan!
                     </p>
                 </div>
             )}
 
             {/* Tabs */}
-            <div className="rounded-xl border bg-white shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div className="border-b border-slate-200">
                     <div className="flex gap-1 overflow-x-auto p-2">
                         {TABS.map((tab) => (
@@ -97,8 +99,8 @@ export default function Config() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition ${activeTab === tab.id
-                                    ? 'bg-[#419823] text-white'
-                                    : 'text-slate-600 hover:bg-slate-100'
+                                    ? 'bg-primary text-white shadow-sm'
+                                    : 'text-slate-700 hover:bg-slate-100'
                                     }`}
                             >
                                 {tab.label}
@@ -132,11 +134,11 @@ export default function Config() {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 rounded-lg bg-[#419823] px-6 py-3 font-medium text-white shadow-sm hover:bg-[#2f7d1a] disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-secondary px-6 py-3 text-sm font-semibold text-slate-900 shadow-sm transition-colors hover:bg-secondary/90 focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     {saving ? (
                         <>
-                            <ClipLoader size={16} color="#ffffff" />
+                            <ClipLoader size={16} color="#0f172a" />
                             Menyimpan...
                         </>
                     ) : (

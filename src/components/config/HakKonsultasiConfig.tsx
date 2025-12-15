@@ -225,7 +225,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
         const card = config.hakKewajibanSection.cards[cardKey];
 
         return (
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between">
                     <div>
                         <h3 className="text-lg font-semibold text-slate-800">{cardTitle}</h3>
@@ -241,7 +241,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
                             type="checkbox"
                             checked={card.enabled}
                             onChange={(e) => updateHakKewajibanCard(cardKey, { enabled: e.target.checked })}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                         />
                         <span className="text-sm text-slate-600">Aktif</span>
                     </label>
@@ -255,7 +255,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
                                     type="checkbox"
                                     checked={item.enabled}
                                     onChange={(e) => updateHakKewajibanItem(cardKey, item.id, 'enabled', e.target.checked)}
-                                    className="h-4 w-4 rounded border-slate-300 text-blue-600"
+                                    className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                                 />
                                 <span className={`flex h-6 w-6 items-center justify-center rounded-full ${badgeColor} text-xs font-semibold`}>
                                     {badgeIcon}
@@ -297,7 +297,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
 
                 <button
                     onClick={() => addHakKewajibanItem(cardKey)}
-                    className="mt-3 flex items-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:border-blue-500 hover:text-blue-600"
+                    className="mt-3 flex items-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:border-primary hover:text-primary"
                 >
                     <Plus className="h-4 w-4" />
                     Tambah Item
@@ -309,7 +309,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
     return (
         <div className="space-y-6">
             {/* Hak & Kewajiban Section Settings */}
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-slate-800">Section: Hak & Kewajiban</h3>
                     <label className="flex items-center gap-2">
@@ -317,7 +317,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
                             type="checkbox"
                             checked={config.hakKewajibanSection.enabled}
                             onChange={(e) => updateHakKewajibanSection('enabled', e.target.checked)}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                         />
                         <span className="text-sm text-slate-600">Aktif</span>
                     </label>
@@ -330,7 +330,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
                             type="text"
                             value={config.hakKewajibanSection.title}
                             onChange={(e) => updateHakKewajibanSection('title', e.target.value)}
-                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                         />
                     </div>
 
@@ -340,18 +340,18 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
                             type="text"
                             value={config.hakKewajibanSection.subtitle}
                             onChange={(e) => updateHakKewajibanSection('subtitle', e.target.value)}
-                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                         />
                     </div>
                 </div>
             </div>
 
             {/* Hak & Kewajiban Cards */}
-            {renderListCard('hakPekerja', 'Hak Pekerja PKWT', 'bg-green-100 text-green-600', '♥')}
-            {renderListCard('kewajibanPekerja', 'Kewajiban Pekerja PKWT', 'bg-blue-100 text-blue-600', '⚡')}
+            {renderListCard('hakPekerja', 'Hak Pekerja PKWT', 'bg-primary/10 text-primary', '♥')}
+            {renderListCard('kewajibanPekerja', 'Kewajiban Pekerja PKWT', 'bg-secondary/40 text-slate-900', '⚡')}
 
             {/* Konsultasi Section Settings */}
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-slate-800">Section: Konsultasi</h3>
                     <label className="flex items-center gap-2">
@@ -359,7 +359,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
                             type="checkbox"
                             checked={config.konsultasiSection.enabled}
                             onChange={(e) => updateKonsultasiSection('enabled', e.target.checked)}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                         />
                         <span className="text-sm text-slate-600">Aktif</span>
                     </label>
@@ -372,7 +372,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
                             type="text"
                             value={config.konsultasiSection.title}
                             onChange={(e) => updateKonsultasiSection('title', e.target.value)}
-                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                         />
                     </div>
 
@@ -382,14 +382,14 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
                             type="text"
                             value={config.konsultasiSection.subtitle}
                             onChange={(e) => updateKonsultasiSection('subtitle', e.target.value)}
-                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                         />
                     </div>
                 </div>
             </div>
 
             {/* Layanan Konsultasi Card */}
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between">
                     <div>
                         <h3 className="text-lg font-semibold text-slate-800">Layanan Konsultasi</h3>
@@ -405,7 +405,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
                             type="checkbox"
                             checked={config.konsultasiSection.cards.layananKonsultasi.enabled}
                             onChange={(e) => updateLayananKonsultasi({ enabled: e.target.checked })}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                         />
                         <span className="text-sm text-slate-600">Aktif</span>
                     </label>
@@ -419,7 +419,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
                                     type="checkbox"
                                     checked={item.enabled}
                                     onChange={(e) => updateLayananItem(item.id, 'enabled', e.target.checked)}
-                                    className="h-4 w-4 rounded border-slate-300 text-blue-600"
+                                    className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                                 />
                                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-100 text-xs font-semibold text-purple-600">
                                     {index + 1}
@@ -461,7 +461,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
 
                 <button
                     onClick={addLayananItem}
-                    className="mt-3 flex items-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:border-blue-500 hover:text-blue-600"
+                    className="mt-3 flex items-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:border-primary hover:text-primary"
                 >
                     <Plus className="h-4 w-4" />
                     Tambah Layanan
@@ -469,7 +469,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
             </div>
 
             {/* Hubungi Kami Card - Dynamic Contacts */}
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between">
                     <div>
                         <h3 className="text-lg font-semibold text-slate-800">Hubungi Kami</h3>
@@ -485,7 +485,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
                             type="checkbox"
                             checked={config.konsultasiSection.cards.hubungiKami.enabled}
                             onChange={(e) => updateHubungiKami({ enabled: e.target.checked })}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                         />
                         <span className="text-sm text-slate-600">Aktif</span>
                     </label>
@@ -499,7 +499,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
                                     type="checkbox"
                                     checked={contact.enabled}
                                     onChange={(e) => updateContact(contact.id, 'enabled', e.target.checked)}
-                                    className="h-4 w-4 rounded border-slate-300 text-blue-600"
+                                    className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                                 />
 
                                 <select
@@ -575,7 +575,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
 
                 <button
                     onClick={addContact}
-                    className="mt-3 flex items-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:border-blue-500 hover:text-blue-600"
+                    className="mt-3 flex items-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:border-primary hover:text-primary"
                 >
                     <Plus className="h-4 w-4" />
                     Tambah Kontak
@@ -596,7 +596,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
                                 type="checkbox"
                                 checked={config.konsultasiSection.cards.hubungiKami.buttonEnabled}
                                 onChange={(e) => updateHubungiKami({ buttonEnabled: e.target.checked })}
-                                className="h-4 w-4 rounded border-slate-300 text-blue-600"
+                                className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                             />
                             <span className="text-sm text-slate-600">Aktif</span>
                         </label>

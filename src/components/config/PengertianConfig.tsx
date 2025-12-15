@@ -96,7 +96,7 @@ export default function PengertianConfig({ config, onChange }: PengertianConfigP
     return (
         <div className="space-y-6">
             {/* Section Settings */}
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-slate-800">Section Settings</h3>
                     <label className="flex items-center gap-2">
@@ -104,7 +104,7 @@ export default function PengertianConfig({ config, onChange }: PengertianConfigP
                             type="checkbox"
                             checked={config.pengertianSection.enabled}
                             onChange={(e) => updateSection('enabled', e.target.checked)}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                         />
                         <span className="text-sm text-slate-600">Aktif</span>
                     </label>
@@ -117,7 +117,7 @@ export default function PengertianConfig({ config, onChange }: PengertianConfigP
                             type="text"
                             value={config.pengertianSection.title}
                             onChange={(e) => updateSection('title', e.target.value)}
-                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                         />
                     </div>
 
@@ -127,14 +127,14 @@ export default function PengertianConfig({ config, onChange }: PengertianConfigP
                             type="text"
                             value={config.pengertianSection.subtitle}
                             onChange={(e) => updateSection('subtitle', e.target.value)}
-                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                         />
                     </div>
                 </div>
             </div>
 
             {/* Karakteristik Card */}
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between">
                     <div>
                         <h3 className="text-lg font-semibold text-slate-800">Karakteristik PKWT</h3>
@@ -150,7 +150,7 @@ export default function PengertianConfig({ config, onChange }: PengertianConfigP
                             type="checkbox"
                             checked={config.pengertianSection.cards.karakteristik.enabled}
                             onChange={(e) => updateCard('karakteristik', { enabled: e.target.checked })}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                         />
                         <span className="text-sm text-slate-600">Aktif</span>
                     </label>
@@ -164,9 +164,9 @@ export default function PengertianConfig({ config, onChange }: PengertianConfigP
                                     type="checkbox"
                                     checked={item.enabled}
                                     onChange={(e) => updateListItem('karakteristik', item.id, 'enabled', e.target.checked)}
-                                    className="h-4 w-4 rounded border-slate-300 text-blue-600"
+                                    className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                                 />
-                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600">
+                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                                     {index + 1}
                                 </span>
                             </div>
@@ -206,7 +206,7 @@ export default function PengertianConfig({ config, onChange }: PengertianConfigP
 
                 <button
                     onClick={() => addListItem('karakteristik')}
-                    className="mt-3 flex items-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:border-blue-500 hover:text-blue-600"
+                    className="mt-3 flex items-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:border-primary hover:text-primary"
                 >
                     <Plus className="h-4 w-4" />
                     Tambah Item
@@ -214,7 +214,7 @@ export default function PengertianConfig({ config, onChange }: PengertianConfigP
             </div>
 
             {/* Kapan Digunakan Card */}
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between">
                     <div>
                         <h3 className="text-lg font-semibold text-slate-800">Kapan Digunakan?</h3>
@@ -230,7 +230,7 @@ export default function PengertianConfig({ config, onChange }: PengertianConfigP
                             type="checkbox"
                             checked={config.pengertianSection.cards.kapanDigunakan.enabled}
                             onChange={(e) => updateCard('kapanDigunakan', { enabled: e.target.checked })}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                         />
                         <span className="text-sm text-slate-600">Aktif</span>
                     </label>
@@ -244,7 +244,7 @@ export default function PengertianConfig({ config, onChange }: PengertianConfigP
                                     type="checkbox"
                                     checked={item.enabled}
                                     onChange={(e) => updateListItem('kapanDigunakan', item.id, 'enabled', e.target.checked)}
-                                    className="h-4 w-4 rounded border-slate-300 text-blue-600"
+                                    className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                                 />
                                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-xs font-semibold text-green-600">
                                     ✓
@@ -286,7 +286,7 @@ export default function PengertianConfig({ config, onChange }: PengertianConfigP
 
                 <button
                     onClick={() => addListItem('kapanDigunakan')}
-                    className="mt-3 flex items-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:border-blue-500 hover:text-blue-600"
+                    className="mt-3 flex items-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:border-primary hover:text-primary"
                 >
                     <Plus className="h-4 w-4" />
                     Tambah Item
@@ -294,7 +294,7 @@ export default function PengertianConfig({ config, onChange }: PengertianConfigP
             </div>
 
             {/* Pertanyaan Umum Card */}
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between">
                     <div>
                         <h3 className="text-lg font-semibold text-slate-800">Pertanyaan Umum (FAQ)</h3>
@@ -310,7 +310,7 @@ export default function PengertianConfig({ config, onChange }: PengertianConfigP
                             type="checkbox"
                             checked={config.pengertianSection.cards.pertanyaanUmum.enabled}
                             onChange={(e) => updateCard('pertanyaanUmum', { enabled: e.target.checked })}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                         />
                         <span className="text-sm text-slate-600">Aktif</span>
                     </label>
@@ -324,7 +324,7 @@ export default function PengertianConfig({ config, onChange }: PengertianConfigP
                                     type="checkbox"
                                     checked={item.enabled}
                                     onChange={(e) => updateQAItem(item.id, 'enabled', e.target.checked)}
-                                    className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600"
+                                    className="mt-1 h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/30"
                                 />
                                 <div className="flex-1">
                                     <label className="mb-1 block text-xs font-medium text-slate-600">Pertanyaan</label>
@@ -374,7 +374,7 @@ export default function PengertianConfig({ config, onChange }: PengertianConfigP
 
                 <button
                     onClick={addQAItem}
-                    className="mt-3 flex items-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:border-blue-500 hover:text-blue-600"
+                    className="mt-3 flex items-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600 hover:border-primary hover:text-primary"
                 >
                     <Plus className="h-4 w-4" />
                     Tambah FAQ

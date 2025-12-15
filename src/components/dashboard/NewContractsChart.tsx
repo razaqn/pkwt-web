@@ -31,7 +31,9 @@ interface NewContractsChartProps {
 }
 
 export default function NewContractsChart({ data }: NewContractsChartProps) {
-    // Mock data - will be replaced with API data
+    const BRAND_PRIMARY = '#419823';
+    const BRAND_PRIMARY_FILL = 'rgba(65, 152, 35, 0.12)';
+
     const mockData = data || {
         labels: ['Jan-Jun', 'February', 'March', 'April', 'May', 'Jun-Jun'],
         values: [21, 54, 35, 76, 57, 93]
@@ -43,12 +45,12 @@ export default function NewContractsChart({ data }: NewContractsChartProps) {
             {
                 label: 'New Contracts',
                 data: mockData.values,
-                borderColor: '#3B82F6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderColor: BRAND_PRIMARY,
+                backgroundColor: BRAND_PRIMARY_FILL,
                 fill: true,
                 tension: 0.4,
                 pointRadius: 4,
-                pointBackgroundColor: '#3B82F6',
+                pointBackgroundColor: BRAND_PRIMARY,
                 pointBorderColor: '#fff',
                 pointBorderWidth: 2,
                 pointHoverRadius: 6,
@@ -105,9 +107,11 @@ export default function NewContractsChart({ data }: NewContractsChartProps) {
     };
 
     return (
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Kontrak Baru per Bulan</h3>
-            <div style={{ height: '280px' }}>
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-200 bg-gradient-to-r from-primary/10 via-white to-secondary/20 px-5 py-4">
+                <h3 className="text-sm font-semibold text-slate-900">Kontrak Baru per Bulan</h3>
+            </div>
+            <div className="p-5" style={{ height: '280px' }}>
                 <Line data={chartData} options={options} />
             </div>
         </div>
