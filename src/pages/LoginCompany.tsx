@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { login } from '../lib/api';
 import { setAuth } from '../store/auth';
 import { useNavigate } from 'react-router-dom';
+import { ClipLoader } from 'react-spinners';
 
 export default function LoginCompany() {
   const [email, setEmail] = useState('');
@@ -62,7 +63,7 @@ export default function LoginCompany() {
                 <label htmlFor="remember" className="text-sm text-slate-700">Ingat saya</label>
               </div>
               {error && <div className="text-sm text-red-600">{error}</div>}
-              <button type="submit" disabled={loading} className="w-full h-10 rounded-md bg-[#1F4E8C] text-white text-sm font-medium hover:bg-[#1b437b] disabled:opacity-50">{loading ? 'Memproses...' : 'Masuk ke Sistem'}</button>
+              <button type="submit" disabled={loading} className="w-full h-10 rounded-md bg-[#1F4E8C] text-white text-sm font-medium hover:bg-[#1b437b] disabled:opacity-50 flex items-center justify-center gap-2">{loading && <ClipLoader size={16} color="#ffffff" />}{loading ? 'Memproses...' : 'Masuk ke Sistem'}</button>
             </form>
             <div className="mt-4 border-t pt-4 text-sm text-slate-600 flex items-center justify-between">
               <a className="hover:text-slate-800" href="#">Pusat Bantuan</a>

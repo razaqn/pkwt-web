@@ -12,7 +12,7 @@ import {
     RotateCcw,
 } from 'lucide-react';
 import { useState } from 'react';
-import { ClipLoader } from 'react-spinners';
+import { MoonLoader } from 'react-spinners';
 import { useApprovalDetail } from '../../hooks/useApprovalDetail';
 import { approveContract, rejectContract } from '../../lib/api';
 import ApprovalEmployeeTable from '../../components/ApprovalEmployeeTable';
@@ -99,9 +99,9 @@ export default function ApprovalDetail() {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-16">
-                <div className="flex items-center gap-2 text-slate-600">
-                    <ClipLoader size={20} color="#475569" />
-                    <span>Memuat detail persetujuan...</span>
+                <div className="flex flex-col items-center gap-3">
+                    <MoonLoader size={48} color="#419823" />
+                    <span className="text-slate-600 font-medium">Memuat detail persetujuan...</span>
                 </div>
             </div>
         );

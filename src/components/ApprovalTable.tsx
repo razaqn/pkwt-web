@@ -103,9 +103,9 @@ export default function ApprovalTable({
                         {loading ? (
                             <tr>
                                 <td colSpan={7} className="px-4 py-16 text-center">
-                                    <div className="flex items-center justify-center gap-2 text-slate-600">
-                                        <ClipLoader size={20} color="#475569" />
-                                        <span>Memuat data persetujuan...</span>
+                                    <div className="flex items-center justify-center gap-3">
+                                        <ClipLoader size={20} color="#419823" />
+                                        <span className="text-slate-600 font-medium">Memuat data persetujuan...</span>
                                     </div>
                                 </td>
                             </tr>

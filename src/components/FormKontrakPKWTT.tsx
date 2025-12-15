@@ -1,6 +1,7 @@
 import { Upload, X, AlertCircle, FileText, FileSpreadsheet, CheckCircle, Download } from 'lucide-react';
 import { useState } from 'react';
 import { parseExcelFile, mapExcelRowsToPKWTT, MAX_FILE_SIZE_MB as EXCEL_MAX_SIZE_MB } from '../lib/excel';
+import { ClipLoader } from 'react-spinners';
 
 const MAX_FILE_SIZE_MB = 5;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -168,6 +169,7 @@ export default function FormKontrakPKWTT({ data, onChange, errors = {}, loading 
                                 className={`inline-flex items-center gap-2 rounded-md border border-blue-300 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-50 transition cursor-pointer ${loading || isImporting ? 'opacity-50 cursor-not-allowed' : ''
                                     }`}
                             >
+                                {isImporting && <ClipLoader size={14} color="#419823" />}
                                 <Upload className="h-4 w-4" />
                                 {isImporting ? 'Mengimpor...' : 'Pilih File'}
                             </label>

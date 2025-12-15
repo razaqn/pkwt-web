@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import FormKontrakPKWT, { type FormKontrakPKWTData } from '../../components/FormKontrakPKWT';
 import FormKontrakPKWTT, { type FormKontrakPKWTTData } from '../../components/FormKontrakPKWTT';
 import { checkNIKs, getDraftContractDetail } from '../../lib/api';
+import { MoonLoader, ClipLoader } from 'react-spinners';
 
 const MAX_FILE_SIZE_MB = 5;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -209,15 +210,12 @@ export default function FormKontrak() {
         <div className="space-y-6">
             {/* Loading State */}
             {draftLoading && (
-                <>
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Memuat Draft...</h1>
-                        <p className="mt-1 text-slate-600">Mengambil data draft Anda</p>
+                <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl p-8 shadow-2xl flex flex-col items-center gap-4">
+                        <MoonLoader size={48} color="#419823" />
+                        <p className="text-slate-700 font-medium">Memuat draft kontrak...</p>
                     </div>
-                    <div className="flex items-center justify-center py-12">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    </div>
-                </>
+                </div>
             )}
 
             {/* Form Content */}
@@ -225,8 +223,8 @@ export default function FormKontrak() {
                 <>
                     {/* Header */}
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Form Kontrak</h1>
-                        <p className="mt-1 text-slate-600">{draftId ? 'Lanjutkan draft kontrak' : 'Tambahkan karyawan dan daftarkan kontrak baru'}</p>
+                        <h1 className="text-2xl font-bold text-slate-900">Formulir Kontrak</h1>
+                        <p className="mt-1 text-slate-600">Buat kontrak PKWT atau PKWTT</p>
                     </div>
 
                     {/* Error Alert */}
@@ -284,8 +282,9 @@ export default function FormKontrak() {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition"
+                                    className="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition flex items-center justify-center gap-2"
                                 >
+                                    {loading && <ClipLoader size={16} color="#ffffff" />}
                                     {loading ? 'Memproses...' : 'Lanjut ke Pengajuan'}
                                 </button>
                                 <button

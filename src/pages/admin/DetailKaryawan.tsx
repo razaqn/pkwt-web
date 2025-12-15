@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Loader } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useEmployeeDetail } from '../../hooks/useEmployeeDetail';
+import { MoonLoader } from 'react-spinners';
 
 export default function AdminDetailKaryawan() {
     const navigate = useNavigate();
@@ -18,9 +19,9 @@ export default function AdminDetailKaryawan() {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-16">
-                <div className="flex items-center gap-2 text-slate-600">
-                    <Loader className="h-5 w-5 animate-spin" />
-                    <span>Memuat detail karyawan...</span>
+                <div className="flex flex-col items-center gap-3">
+                    <MoonLoader size={48} color="#419823" />
+                    <span className="text-slate-600 font-medium">Memuat detail karyawan...</span>
                 </div>
             </div>
         );

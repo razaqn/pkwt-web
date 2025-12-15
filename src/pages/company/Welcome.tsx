@@ -1,4 +1,5 @@
-import { BookOpen, Loader2 } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
+import { MoonLoader } from 'react-spinners';
 import { PengertianSection } from '../../components/welcome/PengertianSection';
 import { SyaratKetentuanSection } from '../../components/welcome/SyaratKetentuanSection';
 import { HakKewajibanSection } from '../../components/welcome/HakKewajibanSection';
@@ -11,9 +12,9 @@ export default function Welcome() {
     if (loading) {
         return (
             <div className="flex min-h-[60vh] items-center justify-center">
-                <div className="text-center">
-                    <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
-                    <p className="mt-2 text-sm text-slate-600">Memuat panduan...</p>
+                <div className="flex flex-col items-center gap-3">
+                    <MoonLoader size={48} color="#419823" />
+                    <p className="text-slate-600 font-medium">Memuat panduan...</p>
                 </div>
             </div>
         );

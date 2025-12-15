@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Save, Loader2 } from 'lucide-react';
+import { Save } from 'lucide-react';
+import { MoonLoader, ClipLoader } from 'react-spinners';
 import { useWelcomeConfig } from '../../hooks/useWelcomeConfig';
 import HeroFooterConfig from '../../components/config/HeroFooterConfig';
 import PengertianConfig from '../../components/config/PengertianConfig';
@@ -31,9 +32,9 @@ export default function Config() {
     if (loading) {
         return (
             <div className="flex min-h-[60vh] items-center justify-center">
-                <div className="text-center">
-                    <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
-                    <p className="mt-2 text-sm text-slate-600">Memuat konfigurasi...</p>
+                <div className="flex flex-col items-center gap-3">
+                    <MoonLoader size={48} color="#419823" />
+                    <p className="text-slate-600 font-medium">Memuat konfigurasi...</p>
                 </div>
             </div>
         );
@@ -66,7 +67,7 @@ export default function Config() {
                 >
                     {saving ? (
                         <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <ClipLoader size={14} color="#ffffff" />
                             Menyimpan...
                         </>
                     ) : (
@@ -96,8 +97,8 @@ export default function Config() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition ${activeTab === tab.id
-                                        ? 'bg-blue-600 text-white'
-                                        : 'text-slate-600 hover:bg-slate-100'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'text-slate-600 hover:bg-slate-100'
                                     }`}
                             >
                                 {tab.label}
@@ -135,7 +136,7 @@ export default function Config() {
                 >
                     {saving ? (
                         <>
-                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <ClipLoader size={16} color="#ffffff" />
                             Menyimpan...
                         </>
                     ) : (

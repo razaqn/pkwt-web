@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { useContractList } from '../../hooks/useContractList';
 import { deleteDraftContract } from '../../lib/api';
+import { useState } from 'react';
+import { ClipLoader } from 'react-spinners';
 
 export default function StatusPantau() {
     const navigate = useNavigate();
@@ -24,6 +26,7 @@ export default function StatusPantau() {
         setStatusFilter,
         goToPage,
     } = useContractList();
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const statusBadgeStyles = {
         PENDING: 'bg-yellow-100 text-yellow-800',
@@ -42,12 +45,14 @@ export default function StatusPantau() {
     async function handleDeleteDraft(draftId: string) {
         if (!window.confirm('Yakin ingin menghapus draft ini?')) return;
 
+        setDeletingId(draftId);
         try {
             await deleteDraftContract(draftId);
             // Refresh list
             window.location.reload();
         } catch (err: any) {
             alert('Gagal menghapus draft: ' + err.message);
+            setDeletingId(null);
         }
     }
 
@@ -197,10 +202,12 @@ export default function StatusPantau() {
                                                     </button>
                                                     <button
                                                         onClick={() => handleDeleteDraft(contract.id)}
-                                                        className="inline-flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700"
+                                                        disabled={deletingId === contract.id}
+                                                        className="inline-flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50"
                                                     >
+                                                        {deletingId === contract.id && <ClipLoader size={12} color="#419823" />}
                                                         <Trash2 className="h-4 w-4" />
-                                                        Hapus
+                                                        {deletingId === contract.id ? 'Menghapus...' : 'Hapus'}
                                                     </button>
                                                 </div>
                                             ) : (

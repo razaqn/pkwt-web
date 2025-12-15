@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { Search, ChevronLeft, ChevronRight, Loader } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ClipLoader } from 'react-spinners';
 
 export interface AdminKaryawan {
     id: string;
@@ -81,9 +82,9 @@ export default function AdminKaryawanTable({
                         {loading ? (
                             <tr>
                                 <td colSpan={7} className="px-4 py-8 text-center">
-                                    <div className="flex items-center justify-center gap-2 text-slate-600">
-                                        <Loader className="h-4 w-4 animate-spin" />
-                                        <span>Memuat data...</span>
+                                    <div className="flex items-center justify-center gap-3">
+                                        <ClipLoader size={20} color="#419823" />
+                                        <span className="text-slate-600 font-medium">Memuat data...</span>
                                     </div>
                                 </td>
                             </tr>

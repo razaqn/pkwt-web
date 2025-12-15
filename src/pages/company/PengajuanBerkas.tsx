@@ -4,6 +4,7 @@ import { Calendar, Users, Clock, AlertCircle, Send, Upload, FileText } from 'luc
 import TabelNIKPengajuan from '../../components/TabelNIKPengajuan';
 import ModalKelengkapanData, { type KelengkapanDataForm } from '../../components/ModalKelengkapanData';
 import { useContractSubmission } from '../../hooks/useContractSubmission';
+import { ClipLoader, MoonLoader } from 'react-spinners';
 
 const MAX_FILE_SIZE_MB = 5;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -315,6 +316,7 @@ export default function PengajuanBerkas() {
                     disabled={submitLoading}
                     className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-6 py-2.5 font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition"
                 >
+                    {submitLoading && <ClipLoader size={14} color="#419823" />}
                     <FileText className="h-4 w-4" />
                     {draftId ? 'Perbarui Draf' : 'Simpan Draf'}
                 </button>
@@ -323,6 +325,7 @@ export default function PengajuanBerkas() {
                     disabled={!allDataComplete || submitLoading || contractStatus === 'pending'}
                     className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
+                    {submitLoading && <ClipLoader size={14} color="#ffffff" />}
                     <Send className="h-4 w-4" />
                     {submitLoading ? 'Mengirim...' : 'Ajukan Berkas'}
                 </button>

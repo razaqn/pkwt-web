@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
-import { Search, ChevronLeft, ChevronRight, Loader } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Company } from '../lib/api';
+import { ClipLoader } from 'react-spinners';
 
 interface AdminCompanyTableProps {
     data: Company[];
@@ -76,9 +77,9 @@ export default function AdminCompanyTable({
                         {loading ? (
                             <tr>
                                 <td colSpan={4} className="px-4 py-8 text-center">
-                                    <div className="flex items-center justify-center gap-2 text-slate-600">
-                                        <Loader className="h-4 w-4 animate-spin" />
-                                        <span>Memuat data perusahaan...</span>
+                                    <div className="flex items-center justify-center gap-3">
+                                        <ClipLoader size={20} color="#419823" />
+                                        <span className="text-slate-600 font-medium">Memuat data perusahaan...</span>
                                     </div>
                                 </td>
                             </tr>

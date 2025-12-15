@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Building2, Phone, MapPin, Globe, Info, Loader, AlertCircle, RotateCcw } from 'lucide-react';
+import { Building2, Phone, MapPin, Globe, Info, AlertCircle, RotateCcw } from 'lucide-react';
 import { getCompanyDetailById } from '../../lib/api';
 import type { CompanyProfileData } from '../../lib/api';
+import { MoonLoader } from 'react-spinners';
 
 export default function DetailCompany() {
     const { id } = useParams<{ id: string }>();
@@ -46,9 +47,9 @@ export default function DetailCompany() {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-12">
-                <div className="flex items-center gap-3 text-slate-600">
-                    <Loader className="h-5 w-5 animate-spin" />
-                    <span>Memuat detail perusahaan...</span>
+                <div className="flex flex-col items-center gap-3">
+                    <MoonLoader size={48} color="#419823" />
+                    <span className="text-slate-600 font-medium">Memuat detail perusahaan...</span>
                 </div>
             </div>
         );
