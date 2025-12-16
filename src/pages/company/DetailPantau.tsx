@@ -3,8 +3,11 @@ import {
     AlertCircle,
     ArrowLeft,
     RotateCcw,
+    Download,
 } from 'lucide-react';
+import { useDialog } from '../../hooks/useDialog';
 import { useContractDetail } from '../../hooks/useContractDetail';
+import { buildNikCsv, downloadCsv } from '../../lib/csv';
 import { MoonLoader } from 'react-spinners';
 import { EmptyState } from '../../components/dashboard/EmptyState';
 
@@ -13,6 +16,8 @@ export default function DetailPantau() {
     const navigate = useNavigate();
     const { contract, employees, comment, loading, error, refetch } =
         useContractDetail(contractId);
+
+    const dialog = useDialog();
 
     const statusBadgeStyles = {
         PENDING: {
@@ -80,6 +85,13 @@ export default function DetailPantau() {
     const totalEmployees = employees.length;
     const incompleteEmployees = employees.filter((e) => !e.data_complete).length;
 
+    // Download CSV of NIKs for rejected submissions
+    function downloadRejectedNiksCsv() {
+        const rows = employees.map((e) => e.nik ?? '').filter(Boolean);
+        const csv = buildNikCsv(rows);
+        downloadCsv(`rejected-niks-${contract?.id ?? 'untitled'}.csv`, csv);
+    }
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -101,6 +113,27 @@ export default function DetailPantau() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {/* Download CSV button shown only when status is REJECTED */}
+                    {statusKey === 'REJECTED' && (
+                        <button
+                            onClick={async () => {
+                                const confirmed = await dialog.confirm({
+                                    title: 'Unduh NIK',
+                                    message: 'Unduh file CSV berisi kolom NIK untuk pengajuan ulang?',
+                                    confirmText: 'Unduh',
+                                    cancelText: 'Batal',
+                                });
+                                if (!confirmed) return;
+                                downloadRejectedNiksCsv();
+                            }}
+                            className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary/30 bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-primary/5 transition-colors"
+                            aria-label="Unduh NIK sebagai CSV"
+                        >
+                            <Download className="h-4 w-4" />
+                            Unduh NIK (CSV)
+                        </button>
+                    )}
+
                     <button
                         onClick={() => refetch()}
                         className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary/30 bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-primary/5 transition-colors"
