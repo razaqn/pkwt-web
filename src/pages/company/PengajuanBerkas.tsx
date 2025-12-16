@@ -5,6 +5,7 @@ import TabelNIKPengajuan from '../../components/TabelNIKPengajuan';
 import ModalKelengkapanData, { type KelengkapanDataForm } from '../../components/ModalKelengkapanData';
 import { useContractSubmission } from '../../hooks/useContractSubmission';
 import { ClipLoader, MoonLoader } from 'react-spinners';
+import { useDialog } from '../../hooks/useDialog';
 
 const MAX_FILE_SIZE_MB = 5;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -25,6 +26,7 @@ export default function PengajuanBerkas() {
     const navigate = useNavigate();
     const location = useLocation();
     const contractData = location.state as ContractData | null;
+    const dialog = useDialog();
 
     // Use custom hook for contract submission logic
     const {
@@ -101,7 +103,11 @@ export default function PengajuanBerkas() {
         // Pass file to hook for submission
         const success = await submitContract(fileKontrak);
         if (success) {
-            alert('Pengajuan berkas berhasil dikirim!');
+            await dialog.alert({
+                title: 'Berhasil',
+                message: 'Pengajuan berkas berhasil dikirim!',
+                tone: 'success',
+            });
         }
     }
 
@@ -109,7 +115,11 @@ export default function PengajuanBerkas() {
         const newDraftId = await saveDraft();
         if (newDraftId) {
             setDraftId(newDraftId);
-            alert('Draf berhasil disimpan!'); // Replace with toast notification if available
+            await dialog.alert({
+                title: 'Draft tersimpan',
+                message: 'Draf berhasil disimpan!',
+                tone: 'success',
+            });
         }
     }
 

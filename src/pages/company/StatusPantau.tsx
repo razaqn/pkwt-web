@@ -13,9 +13,11 @@ import { deleteDraftContract } from '../../lib/api';
 import { useState } from 'react';
 import { ClipLoader } from 'react-spinners';
 import { EmptyState } from '../../components/dashboard/EmptyState';
+import { useDialog } from '../../hooks/useDialog';
 
 export default function StatusPantau() {
     const navigate = useNavigate();
+    const dialog = useDialog();
     const {
         contracts,
         loading,
@@ -44,7 +46,14 @@ export default function StatusPantau() {
     };
 
     async function handleDeleteDraft(draftId: string) {
-        if (!window.confirm('Yakin ingin menghapus draft ini?')) return;
+        const ok = await dialog.confirm({
+            title: 'Hapus draft ini?',
+            message: 'Draft akan dihapus permanen dan tidak bisa dikembalikan.',
+            confirmText: 'Hapus',
+            cancelText: 'Batal',
+            tone: 'error',
+        });
+        if (!ok) return;
 
         setDeletingId(draftId);
         try {
@@ -52,7 +61,11 @@ export default function StatusPantau() {
             setDeletingId(null);
             refetch();
         } catch (err: any) {
-            alert('Gagal menghapus draft: ' + err.message);
+            await dialog.alert({
+                title: 'Gagal menghapus draft',
+                message: err?.message ? String(err.message) : 'Terjadi kesalahan. Silakan coba lagi.',
+                tone: 'error',
+            });
             setDeletingId(null);
         }
     }

@@ -21,6 +21,7 @@ import DetailPantau from './pages/company/DetailPantau';
 import ProfilePerusahaan from './pages/company/ProfilePerusahaan';
 import { RequireAuth, RequireGuest } from './router/guards';
 import { getRole } from './store/auth';
+import { DialogProvider } from './hooks/useDialog';
 
 function DashboardWrapper() {
   const role = getRole();
@@ -35,29 +36,31 @@ function DashboardWrapper() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<RequireAuth><AppLayout><DashboardWrapper /></AppLayout></RequireAuth>} />
-        <Route path="/welcome" element={<RequireAuth><AppLayout><Welcome /></AppLayout></RequireAuth>} />
-        <Route path="/admin/list-employees" element={<RequireAuth><AppLayout><ListEmployees /></AppLayout></RequireAuth>} />
-        <Route path="/admin/detail-karyawan/:id" element={<RequireAuth><AppLayout><AdminDetailKaryawan /></AppLayout></RequireAuth>} />
-        <Route path="/admin/list-companies" element={<RequireAuth><AppLayout><ListCompanies /></AppLayout></RequireAuth>} />
-        <Route path="/admin/detail-company/:id" element={<RequireAuth><AppLayout><DetailCompany /></AppLayout></RequireAuth>} />
-        <Route path="/admin/approvals" element={<RequireAuth><AppLayout><ApprovalList /></AppLayout></RequireAuth>} />
-        <Route path="/admin/approvals/:contractId" element={<RequireAuth><AppLayout><ApprovalDetail /></AppLayout></RequireAuth>} />
-        <Route path="/admin/config" element={<RequireAuth><AppLayout><Config /></AppLayout></RequireAuth>} />
-        <Route path="/list-karyawan" element={<RequireAuth><AppLayout><ListKaryawan /></AppLayout></RequireAuth>} />
-        <Route path="/detail-karyawan/:id" element={<RequireAuth><AppLayout><DetailKaryawan /></AppLayout></RequireAuth>} />
-        <Route path="/form-kontrak" element={<RequireAuth><AppLayout><FormKontrak /></AppLayout></RequireAuth>} />
-        <Route path="/pengajuan-berkas" element={<RequireAuth><AppLayout><PengajuanBerkas /></AppLayout></RequireAuth>} />
-        <Route path="/status-pantau" element={<RequireAuth><AppLayout><StatusPantau /></AppLayout></RequireAuth>} />
-        <Route path="/status-pantau/:contractId" element={<RequireAuth><AppLayout><DetailPantau /></AppLayout></RequireAuth>} />
-        <Route path="/profil-perusahaan" element={<RequireAuth><AppLayout><ProfilePerusahaan /></AppLayout></RequireAuth>} />
-        <Route path="/login" element={<RequireGuest><LoginCompany /></RequireGuest>} />
-        <Route path="/login/admin" element={<RequireGuest><LoginAdmin /></RequireGuest>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <DialogProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<RequireAuth><AppLayout><DashboardWrapper /></AppLayout></RequireAuth>} />
+          <Route path="/welcome" element={<RequireAuth><AppLayout><Welcome /></AppLayout></RequireAuth>} />
+          <Route path="/admin/list-employees" element={<RequireAuth><AppLayout><ListEmployees /></AppLayout></RequireAuth>} />
+          <Route path="/admin/detail-karyawan/:id" element={<RequireAuth><AppLayout><AdminDetailKaryawan /></AppLayout></RequireAuth>} />
+          <Route path="/admin/list-companies" element={<RequireAuth><AppLayout><ListCompanies /></AppLayout></RequireAuth>} />
+          <Route path="/admin/detail-company/:id" element={<RequireAuth><AppLayout><DetailCompany /></AppLayout></RequireAuth>} />
+          <Route path="/admin/approvals" element={<RequireAuth><AppLayout><ApprovalList /></AppLayout></RequireAuth>} />
+          <Route path="/admin/approvals/:contractId" element={<RequireAuth><AppLayout><ApprovalDetail /></AppLayout></RequireAuth>} />
+          <Route path="/admin/config" element={<RequireAuth><AppLayout><Config /></AppLayout></RequireAuth>} />
+          <Route path="/list-karyawan" element={<RequireAuth><AppLayout><ListKaryawan /></AppLayout></RequireAuth>} />
+          <Route path="/detail-karyawan/:id" element={<RequireAuth><AppLayout><DetailKaryawan /></AppLayout></RequireAuth>} />
+          <Route path="/form-kontrak" element={<RequireAuth><AppLayout><FormKontrak /></AppLayout></RequireAuth>} />
+          <Route path="/pengajuan-berkas" element={<RequireAuth><AppLayout><PengajuanBerkas /></AppLayout></RequireAuth>} />
+          <Route path="/status-pantau" element={<RequireAuth><AppLayout><StatusPantau /></AppLayout></RequireAuth>} />
+          <Route path="/status-pantau/:contractId" element={<RequireAuth><AppLayout><DetailPantau /></AppLayout></RequireAuth>} />
+          <Route path="/profil-perusahaan" element={<RequireAuth><AppLayout><ProfilePerusahaan /></AppLayout></RequireAuth>} />
+          <Route path="/login" element={<RequireGuest><LoginCompany /></RequireGuest>} />
+          <Route path="/login/admin" element={<RequireGuest><LoginAdmin /></RequireGuest>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </DialogProvider>
   );
 }
 
