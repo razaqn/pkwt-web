@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import FormKontrakPKWT, { type FormKontrakPKWTData } from '../../components/FormKontrakPKWT';
 import FormKontrakPKWTT, { type FormKontrakPKWTTData } from '../../components/FormKontrakPKWTT';
 import { checkNIKs, getDraftContractDetail } from '../../lib/api';
+import { formatDateToYMD } from '../../lib/date';
 import { MoonLoader, ClipLoader } from 'react-spinners';
 
 const MAX_FILE_SIZE_MB = 5;
@@ -60,14 +61,14 @@ export default function FormKontrak() {
                             id: crypto.randomUUID(),
                             nik
                         })),
-                        startDate: draft.start_date,
+                        startDate: formatDateToYMD(draft.start_date) || draft.start_date,
                         durasi: draft.duration_months || 0,
                     });
                 } else {
                     setActiveTab('PKWTT');
                     setPkwttData({
                         nik: draft.employee_niks[0] || '',
-                        startDate: draft.start_date,
+                        startDate: formatDateToYMD(draft.start_date) || draft.start_date,
                         fileKontrak: null, // File cannot be pre-filled
                     });
                 }
