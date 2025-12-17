@@ -106,7 +106,7 @@ const initialConfig: WelcomeConfig = {
     hero: {
         enabled: true,
         title: 'Panduan E-PKWT',
-        subtitle: 'Sistem Elektronik Perjanjian Kerja Waktu Tertentu',
+        subtitle: 'Sistem Aplikasi Pencatatan PKWT',
         description: 'Selamat datang di sistem E-PKWT Dinas Ketenagakerjaan Kabupaten Paser. Pelajari panduan lengkap tentang PKWT, syarat dan ketentuan, hak dan kewajiban, serta cara mengakses layanan konsultasi kami.',
     },
     footerCTA: {

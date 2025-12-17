@@ -35,7 +35,7 @@ export default function LoginCompany() {
         <div className="flex justify-center mb-6">
           <img src="/siap-pkwt-logo-1.png" alt="Adikara Logo" className="h-40 w-auto" />
         </div>
-        <p className="mt-2 text-center text-slate-600">Sistem Elektronik Perjanjian Kerja Waktu Tertentu</p>
+        <p className="mt-2 text-center text-slate-600">Sistem Aplikasi Pencatatan PKWT</p>
         <div className="mt-6 mx-auto w-full max-w-md rounded-2xl bg-white shadow-xl border border-slate-200">
           <div className="p-6">
             <form onSubmit={onSubmit} className="space-y-4">

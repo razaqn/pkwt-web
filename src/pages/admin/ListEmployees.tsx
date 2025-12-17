@@ -87,7 +87,7 @@ export default function ListEmployees() {
             {/* Header */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <p className="text-sm font-semibold text-primary">Overview</p>
+                    <p className="text-sm font-semibold text-primary">Karyawan</p>
                     <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">List Karyawan</h1>
                     <p className="mt-1 text-sm text-slate-600">Data karyawan PKWT dan PKWTT dari semua perusahaan.</p>
                 </div>

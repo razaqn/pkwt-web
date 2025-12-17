@@ -60,7 +60,7 @@ export default function HeroFooterConfig({ config, onChange }: HeroFooterConfigP
                             value={config.hero.subtitle}
                             onChange={(e) => updateHero('subtitle', e.target.value)}
                             className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                            placeholder="Sistem Elektronik Perjanjian Kerja Waktu Tertentu"
+                            placeholder="Sistem Aplikasi Pencatatan PKWT"
                         />
                     </div>
 

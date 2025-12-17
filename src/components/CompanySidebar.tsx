@@ -24,10 +24,10 @@ export default function CompanySidebar({ sidebarOpen, setSidebarOpen }: CompanyS
             {sidebarOpen && <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black/40 z-30 md:hidden" />}
 
             {/* Sidebar Container */}
-            <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-40 w-64 md:w-56 transform transition bg-primary text-slate-100 flex flex-col`}>
+            <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-40 w-64 md:w-56 transform transition bg-[#48A32A] text-slate-100 flex flex-col`}>
                 {/* Header Sidebar */}
                 <div className="px-4 py-5 flex justify-center">
-                    <img src="/siap-pkwt-logo-2.png" alt="Adikara Logo" className="h-20 w-auto" />
+                    <img src="/siap-pkwt-logo-1.png" alt="Adikara Logo" className="h-15 w-auto" />
                 </div>
 
                 {/* Divider */}
@@ -99,7 +99,7 @@ export default function CompanySidebar({ sidebarOpen, setSidebarOpen }: CompanyS
                 {/* Footer Sidebar */}
                 <div className="p-4 border-t border-white/10">
                     <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center text-sm font-semibold text-white">
+                        <div className="h-9 w-9 rounded-full bg-[#48A32A] flex items-center justify-center text-sm font-semibold text-white">
                             {role?.substring(0, 2)?.toUpperCase() || 'US'}
                         </div>
                         <div className="text-[13px]">
