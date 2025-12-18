@@ -133,6 +133,7 @@ export interface EmployeeDetail {
   place_of_birth: string | null;
   birthdate: string | null; // YYYY-MM-DD
   birthdate_formatted: string | null; // e.g., "15 Januari 1990"
+  ktp_file_url?: string | null; // Optional: URL foto KTP jika tersedia
   company_id: string;
   current_contract_id: string | null;
   contracts: Contract[];

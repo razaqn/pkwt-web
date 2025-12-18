@@ -4,11 +4,12 @@ import type { ApprovalEmployee } from '../lib/api';
 
 interface ApprovalEmployeeTableProps {
     employees: ApprovalEmployee[];
+    onViewDetail?: (employee: ApprovalEmployee) => void;
 }
 
 const ITEMS_PER_PAGE = 10;
 
-export default function ApprovalEmployeeTable({ employees }: ApprovalEmployeeTableProps) {
+export default function ApprovalEmployeeTable({ employees, onViewDetail }: ApprovalEmployeeTableProps) {
     const [currentPage, setCurrentPage] = useState(1);
 
     const totalPages = Math.ceil(employees.length / ITEMS_PER_PAGE);
@@ -57,12 +58,17 @@ export default function ApprovalEmployeeTable({ employees }: ApprovalEmployeeTab
                                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
                                     Jumlah Kontrak Sebelumnya
                                 </th>
+                                {onViewDetail && (
+                                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
+                                        Aksi
+                                    </th>
+                                )}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200 bg-white">
                             {currentEmployees.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="px-4 py-16 text-center text-slate-500">
+                                    <td colSpan={onViewDetail ? 5 : 4} className="px-4 py-16 text-center text-slate-500">
                                         Tidak ada data karyawan
                                     </td>
                                 </tr>
@@ -82,6 +88,16 @@ export default function ApprovalEmployeeTable({ employees }: ApprovalEmployeeTab
                                         <td className="px-4 py-4 text-slate-700">
                                             {employee.previous_contract_count}
                                         </td>
+                                        {onViewDetail && (
+                                            <td className="px-4 py-4 text-slate-700">
+                                                <button
+                                                    onClick={() => onViewDetail(employee)}
+                                                    className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary/90"
+                                                >
+                                                    Lihat Detail
+                                                </button>
+                                            </td>
+                                        )}
                                     </tr>
                                 ))
                             )}

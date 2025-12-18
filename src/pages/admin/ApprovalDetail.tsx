@@ -14,9 +14,11 @@ import {
 import { useState } from 'react';
 import { MoonLoader } from 'react-spinners';
 import { useApprovalDetail } from '../../hooks/useApprovalDetail';
-import { approveContract, rejectContract } from '../../lib/api';
+import { approveContract, getEmployeeDetail, rejectContract } from '../../lib/api';
+import type { ApprovalEmployee, EmployeeDetail } from '../../lib/api';
 import ApprovalEmployeeTable from '../../components/ApprovalEmployeeTable';
 import ApprovalActionModal from '../../components/ApprovalActionModal';
+import ApprovalEmployeeDetailModal from '../../components/ApprovalEmployeeDetailModal';
 
 export default function ApprovalDetail() {
     const { contractId } = useParams<{ contractId: string }>();
@@ -30,6 +32,12 @@ export default function ApprovalDetail() {
     const [actionLoading, setActionLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+
+    const [employeeModalOpen, setEmployeeModalOpen] = useState(false);
+    const [selectedEmployee, setSelectedEmployee] = useState<ApprovalEmployee | null>(null);
+    const [employeeDetail, setEmployeeDetail] = useState<EmployeeDetail | null>(null);
+    const [employeeDetailLoading, setEmployeeDetailLoading] = useState(false);
+    const [employeeDetailError, setEmployeeDetailError] = useState('');
 
     const handleOpenModal = (type: 'approve' | 'reject') => {
         setModalState({ isOpen: true, type });
@@ -71,6 +79,34 @@ export default function ApprovalDetail() {
         } finally {
             setActionLoading(false);
         }
+    };
+
+    const fetchEmployeeDetail = async (employeeId: string) => {
+        setEmployeeDetailLoading(true);
+        setEmployeeDetailError('');
+
+        try {
+            const res = await getEmployeeDetail(employeeId);
+            setEmployeeDetail(res.data);
+        } catch (err: any) {
+            setEmployeeDetailError(err?.message || 'Terjadi kesalahan');
+        } finally {
+            setEmployeeDetailLoading(false);
+        }
+    };
+
+    const handleOpenEmployeeDetail = (employee: ApprovalEmployee) => {
+        setSelectedEmployee(employee);
+        setEmployeeDetail(null);
+        setEmployeeModalOpen(true);
+        fetchEmployeeDetail(employee.id);
+    };
+
+    const handleCloseEmployeeModal = () => {
+        setEmployeeModalOpen(false);
+        setEmployeeDetail(null);
+        setEmployeeDetailError('');
+        setSelectedEmployee(null);
     };
 
     const handleDownload = () => {
@@ -359,7 +395,7 @@ export default function ApprovalDetail() {
                     <h2 className="text-sm font-semibold text-slate-900">Karyawan Terkait</h2>
                 </div>
                 <div className="p-6">
-                    <ApprovalEmployeeTable employees={employees} />
+                    <ApprovalEmployeeTable employees={employees} onViewDetail={handleOpenEmployeeDetail} />
                 </div>
             </div>
 
@@ -370,6 +406,16 @@ export default function ApprovalDetail() {
                 onSubmit={handleSubmitAction}
                 actionType={modalState.type}
                 loading={actionLoading}
+            />
+
+            <ApprovalEmployeeDetailModal
+                isOpen={employeeModalOpen}
+                onClose={handleCloseEmployeeModal}
+                loading={employeeDetailLoading}
+                error={employeeDetailError}
+                employee={employeeDetail}
+                meta={{ full_name: selectedEmployee?.full_name, nik: selectedEmployee?.nik }}
+                onRetry={selectedEmployee ? () => fetchEmployeeDetail(selectedEmployee.id) : undefined}
             />
         </div>
     );
