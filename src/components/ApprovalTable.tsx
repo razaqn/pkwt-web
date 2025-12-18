@@ -12,6 +12,8 @@ interface ApprovalTableProps {
     totalPages?: number;
     onSearchChange?: (query: string) => void;
     searchQuery?: string;
+    statusFilter?: 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED';
+    onStatusChange?: (status: 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED') => void;
 }
 
 export default function ApprovalTable({
@@ -23,6 +25,8 @@ export default function ApprovalTable({
     totalPages = 1,
     onSearchChange,
     searchQuery = '',
+    statusFilter = 'PENDING',
+    onStatusChange,
 }: ApprovalTableProps) {
     const handleSearchChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,6 +47,13 @@ export default function ApprovalTable({
         }
     }, [currentPage, totalPages, onPageChange]);
 
+    const handleStatusChange = useCallback(
+        (e: React.ChangeEvent<HTMLSelectElement>) => {
+            onStatusChange?.(e.target.value as 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED');
+        },
+        [onStatusChange]
+    );
+
     const formatDate = (dateString: string): string => {
         const date = new Date(dateString);
         return date.toLocaleDateString('id-ID', {
@@ -61,16 +72,31 @@ export default function ApprovalTable({
         <div className="space-y-4">
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    {/* Search Input */}
-                    <div className="relative w-full md:max-w-md">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="Cari perusahaan..."
-                            value={searchQuery}
-                            onChange={handleSearchChange}
-                            className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-4 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        />
+                    {/* Search & Filter */}
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2 md:gap-3">
+                        <div className="relative w-full sm:w-64 md:w-72">
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Cari perusahaan..."
+                                value={searchQuery}
+                                onChange={handleSearchChange}
+                                className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-4 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            />
+                        </div>
+
+                        <div className="w-full sm:w-52">
+                            <select
+                                value={statusFilter}
+                                onChange={handleStatusChange}
+                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800 shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            >
+                                <option value="ALL">Semua Status</option>
+                                <option value="PENDING">Menunggu</option>
+                                <option value="APPROVED">Disetujui</option>
+                                <option value="REJECTED">Ditolak</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div className="flex items-center justify-between gap-3 md:justify-end">

@@ -4,6 +4,8 @@ import type { ApprovalListItem, GetApprovalListParams } from '../lib/api';
 
 const LIMIT_PER_PAGE = 7;
 
+type ApprovalStatusFilter = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED';
+
 interface UseApprovalListResult {
     approvals: ApprovalListItem[];
     loading: boolean;
@@ -12,7 +14,9 @@ interface UseApprovalListResult {
     totalPages: number;
     totalCount: number;
     searchQuery: string;
+    statusFilter: ApprovalStatusFilter;
     setSearchQuery: (query: string) => void;
+    setStatusFilter: (status: ApprovalStatusFilter) => void;
     goToPage: (page: number) => void;
 }
 
@@ -23,6 +27,7 @@ export function useApprovalList(): UseApprovalListResult {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState<ApprovalStatusFilter>('PENDING');
 
     useEffect(() => {
         let isMounted = true;
@@ -35,8 +40,11 @@ export function useApprovalList(): UseApprovalListResult {
                 const params: GetApprovalListParams = {
                     limit: LIMIT_PER_PAGE,
                     offset: (currentPage - 1) * LIMIT_PER_PAGE,
-                    status: 'PENDING', // Only show pending approvals
                 };
+
+                if (statusFilter !== 'ALL') {
+                    params.status = statusFilter;
+                }
 
                 if (searchQuery.trim()) {
                     params.search = searchQuery;
@@ -64,7 +72,7 @@ export function useApprovalList(): UseApprovalListResult {
         return () => {
             isMounted = false;
         };
-    }, [currentPage, searchQuery]);
+    }, [currentPage, searchQuery, statusFilter]);
 
     const totalPages = Math.max(1, Math.ceil(totalCount / LIMIT_PER_PAGE));
 
@@ -79,6 +87,11 @@ export function useApprovalList(): UseApprovalListResult {
         setCurrentPage(1); // Reset to page 1 on search
     };
 
+    const handleSetStatusFilter = (status: ApprovalStatusFilter) => {
+        setStatusFilter(status);
+        setCurrentPage(1); // Reset to page 1 on status change
+    };
+
     return {
         approvals,
         loading,
@@ -87,7 +100,9 @@ export function useApprovalList(): UseApprovalListResult {
         totalPages,
         totalCount,
         searchQuery,
+        statusFilter,
         setSearchQuery: handleSetSearchQuery,
+        setStatusFilter: handleSetStatusFilter,
         goToPage,
     };
 }

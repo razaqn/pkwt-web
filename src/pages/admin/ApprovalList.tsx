@@ -14,8 +14,18 @@ export default function ApprovalList() {
         totalCount,
         searchQuery,
         setSearchQuery,
+        statusFilter,
+        setStatusFilter,
         goToPage,
     } = useApprovalList();
+
+    const statusBadgeLabel = statusFilter === 'ALL'
+        ? 'Total'
+        : statusFilter === 'PENDING'
+            ? 'Menunggu'
+            : statusFilter === 'APPROVED'
+                ? 'Disetujui'
+                : 'Ditolak';
 
     const handleLihatDetail = (contractId: string) => {
         navigate(`/admin/approvals/${contractId}`);
@@ -32,7 +42,7 @@ export default function ApprovalList() {
                     </div>
                     <div className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm">
                         <FileCheck className="h-4 w-4 text-primary" />
-                        Pending: {totalCount.toLocaleString('id-ID')}
+                        {statusBadgeLabel}: {totalCount.toLocaleString('id-ID')}
                     </div>
                 </div>
 
@@ -67,7 +77,7 @@ export default function ApprovalList() {
                 </div>
                 <div className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm">
                     <FileCheck className="h-4 w-4 text-primary" />
-                    Pending: {totalCount.toLocaleString('id-ID')}
+                    {statusBadgeLabel}: {totalCount.toLocaleString('id-ID')}
                 </div>
             </div>
 
@@ -81,6 +91,8 @@ export default function ApprovalList() {
                 totalPages={totalPages}
                 onSearchChange={setSearchQuery}
                 searchQuery={searchQuery}
+                statusFilter={statusFilter}
+                onStatusChange={setStatusFilter}
             />
         </div>
     );

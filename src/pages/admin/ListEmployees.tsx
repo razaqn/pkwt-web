@@ -104,7 +104,6 @@ export default function ListEmployees() {
 
     const companyFilterControl = (
         <label className="flex flex-col gap-1 text-xs text-slate-500 min-w-[200px]">
-            <span className="text-xs font-semibold text-slate-600">Perusahaan</span>
             <select
                 value={selectedCompanyId}
                 onChange={handleCompanyChange}
