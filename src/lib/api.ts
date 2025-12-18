@@ -87,6 +87,7 @@ export async function getEmployeesByContract(
 // Admin-wide employee listing (no company_id filter)
 export interface GetAllEmployeesParams {
   contract_type: 'PKWT' | 'PKWTT';
+  company_id?: string;
   approved?: boolean;
   limit?: number;
   offset?: number;
@@ -97,6 +98,9 @@ export async function getAllEmployeesByContract(
 ): Promise<GetEmployeesByContractResponse> {
   const queryParams = new URLSearchParams();
   queryParams.append('contract_type', params.contract_type);
+  if (params.company_id) {
+    queryParams.append('company_id', params.company_id);
+  }
   if (params.approved !== undefined) {
     queryParams.append('approved', String(params.approved));
   }

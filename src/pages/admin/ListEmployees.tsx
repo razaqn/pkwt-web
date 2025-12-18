@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
+import type { ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, RotateCcw } from 'lucide-react';
 import AdminKaryawanTable from '../../components/AdminKaryawanTable';
 import { useAllEmployees } from '../../hooks/useAllEmployees';
+import { useAllCompanies } from '../../hooks/useAllCompanies';
 import { getUserFriendlyErrorMessage } from '../../lib/errors';
 import type { AdminKaryawan } from '../../components/AdminKaryawanTable';
 
@@ -38,6 +40,7 @@ function transformEmployeeToAdminKaryawan(employee: any): AdminKaryawan {
             employee.latest_contract?.start_date,
             employee.latest_contract?.duration_months
         ),
+        companyId: employee.company_id,
     };
 }
 
@@ -46,12 +49,19 @@ export default function ListEmployees() {
     const [activeTab, setActiveTab] = useState<ContractType>('PKWT');
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCompanyId, setSelectedCompanyId] = useState('');
 
-    // Fetch employees based on contract type (admin-wide, no company filter)
+    // Fetch employees based on contract type (admin-wide, optionally filtered by company)
     const { employees, loading, error, pagination } = useAllEmployees({
         contract_type: activeTab,
+        company_id: selectedCompanyId || undefined,
         limit: ITEMS_PER_PAGE,
         offset: (currentPage - 1) * ITEMS_PER_PAGE,
+    });
+
+    const { companies, loading: companiesLoading } = useAllCompanies({
+        limit: 100,
+        offset: 0,
     });
 
     const totalItems = pagination.total;
@@ -65,11 +75,16 @@ export default function ListEmployees() {
 
     // Filter data based on search query (client-side search)
     const filteredData: AdminKaryawan[] = useMemo(
-        () => tableData.filter(karyawan =>
-            karyawan.namaLengkap.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            karyawan.perusahaan.toLowerCase().includes(searchQuery.toLowerCase())
-        ),
-        [tableData, searchQuery]
+        () => tableData.filter(karyawan => {
+            const matchesSearch =
+                karyawan.namaLengkap.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                karyawan.perusahaan.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesCompany =
+                !selectedCompanyId || karyawan.companyId === selectedCompanyId;
+
+            return matchesSearch && matchesCompany;
+        }),
+        [tableData, searchQuery, selectedCompanyId]
     );
 
     const handleLihatDetail = (karyawanId: string) => {
@@ -81,6 +96,30 @@ export default function ListEmployees() {
         setCurrentPage(1); // Reset ke halaman pertama saat ganti tab
         setSearchQuery(''); // Reset search saat ganti tab
     };
+
+    const handleCompanyChange = (event: ChangeEvent<HTMLSelectElement>) => {
+        setSelectedCompanyId(event.target.value);
+        setCurrentPage(1);
+    };
+
+    const companyFilterControl = (
+        <label className="flex flex-col gap-1 text-xs text-slate-500 min-w-[200px]">
+            <span className="text-xs font-semibold text-slate-600">Perusahaan</span>
+            <select
+                value={selectedCompanyId}
+                onChange={handleCompanyChange}
+                disabled={companiesLoading}
+                className="rounded-lg border border-slate-300 bg-white py-1.5 px-3 text-sm text-slate-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:cursor-not-allowed"
+            >
+                <option value="">Semua Perusahaan</option>
+                {companies.map(company => (
+                    <option key={company.id} value={company.id}>
+                        {company.company_name}
+                    </option>
+                ))}
+            </select>
+        </label>
+    );
 
     return (
         <div className="space-y-6">
@@ -150,6 +189,7 @@ export default function ListEmployees() {
                 totalItems={totalItems}
                 onSearchChange={setSearchQuery}
                 searchQuery={searchQuery}
+                filterControls={companyFilterControl}
             />
         </div>
     );

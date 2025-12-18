@@ -55,7 +55,7 @@ export function useAllEmployees(
         return () => {
             isMounted = false;
         };
-    }, [params.contract_type, params.approved, params.limit, params.offset]);
+    }, [params.contract_type, params.company_id, params.approved, params.limit, params.offset]);
 
     return { employees, loading, error, pagination };
 }

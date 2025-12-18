@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import type { ReactNode } from 'react';
 import { Search, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { ClipLoader } from 'react-spinners';
 
@@ -10,6 +11,7 @@ export interface AdminKaryawan {
     perusahaan: string;
     kontrakSekarang: string;
     sisaWaktuKontrak: number; // dalam minggu
+    companyId: string;
 }
 
 interface AdminKaryawanTableProps {
@@ -22,6 +24,7 @@ interface AdminKaryawanTableProps {
     totalItems?: number;
     onSearchChange?: (query: string) => void;
     searchQuery?: string;
+    filterControls?: ReactNode;
 }
 
 export default function AdminKaryawanTable({
@@ -34,6 +37,7 @@ export default function AdminKaryawanTable({
     totalItems,
     onSearchChange,
     searchQuery = '',
+    filterControls,
 }: AdminKaryawanTableProps) {
     const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         if (onSearchChange) {
@@ -60,20 +64,21 @@ export default function AdminKaryawanTable({
         <div className="space-y-4">
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    {/* Search Field */}
-                    <div className="relative w-full md:max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="Cari nama karyawan atau perusahaan..."
-                            disabled={loading}
-                            value={searchQuery}
-                            onChange={handleSearch}
-                            className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-4 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:cursor-not-allowed"
-                        />
+                    <div className="flex flex-1 flex-wrap items-center gap-3">
+                        <div className="relative w-full md:w-80">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Cari nama karyawan atau perusahaan..."
+                                disabled={loading}
+                                value={searchQuery}
+                                onChange={handleSearch}
+                                className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-4 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:cursor-not-allowed"
+                            />
+                        </div>
+                        {filterControls}
                     </div>
-
-                    <div className="flex items-center justify-between gap-3 md:justify-end">
+                    <div className="flex items-center gap-3 justify-end">
                         <div className="text-sm text-slate-600">
                             {typeof totalItems === 'number' ? (
                                 <span>
