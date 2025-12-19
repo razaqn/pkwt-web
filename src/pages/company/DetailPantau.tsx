@@ -4,6 +4,7 @@ import {
     ArrowLeft,
     RotateCcw,
     Download,
+    FileText,
 } from 'lucide-react';
 import { useDialog } from '../../hooks/useDialog';
 import { useContractDetail } from '../../hooks/useContractDetail';
@@ -112,7 +113,29 @@ export default function DetailPantau() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                    {/* Submission file (company-uploaded contract) */}
+                    {contract.submission_file_url && (
+                        <button
+                            onClick={() => window.open(contract.submission_file_url!, '_blank')}
+                            className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+                        >
+                            <FileText className="h-4 w-4" />
+                            Unduh Kontrak (Perusahaan)
+                        </button>
+                    )}
+
+                    {/* Approval file (admin-uploaded) */}
+                    {contract.approval_file_url && (
+                        <button
+                            onClick={() => window.open(contract.approval_file_url!, '_blank')}
+                            className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+                        >
+                            <Download className="h-4 w-4" />
+                            Unduh Dokumen Persetujuan
+                        </button>
+                    )}
+
                     {/* Download CSV button shown only when status is REJECTED */}
                     {statusKey === 'REJECTED' && (
                         <button

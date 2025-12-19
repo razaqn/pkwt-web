@@ -49,7 +49,7 @@ export default function ApprovalDetail() {
         setModalState({ isOpen: false, type: 'approve' });
     };
 
-    const handleSubmitAction = async (comment: string) => {
+    const handleSubmitAction = async ({ comment, file }: { comment: string; file: File }) => {
         if (!contractId) return;
 
         setActionLoading(true);
@@ -57,10 +57,10 @@ export default function ApprovalDetail() {
 
         try {
             if (modalState.type === 'approve') {
-                await approveContract(contractId, comment);
+                await approveContract(contractId, { comment, file });
                 setSuccessMessage('Kontrak berhasil disetujui');
             } else {
-                await rejectContract(contractId, comment);
+                await rejectContract(contractId, { comment, file });
                 setSuccessMessage('Kontrak berhasil ditolak');
             }
 
@@ -109,10 +109,14 @@ export default function ApprovalDetail() {
         setSelectedEmployee(null);
     };
 
-    const handleDownload = () => {
-        if (approval?.contract.file_url) {
-            window.open(approval.contract.file_url, '_blank');
-        }
+    const handleDownloadSubmission = () => {
+        const url = approval?.contract.submission_file_url || approval?.contract.file_url;
+        if (url) window.open(url, '_blank');
+    };
+
+    const handleDownloadApproval = () => {
+        const url = approval?.contract.approval_file_url;
+        if (url) window.open(url, '_blank');
     };
 
     const formatDate = (dateString: string): string => {
@@ -260,13 +264,22 @@ export default function ApprovalDetail() {
 
                         {/* Action Buttons */}
                         <div className="flex flex-wrap gap-2">
-                            {contract.file_url && (
+                            {(contract.submission_file_url || contract.file_url) && (
                                 <button
-                                    onClick={handleDownload}
+                                    onClick={handleDownloadSubmission}
                                     className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
                                 >
                                     <Download className="h-4 w-4" />
                                     Unduh Dokumen
+                                </button>
+                            )}
+                            {contract.approval_file_url && (
+                                <button
+                                    onClick={handleDownloadApproval}
+                                    className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                                >
+                                    <Download className="h-4 w-4" />
+                                    Unduh Dokumen Persetujuan
                                 </button>
                             )}
                             <button

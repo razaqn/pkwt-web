@@ -1,4 +1,5 @@
 import { request } from './http';
+import { fileToBase64 } from './utils';
 
 export const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -393,6 +394,9 @@ export interface ContractApplicationDetail {
   contract_type: 'PKWT' | 'PKWTT';
   approval_status: 'PENDING' | 'REJECTED' | 'APPROVED';
   admin_comment: string | null; // Admin comment (single text)
+  approval_file_url?: string | null; // Admin-uploaded approval PDF
+  submission_file_url?: string | null; // Company-uploaded contract PDF
+  file_url?: string | null; // alias from backend for submission
 }
 
 export interface GetContractApplicationDetailResponse {
@@ -412,15 +416,45 @@ export async function getContractApplicationDetail(
     `${API_BASE}/api/contracts/applications/${contractId}`
   );
 
+  // Helper to normalize approval file URL across shapes/keys
+  const pickApprovalFileUrl = (data: Record<string, any>) =>
+    data?.approval_file_url ?? null;
+
+  const pickSubmissionFileUrl = (data: Record<string, any>) =>
+    data?.submission_file_url ?? data?.file_url ?? null;
+
   // Handle nested response (PKWT returns { contract, company, employees })
   if ('contract' in response.data) {
+    const nested = response.data as { contract: ContractApplicationDetail } & Record<string, any>;
+    const approvalFileUrl = pickApprovalFileUrl(nested) ?? pickApprovalFileUrl(nested.contract) ?? null;
+    const submissionFileUrl = pickSubmissionFileUrl(nested) ?? pickSubmissionFileUrl(nested.contract) ?? null;
+
     return {
       ok: response.ok,
-      data: response.data.contract
+      data: {
+        ...nested.contract,
+        approval_file_url: approvalFileUrl,
+        submission_file_url: submissionFileUrl,
+        file_url: submissionFileUrl,
+      },
     };
   }
 
   // Handle flat response (PKWTT returns direct contract data)
+  if (response?.data) {
+    const approvalFileUrl = pickApprovalFileUrl(response.data as Record<string, any>);
+    const submissionFileUrl = pickSubmissionFileUrl(response.data as Record<string, any>);
+    return {
+      ...response,
+      data: {
+        ...(response.data as ContractApplicationDetail),
+        approval_file_url: approvalFileUrl,
+        submission_file_url: submissionFileUrl,
+        file_url: submissionFileUrl,
+      },
+    };
+  }
+
   return response;
 }
 
@@ -610,6 +644,8 @@ export interface ApprovalDetail {
     admin_comment: string | null;
     submission_notes: string | null;
     file_url: string | null;
+    submission_file_url?: string | null; // Company-uploaded contract PDF (alias: file_url)
+    approval_file_url?: string | null; // Admin-uploaded approval/rejection PDF
   };
   company: {
     id: string;
@@ -618,6 +654,11 @@ export interface ApprovalDetail {
     address: string;
   };
   employees: ApprovalEmployee[];
+}
+
+export interface ApprovalActionPayload {
+  comment?: string;
+  file: File;
 }
 
 export interface GetApprovalListParams {
@@ -672,13 +713,23 @@ export async function getApprovalDetail(
 // Approve contract application (admin only)
 export async function approveContract(
   contractId: string,
-  comment?: string
+  payload: ApprovalActionPayload | string
 ): Promise<{ ok: boolean; message: string }> {
+  if (typeof payload === 'string') {
+    throw new Error('File PDF wajib diunggah untuk persetujuan');
+  }
+
+  const fileBase64 = await fileToBase64(payload.file);
+
   return request(
     `${API_BASE}/api/admin/contracts/approvals/${contractId}/approve`,
     {
       method: 'POST',
-      body: JSON.stringify({ comment: comment || '' }),
+      body: JSON.stringify({
+        comment: payload.comment || '',
+        approval_file_name: payload.file.name,
+        approval_file_content_base64: fileBase64,
+      }),
     }
   );
 }
@@ -686,13 +737,23 @@ export async function approveContract(
 // Reject contract application (admin only)
 export async function rejectContract(
   contractId: string,
-  comment: string
+  payload: ApprovalActionPayload | string
 ): Promise<{ ok: boolean; message: string }> {
+  if (typeof payload === 'string') {
+    throw new Error('File PDF wajib diunggah untuk penolakan');
+  }
+
+  const fileBase64 = await fileToBase64(payload.file);
+
   return request(
     `${API_BASE}/api/admin/contracts/approvals/${contractId}/reject`,
     {
       method: 'POST',
-      body: JSON.stringify({ comment }),
+      body: JSON.stringify({
+        comment: payload.comment || '',
+        approval_file_name: payload.file.name,
+        approval_file_content_base64: fileBase64,
+      }),
     }
   );
 }

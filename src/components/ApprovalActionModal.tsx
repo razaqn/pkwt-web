@@ -1,11 +1,11 @@
-import { AlertCircle, Info, X } from 'lucide-react';
+import { AlertCircle, Info, Paperclip, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { ClipLoader } from 'react-spinners';
 
 interface ApprovalActionModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (comment: string) => Promise<void>;
+    onSubmit: (data: { comment: string; file: File }) => Promise<void>;
     actionType: 'approve' | 'reject';
     loading?: boolean;
 }
@@ -19,9 +19,12 @@ export default function ApprovalActionModal({
 }: ApprovalActionModalProps) {
     const [comment, setComment] = useState('');
     const [error, setError] = useState('');
+    const [fileError, setFileError] = useState('');
+    const [file, setFile] = useState<File | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
     const MAX_COMMENT_LENGTH = 500;
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
     const isApprove = actionType === 'approve';
     const iconColor = isApprove ? 'text-primary' : 'text-red-600';
@@ -56,30 +59,76 @@ export default function ApprovalActionModal({
         async (e: React.FormEvent) => {
             e.preventDefault();
             setError('');
+            setFileError('');
 
-            // Validation: reject requires comment
-            if (!isApprove && !comment.trim()) {
-                setError('Komentar wajib diisi untuk penolakan');
+            // Validation: reject requires comment (min 5 chars)
+            const trimmedComment = comment.trim();
+            if (!isApprove) {
+                if (!trimmedComment) {
+                    setError('Komentar wajib diisi untuk penolakan');
+                    return;
+                }
+                if (trimmedComment.length < 5) {
+                    setError('Komentar minimal 5 karakter');
+                    return;
+                }
+            }
+
+            if (!file) {
+                setFileError('File PDF wajib diunggah');
                 return;
             }
 
             try {
-                await onSubmit(comment);
+                await onSubmit({ comment: trimmedComment, file });
                 setComment(''); // Reset on success
+                setFile(null);
             } catch (err: any) {
                 setError(err?.message || 'Terjadi kesalahan');
             }
         },
-        [comment, isApprove, onSubmit]
+        [comment, file, isApprove, onSubmit]
     );
 
     const handleClose = useCallback(() => {
         if (!loading) {
             setComment('');
             setError('');
+            setFileError('');
+            setFile(null);
             onClose();
         }
     }, [loading, onClose]);
+
+    const handleFileChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            setFileError('');
+            const selected = e.target.files?.[0];
+
+            if (!selected) {
+                setFile(null);
+                return;
+            }
+
+            if (selected.type !== 'application/pdf') {
+                setFileError('Format file harus PDF');
+                setFile(null);
+                return;
+            }
+
+            if (selected.size > MAX_FILE_SIZE) {
+                const sizeMb = (selected.size / 1024 / 1024).toFixed(2);
+                setFileError(`File terlalu besar. Maksimal 5MB, file Anda ${sizeMb}MB`);
+                setFile(null);
+                return;
+            }
+
+            setFile(selected);
+        },
+        []
+    );
+
+    const formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`;
 
     if (!isOpen) return null;
 
@@ -114,6 +163,41 @@ export default function ApprovalActionModal({
                         <div className="flex items-start gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                             <Info className="mt-0.5 h-4 w-4 text-slate-500" />
                             <p className="text-sm text-slate-700">{helperText}</p>
+                        </div>
+
+                        {/* File Upload */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-slate-700">
+                                Unggah Dokumen (PDF) <span className="text-red-600">*</span>
+                            </label>
+                            <label
+                                className={`flex cursor-pointer items-center justify-between gap-3 rounded-lg border ${fileError ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white'} px-4 py-3 shadow-sm transition hover:border-primary`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                                        <Paperclip className="h-5 w-5 text-primary" />
+                                    </span>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-medium text-slate-900">
+                                            {file ? file.name : 'Pilih file PDF'}
+                                        </span>
+                                        <span className="text-xs text-slate-500">
+                                            {file ? formatFileSize(file.size) : 'Maksimal 5MB'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <input
+                                    type="file"
+                                    accept="application/pdf"
+                                    onChange={handleFileChange}
+                                    disabled={loading}
+                                    className="hidden"
+                                />
+                                <span className="text-sm font-semibold text-primary">Unggah</span>
+                            </label>
+                            {fileError && (
+                                <p className="text-sm text-red-600">{fileError}</p>
+                            )}
                         </div>
 
                         {/* Comment Textarea */}
