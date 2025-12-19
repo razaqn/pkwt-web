@@ -5,6 +5,7 @@ import {
     type ContractApplicationDetail,
     type ContractEmployee,
 } from '../lib/api';
+import { toUserMessage } from '../lib/errors';
 
 export interface UseContractDetailReturn {
     contract: ContractApplicationDetail | null;
@@ -60,7 +61,7 @@ export function useContractDetail(
                 }
             } catch (err: any) {
                 if (isMounted) {
-                    setError(err?.message || 'Gagal memuat detail pengajuan');
+                    setError(toUserMessage(err, 'Gagal memuat detail pengajuan'));
                 }
             } finally {
                 if (isMounted) {

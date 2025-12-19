@@ -2,6 +2,7 @@ import { Trash2, Upload, FileText, AlertCircle, FileSpreadsheet, X, CheckCircle,
 import { useState } from 'react';
 import { parseExcelFile, mapExcelRowsToPKWT, MAX_FILE_SIZE_MB as EXCEL_MAX_SIZE_MB } from '../lib/excel';
 import { ClipLoader } from 'react-spinners';
+import { toUserMessage } from '../lib/errors';
 
 const MAX_FILE_SIZE_MB = 5;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -139,7 +140,7 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
             // Clear success message after 5 seconds
             setTimeout(() => setImportSuccess(null), 5000);
         } catch (err: any) {
-            setImportError(err?.message || 'Gagal mengimpor file Excel');
+            setImportError(toUserMessage(err, 'Gagal mengimpor file Excel'));
         } finally {
             setIsImporting(false);
         }

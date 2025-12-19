@@ -3,6 +3,7 @@ import { login } from '../lib/api';
 import { setAuth } from '../store/auth';
 import { useNavigate } from 'react-router-dom';
 import { ClipLoader } from 'react-spinners';
+import { toUserMessage } from '../lib/errors';
 
 export default function LoginAdmin() {
   const [email, setEmail] = useState('');
@@ -24,7 +25,7 @@ export default function LoginAdmin() {
       setAuth(res.token, res.role);
       navigate('/');
     } catch (err: any) {
-      setError(err?.message || 'Login gagal');
+      setError(toUserMessage(err, 'Login gagal'));
     } finally {
       setLoading(false);
     }

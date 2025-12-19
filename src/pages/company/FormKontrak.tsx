@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import FormKontrakPKWT, { type FormKontrakPKWTData } from '../../components/FormKontrakPKWT';
 import FormKontrakPKWTT, { type FormKontrakPKWTTData } from '../../components/FormKontrakPKWTT';
 import { checkNIKs, getDraftContractDetail } from '../../lib/api';
+import { toUserMessage } from '../../lib/errors';
 import { formatDateToYMD } from '../../lib/date';
 import { MoonLoader, ClipLoader } from 'react-spinners';
 
@@ -74,7 +75,7 @@ export default function FormKontrak() {
                 }
             } catch (err: any) {
                 setErrors({
-                    submit: err?.message || 'Gagal memuat draft',
+                    submit: toUserMessage(err, 'Gagal memuat draft'),
                 });
             } finally {
                 setDraftLoading(false);
@@ -162,7 +163,7 @@ export default function FormKontrak() {
             });
         } catch (err: any) {
             setErrors({
-                submit: err?.message || 'Terjadi kesalahan saat memproses data',
+                submit: toUserMessage(err, 'Terjadi kesalahan saat memproses data'),
             });
         } finally {
             setLoading(false);
@@ -200,7 +201,7 @@ export default function FormKontrak() {
             });
         } catch (err: any) {
             setErrors({
-                submit: err?.message || 'Terjadi kesalahan saat memproses data',
+                submit: toUserMessage(err, 'Terjadi kesalahan saat memproses data'),
             });
         } finally {
             setLoading(false);

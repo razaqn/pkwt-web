@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getAdminDashboardOverview, type AdminDashboardOverview } from '../lib/api';
+import { toUserMessage } from '../lib/errors';
 
 export function useAdminDashboard() {
     const [data, setData] = useState<AdminDashboardOverview | null>(null);
@@ -20,7 +21,7 @@ export function useAdminDashboard() {
                 }
             } catch (err: any) {
                 if (isMounted) {
-                    setError(err?.message || 'Failed to fetch dashboard data');
+                    setError(toUserMessage(err, 'Gagal memuat data dashboard'));
                 }
             } finally {
                 if (isMounted) {

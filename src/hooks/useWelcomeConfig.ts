@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { request } from '../lib/http';
+import { toUserMessage } from '../lib/errors';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
@@ -316,19 +317,19 @@ export function useWelcomeConfig() {
         const fetchConfig = async () => {
             try {
                 setLoading(true);
-                const response = await request<{ ok: boolean; data: WelcomeConfig }>(
+                const response = await request<{ ok: boolean; data: WelcomeConfig; message?: string }>(
                     `${API_BASE}/api/config/welcome`
                 );
 
                 if (response.ok && response.data) {
                     setConfig(response.data);
                 } else {
-                    // Fallback to initial config if response is unexpected
+                    const errorMsg = response.message || 'Gagal memuat konfigurasi';
+                    setError(errorMsg);
                     setConfig(initialConfig);
                 }
             } catch (err: any) {
-                setError(err?.message || 'Failed to load config');
-                // Fallback to initial config on error
+                setError(toUserMessage(err, 'Gagal memuat konfigurasi'));
                 setConfig(initialConfig);
             } finally {
                 setLoading(false);
@@ -355,12 +356,12 @@ export function useWelcomeConfig() {
                 setConfig(response.data);
                 return { success: true };
             } else {
-                const errorMsg = response.message || 'Failed to save config';
+                const errorMsg = response.message || 'Gagal menyimpan konfigurasi';
                 setError(errorMsg);
                 return { success: false, error: errorMsg };
             }
         } catch (err: any) {
-            const errorMsg = err?.message || 'Failed to save config';
+            const errorMsg = toUserMessage(err, 'Gagal menyimpan konfigurasi');
             setError(errorMsg);
             return { success: false, error: errorMsg };
         } finally {

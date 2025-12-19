@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getApprovalDetail } from '../lib/api';
 import type { ApprovalDetail } from '../lib/api';
+import { toUserMessage } from '../lib/errors';
 
 interface UseApprovalDetailResult {
     approval: ApprovalDetail | null;
@@ -35,7 +36,7 @@ export function useApprovalDetail(contractId: string | undefined): UseApprovalDe
                 }
             } catch (err: any) {
                 if (isMounted) {
-                    setError(err?.message || 'Gagal memuat detail persetujuan');
+                    setError(toUserMessage(err, 'Gagal memuat detail persetujuan'));
                 }
             } finally {
                 if (isMounted) {

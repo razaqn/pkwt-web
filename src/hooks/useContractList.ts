@@ -4,6 +4,7 @@ import {
     type ContractApplicationBatch,
 } from '../lib/api';
 import { getCompanyId } from '../store/auth';
+import { toUserMessage } from '../lib/errors';
 
 type ApprovalStatus = 'PENDING' | 'REJECTED' | 'APPROVED' | 'DRAFT' | null;
 
@@ -139,7 +140,7 @@ export function useContractList(): UseContractListReturn {
                 }
             } catch (err: any) {
                 if (isMounted) {
-                    setError(err?.message || 'Gagal memuat data pengajuan');
+                    setError(toUserMessage(err, 'Gagal memuat data pengajuan'));
                 }
             } finally {
                 if (isMounted) {

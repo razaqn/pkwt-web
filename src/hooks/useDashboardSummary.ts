@@ -5,6 +5,7 @@ import {
     markNotificationAsRead,
     type DashboardSummary,
 } from '../lib/api';
+import { toUserMessage } from '../lib/errors';
 
 const REFRESH_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -30,7 +31,7 @@ export function useDashboardSummary(): UseDashboardSummaryResult {
             const response = await getDashboardSummary();
             setSummary(response.data);
         } catch (err: any) {
-            setError(err?.message || 'Gagal memuat ringkasan dashboard');
+            setError(toUserMessage(err, 'Gagal memuat ringkasan dashboard'));
         } finally {
             setLoading(false);
         }
@@ -85,7 +86,7 @@ export function useDashboardSummary(): UseDashboardSummaryResult {
         try {
             await markNotificationAsRead(notificationId);
         } catch (err: any) {
-            setError(err?.message || 'Gagal menandai notifikasi');
+            setError(toUserMessage(err, 'Gagal menandai notifikasi'));
         }
     }, []);
 
@@ -114,7 +115,7 @@ export function useDashboardSummary(): UseDashboardSummaryResult {
         try {
             await markAllNotificationsAsRead();
         } catch (err: any) {
-            setError(err?.message || 'Gagal menandai semua notifikasi');
+            setError(toUserMessage(err, 'Gagal menandai semua notifikasi'));
         }
     }, []);
 

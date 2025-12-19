@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getCompanyProfile } from '../lib/api';
 import type { CompanyProfileData } from '../lib/api';
+import { toUserMessage } from '../lib/errors';
 
 // Frontend interface - maps backend snake_case to camelCase for UI
 export interface CompanyProfile {
@@ -65,7 +66,7 @@ export function useCompanyProfile() {
                 }
             } catch (err: any) {
                 if (isMounted) {
-                    setError(err?.message || 'Gagal memuat data profil perusahaan');
+                    setError(toUserMessage(err, 'Gagal memuat data profil perusahaan'));
                 }
             } finally {
                 if (isMounted) {

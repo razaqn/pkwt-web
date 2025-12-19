@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getApprovalList } from '../lib/api';
 import type { ApprovalListItem, GetApprovalListParams } from '../lib/api';
+import { toUserMessage } from '../lib/errors';
 
 const LIMIT_PER_PAGE = 7;
 
@@ -58,7 +59,7 @@ export function useApprovalList(): UseApprovalListResult {
                 }
             } catch (err: any) {
                 if (isMounted) {
-                    setError(err?.message || 'Gagal memuat data persetujuan');
+                    setError(toUserMessage(err, 'Gagal memuat data persetujuan'));
                 }
             } finally {
                 if (isMounted) {

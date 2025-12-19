@@ -1,9 +1,83 @@
+const FIELD_LABELS: Record<string, string> = {
+  niks: 'NIK karyawan',
+  employee_niks: 'NIK karyawan',
+  nik: 'NIK',
+  start_date: 'Tanggal mulai',
+  duration_months: 'Durasi kontrak (bulan)',
+  contract_type: 'Jenis kontrak',
+  file_content_base64: 'File kontrak',
+  file_name: 'Nama file kontrak',
+  full_name: 'Nama lengkap',
+  address: 'Alamat',
+  district: 'Kecamatan',
+  village: 'Kelurahan/Desa',
+  place_of_birth: 'Tempat lahir',
+  birthdate: 'Tanggal lahir',
+  ktp_file_content_base64: 'File KTP',
+  ktp_file_name: 'Nama file KTP',
+};
+
+function formatFieldLabel(path: string | number | Array<string | number> | undefined): string {
+  if (path === undefined || path === null) return 'Kolom ini';
+  const segments = Array.isArray(path) ? path : String(path).split('.');
+  const [first, second] = segments;
+  const baseKey = typeof first === 'number' ? String(first) : String(first || '').trim();
+  const baseLabel = FIELD_LABELS[baseKey] || baseKey.replace(/_/g, ' ').trim() || 'Kolom ini';
+
+  if (typeof second === 'number' || (typeof second === 'string' && /^\d+$/.test(second))) {
+    const idx = Number(second);
+    return `${baseLabel} ke-${idx + 1}`;
+  }
+
+  return baseLabel;
+}
+
+function simplifyMessage(message: string, label: string): string {
+  const lower = message.toLowerCase();
+
+  if (lower.includes('^[0-9]{16}') || lower.includes('must match pattern') || lower.includes('16')) {
+    return `${label} harus terdiri dari 16 digit angka.`;
+  }
+
+  if (lower.includes('required') || lower.includes('wajib') || lower.includes('must be non-empty')) {
+    return `${label} wajib diisi.`;
+  }
+
+  if (lower.includes('invalid') || lower.includes('not valid')) {
+    return `${label} tidak valid.`;
+  }
+
+  if (lower.includes('greater than') || lower.includes('less than')) {
+    return `${label} belum sesuai.`;
+  }
+
+  return `${label}: ${message}`;
+}
+
+function formatIssue(path: any, message: string | undefined): string {
+  const label = formatFieldLabel(path);
+  if (!message || !message.trim()) return `${label} belum sesuai.`;
+  return simplifyMessage(message.trim(), label);
+}
+
+function formatRawLine(raw: string): string {
+  if (raw.includes(':')) {
+    const [pathPart, ...rest] = raw.split(':');
+    const msgPart = rest.join(':').trim();
+    return formatIssue(pathPart.trim(), msgPart);
+  }
+  if (raw.includes('^[0-9]{16}')) {
+    return 'NIK harus terdiri dari 16 digit angka.';
+  }
+  return raw;
+}
+
 export function extractErrorMessage(raw: string): string {
   try {
     const data = JSON.parse(raw);
     const e = data?.errors;
     if (Array.isArray(e)) {
-      const msgs = e.map((i: any) => `${i?.path || 'field'}: ${i?.message || 'invalid'}`);
+      const msgs = e.map((i: any) => formatIssue(i?.path, i?.message));
       return msgs.join('\n');
     }
     if (typeof e === 'string') {
@@ -13,19 +87,19 @@ export function extractErrorMessage(raw: string): string {
         try {
           const z = JSON.parse(json);
           if (Array.isArray(z?.issues) && z.issues.length > 0) {
-            const msgs = z.issues.map((i: any) => `${i?.path?.[0] ?? 'field'}: ${i?.message ?? 'invalid'}`);
+            const msgs = z.issues.map((i: any) => formatIssue(i?.path, i?.message));
             return msgs.join('\n');
           }
         } catch {
           // Ignore invalid embedded JSON in validation error string.
         }
       }
-      return e;
+      return formatRawLine(e);
     }
-    if (typeof data?.message === 'string') return data.message;
-    return raw;
+    if (typeof data?.message === 'string') return formatRawLine(data.message);
+    return formatRawLine(raw);
   } catch {
-    return raw;
+    return formatRawLine(raw);
   }
 }
 
@@ -59,6 +133,14 @@ export function getUserFriendlyErrorMessage(error: string): string {
     return 'Data yang dicari tidak ditemukan.';
   }
 
-  // Return original error if no match
-  return error;
+  // Return formatted error if no match
+  return formatRawLine(error);
+}
+
+export function toUserMessage(err: unknown, fallback = 'Terjadi kesalahan. Silakan coba lagi.'): string {
+  const raw = typeof err === 'string' ? err : (err as any)?.message;
+  if (typeof raw === 'string' && raw.trim()) {
+    return getUserFriendlyErrorMessage(raw.trim());
+  }
+  return fallback;
 }

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { checkNIKs, saveEmployeeData, submitContractApplication, saveDraftContract, type SaveDraftRequest } from '../lib/api';
 import { fileToBase64, mapNIKResultToData, mapEmployeeResponseToData, type NIKData } from '../lib/utils';
+import { toUserMessage } from '../lib/errors';
 import type { KelengkapanDataForm } from '../components/ModalKelengkapanData';
 
 type ContractType = 'PKWT' | 'PKWTT';
@@ -73,7 +74,7 @@ export function useContractSubmission(contractData: ContractData | null) {
 
                 setNikDataList(nikData);
             } catch (err: any) {
-                setError(err?.message || 'Gagal mengecek data NIK');
+                setError(toUserMessage(err, 'Gagal mengecek data NIK'));
                 console.error('Error fetching NIK data:', err);
             } finally {
                 setLoading(false);
@@ -123,7 +124,7 @@ export function useContractSubmission(contractData: ContractData | null) {
 
             return true;
         } catch (err: any) {
-            setError(err?.message || 'Gagal menyimpan data');
+            setError(toUserMessage(err, 'Gagal menyimpan data'));
             return false;
         } finally {
             setLoading(false);
@@ -148,7 +149,7 @@ export function useContractSubmission(contractData: ContractData | null) {
             setContractStatus('draft');
             return response.data.id; // Return draft ID for subsequent saves
         } catch (err: any) {
-            setError(err?.message || 'Gagal menyimpan draf');
+            setError(toUserMessage(err, 'Gagal menyimpan draf'));
             return null;
         }
     }, [contractData]);
@@ -219,7 +220,7 @@ export function useContractSubmission(contractData: ContractData | null) {
 
             return true;
         } catch (err: any) {
-            setError(err?.message || 'Gagal mengirim pengajuan');
+            setError(toUserMessage(err, 'Gagal mengirim pengajuan'));
             return false;
         } finally {
             setSubmitLoading(false);

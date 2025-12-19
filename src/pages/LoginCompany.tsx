@@ -3,6 +3,7 @@ import { login } from '../lib/api';
 import { setAuth } from '../store/auth';
 import { useNavigate } from 'react-router-dom';
 import { ClipLoader } from 'react-spinners';
+import { toUserMessage } from '../lib/errors';
 
 export default function LoginCompany() {
   const [email, setEmail] = useState('');
@@ -23,7 +24,7 @@ export default function LoginCompany() {
       setAuth(res.token, res.role, res.company_id);
       navigate('/');
     } catch (err: any) {
-      setError(err?.message || 'Login gagal');
+      setError(toUserMessage(err, 'Login gagal'));
     } finally {
       setLoading(false);
     }

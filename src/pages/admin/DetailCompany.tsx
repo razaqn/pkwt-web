@@ -5,6 +5,7 @@ import { getCompanyDetailById } from '../../lib/api';
 import type { CompanyProfileData } from '../../lib/api';
 import { MoonLoader } from 'react-spinners';
 import { EmptyState } from '../../components/dashboard/EmptyState';
+import { toUserMessage } from '../../lib/errors';
 
 export default function DetailCompany() {
     const { id } = useParams<{ id: string }>();
@@ -28,7 +29,7 @@ export default function DetailCompany() {
             const response = await getCompanyDetailById(id);
             setProfile(response.data);
         } catch (err: any) {
-            setError(err?.message || 'Gagal memuat detail perusahaan');
+            setError(toUserMessage(err, 'Gagal memuat detail perusahaan'));
         } finally {
             setLoading(false);
         }

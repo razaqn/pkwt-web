@@ -1,6 +1,7 @@
 import { AlertCircle, Info, Paperclip, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { ClipLoader } from 'react-spinners';
+import { toUserMessage } from '../lib/errors';
 
 interface ApprovalActionModalProps {
     isOpen: boolean;
@@ -84,7 +85,7 @@ export default function ApprovalActionModal({
                 setComment(''); // Reset on success
                 setFile(null);
             } catch (err: any) {
-                setError(err?.message || 'Terjadi kesalahan');
+                setError(toUserMessage(err, 'Terjadi kesalahan'));
             }
         },
         [comment, file, isApprove, onSubmit]

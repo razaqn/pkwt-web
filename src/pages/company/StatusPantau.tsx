@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { ClipLoader } from 'react-spinners';
 import { EmptyState } from '../../components/dashboard/EmptyState';
 import { useDialog } from '../../hooks/useDialog';
+import { toUserMessage } from '../../lib/errors';
 
 export default function StatusPantau() {
     const navigate = useNavigate();
@@ -63,7 +64,7 @@ export default function StatusPantau() {
         } catch (err: any) {
             await dialog.alert({
                 title: 'Gagal menghapus draft',
-                message: err?.message ? String(err.message) : 'Terjadi kesalahan. Silakan coba lagi.',
+                message: toUserMessage(err, 'Terjadi kesalahan. Silakan coba lagi.'),
                 tone: 'error',
             });
             setDeletingId(null);

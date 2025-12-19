@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getEmployeeDetail } from '../lib/api';
+import { toUserMessage } from '../lib/errors';
 import type { EmployeeDetail } from '../lib/api';
 
 interface UseEmployeeDetailResult {
@@ -22,7 +23,7 @@ export function useEmployeeDetail(employeeId: string | undefined): UseEmployeeDe
     useEffect(() => {
         if (!employeeId) {
             setLoading(false);
-            setError('Employee ID is required');
+            setError('ID karyawan tidak ditemukan');
             return;
         }
 
@@ -39,7 +40,7 @@ export function useEmployeeDetail(employeeId: string | undefined): UseEmployeeDe
                 }
             } catch (err: any) {
                 if (isMounted) {
-                    setError(err?.message || 'Failed to fetch employee detail');
+                    setError(toUserMessage(err, 'Gagal memuat detail karyawan'));
                 }
             } finally {
                 if (isMounted) {

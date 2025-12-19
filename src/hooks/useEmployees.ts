@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getEmployeesByContract } from '../lib/api';
+import { toUserMessage } from '../lib/errors';
 import type { Employee, GetEmployeesByContractParams } from '../lib/api';
 
 interface UseEmployeesResult {
@@ -42,7 +43,7 @@ export function useEmployees(
                 }
             } catch (err: any) {
                 if (isMounted) {
-                    setError(err?.message || 'Failed to fetch employees');
+                    setError(toUserMessage(err, 'Gagal memuat data karyawan'));
                 }
             } finally {
                 if (isMounted) {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getAllCompanies } from '../lib/api';
+import { toUserMessage } from '../lib/errors';
 import type { Company, GetAllCompaniesParams } from '../lib/api';
 
 interface UseAllCompaniesResult {
@@ -41,7 +42,7 @@ export function useAllCompanies(
                 }
             } catch (err: any) {
                 if (isMounted) {
-                    setError(err?.message || 'Failed to fetch companies');
+                    setError(toUserMessage(err, 'Gagal memuat data perusahaan'));
                 }
             } finally {
                 if (isMounted) {

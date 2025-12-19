@@ -19,6 +19,7 @@ import type { ApprovalEmployee, EmployeeDetail } from '../../lib/api';
 import ApprovalEmployeeTable from '../../components/ApprovalEmployeeTable';
 import ApprovalActionModal from '../../components/ApprovalActionModal';
 import ApprovalEmployeeDetailModal from '../../components/ApprovalEmployeeDetailModal';
+import { toUserMessage } from '../../lib/errors';
 
 export default function ApprovalDetail() {
     const { contractId } = useParams<{ contractId: string }>();
@@ -74,7 +75,7 @@ export default function ApprovalDetail() {
                 }, 1000);
             }, 500);
         } catch (err: any) {
-            setErrorMessage(err?.message || 'Terjadi kesalahan');
+            setErrorMessage(toUserMessage(err, 'Terjadi kesalahan'));
             throw err; // Re-throw to let modal handle it
         } finally {
             setActionLoading(false);
@@ -89,7 +90,7 @@ export default function ApprovalDetail() {
             const res = await getEmployeeDetail(employeeId);
             setEmployeeDetail(res.data);
         } catch (err: any) {
-            setEmployeeDetailError(err?.message || 'Terjadi kesalahan');
+            setEmployeeDetailError(toUserMessage(err, 'Terjadi kesalahan'));
         } finally {
             setEmployeeDetailLoading(false);
         }
