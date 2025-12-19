@@ -55,6 +55,7 @@ export default function ListEmployees() {
     const { employees, loading, error, pagination } = useAllEmployees({
         contract_type: activeTab,
         company_id: selectedCompanyId || undefined,
+        approved: true,
         limit: ITEMS_PER_PAGE,
         offset: (currentPage - 1) * ITEMS_PER_PAGE,
     });

@@ -51,6 +51,7 @@ export default function ListKaryawan() {
     const { employees, loading, error, pagination, refetch } = useEmployees({
         company_id: companyId ?? '',
         contract_type: activeTab,
+        approved: true,
         limit: ITEMS_PER_PAGE,
         offset: (currentPage - 1) * ITEMS_PER_PAGE,
     });
