@@ -58,6 +58,19 @@ export default function DetailKaryawan() {
         return list;
     }, [data?.contracts]);
 
+    const totalDurationMonths = useMemo(() => {
+        return contractsSorted.reduce((acc, contract) => {
+            if (contract.contract_type === 'PKWT' && typeof contract.duration_months === 'number') {
+                return acc + contract.duration_months;
+            }
+            return acc;
+        }, 0);
+    }, [contractsSorted]);
+
+    const contractSummaryText = contractsSorted.length > 0
+        ? `${contractsSorted.length} Kontrak | ${totalDurationMonths > 0 ? `${totalDurationMonths} Bulan` : '-'}`
+        : '-';
+
     const activeContract = data
         ? contractsSorted.find((c) => c.id === data.current_contract_id) ?? contractsSorted[0]
         : undefined;
@@ -206,7 +219,7 @@ export default function DetailKaryawan() {
 
                 <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Jumlah Kontrak</p>
-                    <p className="mt-2 text-2xl font-bold text-slate-900">{contractsSorted.length}</p>
+                    <p className="mt-2 text-2xl font-bold text-slate-900">{contractSummaryText}</p>
                 </div>
             </div>
 
@@ -282,7 +295,7 @@ export default function DetailKaryawan() {
                             {/* Jumlah Kontrak */}
                             <div>
                                 <label className="text-sm font-medium text-slate-600">Jumlah Kontrak</label>
-                                <p className="mt-2 text-slate-900">{contractsSorted.length} kontrak</p>
+                                <p className="mt-2 text-slate-900">{contractSummaryText}</p>
                             </div>
                         </div>
                     </div>
