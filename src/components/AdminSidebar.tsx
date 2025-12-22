@@ -2,7 +2,7 @@
 
 import { NavLink, useNavigate } from 'react-router-dom';
 import { clearAuth, getRole } from '../store/auth';
-import { LayoutDashboard, Users, FileText, FileCheck, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, FileCheck, Settings, Image, LogOut } from 'lucide-react';
 
 interface AdminSidebarProps {
     sidebarOpen: boolean;
@@ -35,7 +35,7 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSideb
 
                 {/* Navigasi */}
                 <nav className="px-3 py-4 space-y-2 flex-1 overflow-y-auto">
-                    <NavLink to="/" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
+                    <NavLink to="/dashboard" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
                         <span className="mt-0.5 text-white/90">
                             <LayoutDashboard className="h-5 w-5" />
                         </span>
@@ -82,6 +82,16 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSideb
                         <span className="flex-1">
                             <div className="text-sm font-medium">Config</div>
                             <div className="text-[11px] text-white/70">Kelola konten panduan</div>
+                        </span>
+                    </NavLink>
+
+                    <NavLink to="/admin/landing-config" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
+                        <span className="mt-0.5 text-white/90">
+                            <Image className="h-5 w-5" />
+                        </span>
+                        <span className="flex-1">
+                            <div className="text-sm font-medium">Landing Page</div>
+                            <div className="text-[11px] text-white/70">Kelola konten landing</div>
                         </span>
                     </NavLink>
                 </nav>

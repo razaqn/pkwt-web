@@ -12,6 +12,7 @@ import DetailCompany from './pages/admin/DetailCompany';
 import ApprovalList from './pages/admin/ApprovalList';
 import ApprovalDetail from './pages/admin/ApprovalDetail';
 import Config from './pages/admin/Config';
+import LandingConfigPage from './pages/admin/LandingConfig';
 import ListKaryawan from './pages/company/ListKaryawan';
 import DetailKaryawan from './pages/company/DetailKaryawan';
 import FormKontrak from './pages/company/FormKontrak';
@@ -20,8 +21,9 @@ import StatusPantau from './pages/company/StatusPantau';
 import DetailPantau from './pages/company/DetailPantau';
 import ProfilePerusahaan from './pages/company/ProfilePerusahaan';
 import { RequireAuth, RequireGuest } from './router/guards';
-import { getRole } from './store/auth';
+import { getRole, getToken } from './store/auth';
 import { DialogProvider } from './hooks/useDialog';
+import Home from './pages/public/Home';
 
 function DashboardWrapper() {
   const role = getRole();
@@ -34,12 +36,19 @@ function DashboardWrapper() {
   return <CompanyDashboard />;
 }
 
+function RootRedirect() {
+  const isAuthed = Boolean(getToken());
+  return <Navigate to={isAuthed ? '/dashboard' : '/home'} replace />;
+}
+
 function App() {
   return (
     <DialogProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<RequireAuth><AppLayout><DashboardWrapper /></AppLayout></RequireAuth>} />
+          <Route path="/" element={<RootRedirect />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/dashboard" element={<RequireAuth><AppLayout><DashboardWrapper /></AppLayout></RequireAuth>} />
           <Route path="/welcome" element={<RequireAuth><AppLayout><Welcome /></AppLayout></RequireAuth>} />
           <Route path="/admin/list-employees" element={<RequireAuth><AppLayout><ListEmployees /></AppLayout></RequireAuth>} />
           <Route path="/admin/detail-karyawan/:id" element={<RequireAuth><AppLayout><AdminDetailKaryawan /></AppLayout></RequireAuth>} />
@@ -48,6 +57,7 @@ function App() {
           <Route path="/admin/approvals" element={<RequireAuth><AppLayout><ApprovalList /></AppLayout></RequireAuth>} />
           <Route path="/admin/approvals/:contractId" element={<RequireAuth><AppLayout><ApprovalDetail /></AppLayout></RequireAuth>} />
           <Route path="/admin/config" element={<RequireAuth><AppLayout><Config /></AppLayout></RequireAuth>} />
+          <Route path="/admin/landing-config" element={<RequireAuth><AppLayout><LandingConfigPage /></AppLayout></RequireAuth>} />
           <Route path="/list-karyawan" element={<RequireAuth><AppLayout><ListKaryawan /></AppLayout></RequireAuth>} />
           <Route path="/detail-karyawan/:id" element={<RequireAuth><AppLayout><DetailKaryawan /></AppLayout></RequireAuth>} />
           <Route path="/form-kontrak" element={<RequireAuth><AppLayout><FormKontrak /></AppLayout></RequireAuth>} />

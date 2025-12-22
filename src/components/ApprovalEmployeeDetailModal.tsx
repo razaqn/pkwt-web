@@ -26,12 +26,12 @@ export default function ApprovalEmployeeDetailModal({
     meta,
     onRetry,
 }: ApprovalEmployeeDetailModalProps) {
+    const [isFullImageOpen, setIsFullImageOpen] = useState(false);
+
     if (!isOpen) return null;
 
     const displayName = employee?.full_name || meta?.full_name || '-';
     const displayNik = employee?.nik || meta?.nik || '-';
-
-    const [isFullImageOpen, setIsFullImageOpen] = useState(false);
 
     const infoRows = [
         { label: 'NIK (Nomor Induk Kependudukan)', value: displayNik },

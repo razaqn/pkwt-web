@@ -23,7 +23,7 @@ export default function LoginAdmin() {
         throw new Error('Akun bukan admin DISNAKER. Silakan gunakan halaman login perusahaan.');
       }
       setAuth(res.token, res.role);
-      navigate('/');
+      navigate('/dashboard');
     } catch (err: any) {
       setError(toUserMessage(err, 'Login gagal'));
     } finally {

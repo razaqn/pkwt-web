@@ -45,7 +45,7 @@ export default function CompanySidebar({ sidebarOpen, setSidebarOpen }: CompanyS
                         </span>
                     </NavLink>
 
-                    <NavLink to="/" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
+                    <NavLink to="/dashboard" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
                         <span className="mt-0.5 text-white/90">
                             <LayoutDashboard className="h-5 w-5" />
                         </span>

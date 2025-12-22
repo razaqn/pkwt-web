@@ -10,6 +10,6 @@ export function RequireAuth({ children }: { children: JSX.Element }) {
 
 export function RequireGuest({ children }: { children: JSX.Element }) {
   const isAuthed = Boolean(getToken());
-  if (isAuthed) return <Navigate to="/" replace />;
+  if (isAuthed) return <Navigate to="/dashboard" replace />;
   return children;
 }

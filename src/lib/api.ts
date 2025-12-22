@@ -803,3 +803,70 @@ export interface GetAdminDashboardOverviewResponse {
 export async function getAdminDashboardOverview(): Promise<GetAdminDashboardOverviewResponse> {
   return request(`${API_BASE}/api/admin/dashboard/overview`);
 }
+
+// Landing Page (Public + Admin Config)
+export type LandingConfig = {
+  id: string;
+  runningText: { enabled: boolean; text: string };
+  ucapan: { enabled: boolean; title: string; body: string };
+  partners: {
+    enabled: boolean;
+    title: string;
+    items: Array<{ id: string; image_path: string; alt: string; order: number; enabled: boolean }>;
+  };
+  faq: {
+    enabled: boolean;
+    title: string;
+    items: Array<{ id: string; question: string; answer: string; order: number; enabled: boolean }>;
+  };
+  contact: {
+    enabled: boolean;
+    title: string;
+    phone: string;
+    email: string;
+    address: string;
+  };
+  updatedAt?: string | null;
+  updatedBy?: string | null;
+};
+
+export type LandingStats = {
+  companyRegistered: number;
+  contractEmployeesRegistered: number;
+  permanentEmployeesRegistered: number;
+  refreshedAt?: string | null;
+};
+
+export async function getLandingConfigPublic(): Promise<{ ok: boolean; data: LandingConfig }> {
+  return request(`${API_BASE}/api/public/config/landing`);
+}
+
+export async function getLandingStatsPublic(): Promise<{ ok: boolean; data: LandingStats }> {
+  return request(`${API_BASE}/api/public/landing/stats`);
+}
+
+export async function getLandingConfigAdmin(): Promise<{ ok: boolean; data: LandingConfig }> {
+  return request(`${API_BASE}/api/config/landing`);
+}
+
+export async function updateLandingConfigAdmin(
+  config: LandingConfig
+): Promise<{ ok: boolean; message: string; data: LandingConfig }> {
+  return request(`${API_BASE}/api/config/landing`, {
+    method: 'PUT',
+    body: JSON.stringify(config),
+  });
+}
+
+export async function uploadLandingPartnerImage(file: File): Promise<{ ok: boolean; data: { image_path: string } }> {
+  const base64 = await fileToBase64(file);
+
+  return request(`${API_BASE}/api/uploads/landing/partners`, {
+    method: 'POST',
+    body: JSON.stringify({
+      file_name: file.name,
+      file_content_base64: base64,
+      content_type: file.type || 'application/octet-stream',
+    }),
+  });
+}

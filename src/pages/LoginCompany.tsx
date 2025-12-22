@@ -22,7 +22,7 @@ export default function LoginCompany() {
         throw new Error('Akun bukan perusahaan. Silakan gunakan halaman admin.');
       }
       setAuth(res.token, res.role, res.company_id);
-      navigate('/');
+      navigate('/dashboard');
     } catch (err: any) {
       setError(toUserMessage(err, 'Login gagal'));
     } finally {
