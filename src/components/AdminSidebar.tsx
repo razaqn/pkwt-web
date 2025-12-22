@@ -27,7 +27,7 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSideb
             <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-40 w-64 md:w-56 transform transition bg-[#48A32A] text-slate-100 flex flex-col`}>
                 {/* Header Sidebar */}
                 <div className="px-4 py-5 flex justify-center">
-                    <img src="/siap-pkwt-logo-1.png" alt="Adikara Logo" className="h-15 w-auto" />
+                    <img src="/siap-pkwt-logo-1.png" alt="siap PKWT Logo" className="h-10 w-auto" />
                 </div>
 
                 {/* Divider */}

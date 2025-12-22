@@ -35,7 +35,7 @@ export default function LoginAdmin() {
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#f3f8ff] via-[#e8eef7] to-[#dbe7f2] flex items-center justify-center px-4">
       <div className="w-full max-w-xl">
         <div className="flex justify-center mb-6">
-          <img src="/siap-pkwt-logo-1.png" alt="Adikara Logo" className="h-40 w-auto" />
+          <img src="/siap-pkwt-logo-1.png" alt="siap PKWT Logo" className="h-30 w-auto" />
         </div>
         <h1 className="text-center text-3xl font-bold tracking-tight text-primary">Masuk Admin DISNAKER</h1>
         <p className="mt-2 text-center text-slate-600">Akses administrasi verifikasi kontrak</p>

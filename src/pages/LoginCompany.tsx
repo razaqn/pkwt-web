@@ -34,7 +34,7 @@ export default function LoginCompany() {
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#f3f8ff] via-[#e8eef7] to-[#dbe7f2] flex items-center justify-center px-4">
       <div className="w-full max-w-xl">
         <div className="flex justify-center mb-6">
-          <img src="/siap-pkwt-logo-1.png" alt="Adikara Logo" className="h-40 w-auto" />
+          <img src="/siap-pkwt-logo-1.png" alt="siap PKWT Logo" className="h-30 w-auto" />
         </div>
         <p className="mt-2 text-center text-slate-600">Sistem Aplikasi Pencatatan PKWT</p>
         <div className="mt-6 mx-auto w-full max-w-md rounded-2xl bg-white shadow-xl border border-slate-200">
