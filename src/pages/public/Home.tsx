@@ -1,4 +1,5 @@
 import { Navigate, Link } from 'react-router-dom';
+import { useState, useRef, useLayoutEffect } from 'react';
 import { getToken } from '../../store/auth';
 import { useLandingPublic } from '../../hooks/useLandingPublic';
 import { resolveUploadUrl } from '../../lib/url';
@@ -36,7 +37,48 @@ function Marquee({ children }: { children: ReactNode }) {
 
 export default function Home() {
     const isAuthed = Boolean(getToken());
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { config, stats, loading, error } = useLandingPublic({ enabled: !isAuthed });
+
+    // Running ticker helpers: measure and repeat content so marquee never shows blank on wide screens
+    const tickerContainerRef = useRef<HTMLDivElement | null>(null);
+    const tickerGroupRef = useRef<HTMLDivElement | null>(null);
+    const measureRef = useRef<HTMLDivElement | null>(null);
+    const [tickerRepeat, setTickerRepeat] = useState(2);
+
+    useLayoutEffect(() => {
+        function updateRepeat() {
+            const container = tickerContainerRef.current;
+            const measure = measureRef.current;
+            if (!container || !measure) return;
+
+            const containerW = container.clientWidth || 0;
+            const singleW = measure.clientWidth || 0;
+            if (singleW <= 0) return;
+
+            // compute minimal repeat count so (singleW * repeats) * 2 >= containerW
+            const repeats = Math.max(1, Math.ceil(containerW / (singleW * 2)));
+            setTickerRepeat((prev) => (prev === repeats ? prev : repeats));
+        }
+
+        updateRepeat();
+        let raf = 0;
+        let timer: any = null;
+        const onResize = () => {
+            cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(updateRepeat);
+            clearTimeout(timer);
+            timer = setTimeout(updateRepeat, 150);
+        };
+
+        window.addEventListener('resize', onResize);
+        return () => {
+            window.removeEventListener('resize', onResize);
+            cancelAnimationFrame(raf);
+            clearTimeout(timer);
+        };
+    }, [config?.runningText?.text]);
+
     if (isAuthed) return <Navigate to="/dashboard" replace />;
 
     const runningTextEnabled = Boolean(config?.runningText?.enabled);
@@ -64,30 +106,50 @@ export default function Home() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <Link
-                            to="/login"
-                            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-primary to-primary/90 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/30 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/40"
+                        {/* Desktop actions */}
+                        <div className="hidden md:flex items-center gap-3">
+                            <Link
+                                to="/login"
+                                className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-primary to-primary/90 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/30 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/40"
+                            >
+                                Masuk Perusahaan
+                            </Link>
+                        </div>
+
+                        {/* Mobile hamburger */}
+                        <button
+                            type="button"
+                            className="md:hidden inline-flex items-center justify-center rounded-lg p-2 text-slate-700 hover:bg-slate-100"
+                            aria-label="Open menu"
+                            onClick={() => setMobileMenuOpen((s) => !s)}
                         >
-                            Masuk Perusahaan
-                        </Link>
-                        <Link
-                            to="/login/admin"
-                            className="inline-flex items-center justify-center rounded-xl border-2 border-primary/20 bg-white px-5 py-2.5 text-sm font-bold text-primary transition-all duration-300 hover:scale-105 hover:border-primary/40 hover:bg-primary/5"
-                        >
-                            Masuk Admin
-                        </Link>
+                            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </header>
 
+            {/* Mobile menu overlay */}
+            {mobileMenuOpen && (
+                <div className="md:hidden fixed inset-0 z-20">
+                    <div className="absolute inset-0 bg-black/40" onClick={() => setMobileMenuOpen(false)} />
+                    <div className="absolute top-0 right-0 w-64 bg-white shadow-lg p-4">
+                        <Link to="/login" className="block px-4 py-2 rounded text-base font-semibold text-slate-700 hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>
+                            Masuk Perusahaan
+                        </Link>
+                    </div>
+                </div>
+            )}
+
             <main>
                 {/* (1) Hero full image */}
                 <section className="relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-50/80 z-10"></div>
                     <img
                         src="/hero-section.jpg"
                         alt="Hero"
-                        className="h-[46vh] w-full object-cover md:h-[62vh]"
+                        className="block w-full h-auto object-contain"
                         loading="eager"
                     />
                 </section>
@@ -110,13 +172,37 @@ export default function Home() {
                 {runningTextEnabled && runningText && (
                     <section className="border-y border-primary/10 bg-gradient-to-r from-secondary/20 via-white to-secondary/20 shadow-sm">
                         <div className="mx-auto max-w-6xl px-6 py-4">
-                            <div className="landing-ticker" aria-label="Pengumuman berjalan">
+                            <div className="landing-ticker" aria-label="Pengumuman berjalan" ref={tickerContainerRef}>
+                                {/* Hidden measurement element (single copy) used to compute required repeats */}
+                                <div
+                                    ref={measureRef}
+                                    aria-hidden
+                                    style={{ position: 'absolute', left: -9999, top: 0, whiteSpace: 'nowrap', visibility: 'hidden', pointerEvents: 'none' }}
+                                >
+                                    <span className="landing-ticker__item inline-block">{runningText}</span>
+                                    <span className="landing-ticker__sep">•</span>
+                                </div>
+
                                 <div className="landing-ticker__track">
-                                    <span className="landing-ticker__item">{runningText}</span>
-                                    <span className="landing-ticker__sep">•</span>
-                                    <span className="landing-ticker__item">{runningText}</span>
-                                    <span className="landing-ticker__sep">•</span>
-                                    <span className="landing-ticker__item">{runningText}</span>
+                                    {/* Group that will be duplicated for seamless scroll */}
+                                    <div className="landing-ticker__group" ref={tickerGroupRef}>
+                                        {Array.from({ length: tickerRepeat }).map((_, i) => (
+                                            <span key={`run-${i}`} className="landing-ticker__item inline-block">
+                                                {runningText}
+                                            </span>
+                                        ))}
+                                        <span className="landing-ticker__sep">•</span>
+                                    </div>
+
+                                    {/* ARIA hidden duplicate group (for continuous loop) */}
+                                    <div className="landing-ticker__group" aria-hidden>
+                                        {Array.from({ length: tickerRepeat }).map((_, i) => (
+                                            <span key={`run2-${i}`} className="landing-ticker__item inline-block">
+                                                {runningText}
+                                            </span>
+                                        ))}
+                                        <span className="landing-ticker__sep">•</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -152,10 +238,12 @@ export default function Home() {
                                 Pendaftaran perusahaan dilakukan melalui verifikasi pihak berwenang.
                             </p>
                             <a
-                                href="#contact"
+                                href="https://adikara.vercel.app/register/company"
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="mt-6 inline-flex items-center justify-center rounded-xl border-2 border-slate-300 bg-white px-6 py-3 text-sm font-bold text-slate-700 transition-all duration-300 hover:border-slate-400 hover:bg-slate-50"
                             >
-                                Hubungi Kontak
+                                Daftar Perusahaan
                             </a>
                         </div>
 
@@ -170,12 +258,6 @@ export default function Home() {
                                         className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-primary to-primary/90 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-primary/30 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/40"
                                     >
                                         Login Perusahaan
-                                    </Link>
-                                    <Link
-                                        to="/login/admin"
-                                        className="inline-flex items-center justify-center rounded-xl border-2 border-primary/30 bg-white px-6 py-3 text-sm font-bold text-primary transition-all duration-300 hover:scale-105 hover:border-primary/50 hover:bg-primary/10"
-                                    >
-                                        Login Admin
                                     </Link>
                                 </div>
                             </div>

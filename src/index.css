@@ -103,6 +103,14 @@
     display: flex;
 }
 
+/* Ticker group for running text - duplicated group will be animated (see JS measurement in Home.tsx) */
+.landing-ticker__group {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    white-space: nowrap;
+}
+
 @media (prefers-reduced-motion: reduce) {
 
     .landing-ticker__track,
