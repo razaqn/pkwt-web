@@ -1,19 +1,19 @@
-import type { WelcomeConfig } from '../../hooks/useWelcomeConfig';
+import type { GuideConfig } from '../../hooks/useGuideConfig';
 
 interface HeroFooterConfigProps {
-    config: WelcomeConfig;
-    onChange: (config: WelcomeConfig) => void;
+    config: GuideConfig;
+    onChange: (config: GuideConfig) => void;
 }
 
 export default function HeroFooterConfig({ config, onChange }: HeroFooterConfigProps) {
-    const updateHero = (field: keyof WelcomeConfig['hero'], value: string | boolean) => {
+    const updateHero = (field: keyof GuideConfig['hero'], value: string | boolean) => {
         onChange({
             ...config,
             hero: { ...config.hero, [field]: value },
         });
     };
 
-    const updateFooterCTA = (field: keyof WelcomeConfig['footerCTA'], value: string | boolean) => {
+    const updateFooterCTA = (field: keyof GuideConfig['footerCTA'], value: string | boolean) => {
         onChange({
             ...config,
             footerCTA: { ...config.footerCTA, [field]: value },

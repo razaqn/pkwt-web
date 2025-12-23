@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Save } from 'lucide-react';
 import { MoonLoader, ClipLoader } from 'react-spinners';
-import { useWelcomeConfig } from '../../hooks/useWelcomeConfig';
+import { useGuideConfig, type GuideType } from '../../hooks/useGuideConfig';
 import HeroFooterConfig from '../../components/config/HeroFooterConfig';
 import PengertianConfig from '../../components/config/PengertianConfig';
 import SyaratConfig from '../../components/config/SyaratConfig';
@@ -9,17 +9,19 @@ import HakKonsultasiConfig from '../../components/config/HakKonsultasiConfig';
 
 type TabType = 'hero' | 'pengertian' | 'syarat' | 'hak-konsultasi';
 
-const TABS: Array<{ id: TabType; label: string }> = [
-    { id: 'hero', label: 'Hero & Footer' },
-    { id: 'pengertian', label: 'Pengertian PKWT' },
-    { id: 'syarat', label: 'Syarat & Ketentuan' },
-    { id: 'hak-konsultasi', label: 'Hak & Konsultasi' },
-];
-
 export default function Config() {
     const [activeTab, setActiveTab] = useState<TabType>('hero');
-    const { config, setConfig, loading, error, saving, saveConfig } = useWelcomeConfig();
+    const [guideType, setGuideType] = useState<GuideType>('pkwt');
+    const { config, setConfig, loading, error, saving, saveConfig } = useGuideConfig(guideType);
     const [saveSuccess, setSaveSuccess] = useState(false);
+
+    const guideName = guideType === 'pkwtt' ? 'PKWTT' : 'PKWT';
+    const TABS: Array<{ id: TabType; label: string }> = [
+        { id: 'hero', label: 'Hero & Footer' },
+        { id: 'pengertian', label: `Pengertian ${guideName}` },
+        { id: 'syarat', label: 'Syarat & Ketentuan' },
+        { id: 'hak-konsultasi', label: 'Hak & Konsultasi' },
+    ];
 
     const handleSave = async () => {
         const result = await saveConfig(config);
@@ -55,29 +57,56 @@ export default function Config() {
             <div className="rounded-xl border border-slate-200 bg-gradient-to-r from-primary/10 via-white to-secondary/25 p-6 shadow-sm">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Welcome Page Config</h1>
+                        <h1 className="text-2xl font-bold text-slate-900">Panduan {guideName} Config</h1>
                         <p className="mt-1 text-sm text-slate-600">
-                            Kelola konten halaman panduan untuk pengguna perusahaan
+                            Kelola konten panduan publik untuk {guideName}
                         </p>
                     </div>
 
-                    <button
-                        onClick={handleSave}
-                        disabled={saving}
-                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-secondary px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition-colors hover:bg-secondary/90 focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                        {saving ? (
-                            <>
-                                <ClipLoader size={14} color="#0f172a" />
-                                Menyimpan...
-                            </>
-                        ) : (
-                            <>
-                                <Save className="h-4 w-4" />
-                                Simpan Perubahan
-                            </>
-                        )}
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setGuideType('pkwt');
+                                    setSaveSuccess(false);
+                                }}
+                                className={`rounded-md px-3 py-1.5 text-sm font-semibold transition ${guideType === 'pkwt' ? 'bg-primary text-white' : 'text-slate-700 hover:bg-slate-100'
+                                    }`}
+                            >
+                                PKWT
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setGuideType('pkwtt');
+                                    setSaveSuccess(false);
+                                }}
+                                className={`rounded-md px-3 py-1.5 text-sm font-semibold transition ${guideType === 'pkwtt' ? 'bg-primary text-white' : 'text-slate-700 hover:bg-slate-100'
+                                    }`}
+                            >
+                                PKWTT
+                            </button>
+                        </div>
+
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="inline-flex items-center justify-center gap-2 rounded-lg bg-secondary px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition-colors hover:bg-secondary/90 focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            {saving ? (
+                                <>
+                                    <ClipLoader size={14} color="#0f172a" />
+                                    Menyimpan...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-4 w-4" />
+                                    Simpan Perubahan
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
             </div>
 

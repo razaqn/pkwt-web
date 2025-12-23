@@ -2,7 +2,7 @@
 
 import { NavLink, useNavigate } from 'react-router-dom';
 import { clearAuth, getRole } from '../store/auth';
-import { LayoutDashboard, Users, FilePlus, Building, LogOut, FileCheck, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Users, FilePlus, Building, LogOut, FileCheck } from 'lucide-react';
 
 interface CompanySidebarProps {
     sidebarOpen: boolean;
@@ -35,15 +35,20 @@ export default function CompanySidebar({ sidebarOpen, setSidebarOpen }: CompanyS
 
                 {/* Navigasi */}
                 <nav className="px-3 py-4 space-y-2 flex-1 overflow-y-auto">
-                    <NavLink to="/welcome" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
-                        <span className="mt-0.5 text-white/90">
-                            <BookOpen className="h-5 w-5" />
-                        </span>
-                        <span className="flex-1">
-                            <div className="text-sm font-medium">Panduan</div>
-                            <div className="text-[11px] text-white/70">Informasi PKWT</div>
-                        </span>
-                    </NavLink>
+                    {/*
+                        Legacy company-only guide link (disabled).
+                        Guide is now public via /pkwt and /pkwtt.
+
+                        <NavLink to="/welcome" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
+                            <span className="mt-0.5 text-white/90">
+                                <BookOpen className="h-5 w-5" />
+                            </span>
+                            <span className="flex-1">
+                                <div className="text-sm font-medium">Panduan</div>
+                                <div className="text-[11px] text-white/70">Informasi PKWT</div>
+                            </span>
+                        </NavLink>
+                    */}
 
                     <NavLink to="/dashboard" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
                         <span className="mt-0.5 text-white/90">

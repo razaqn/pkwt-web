@@ -1,8 +1,8 @@
 import { Info, CheckCircle } from 'lucide-react';
-import type { WelcomeConfig, ListItem, QAItem } from '../../hooks/useWelcomeConfig';
+import type { GuideConfig, ListItem, QAItem } from '../../hooks/useGuideConfig';
 
 interface PengertianSectionProps {
-    config: WelcomeConfig['pengertianSection'];
+    config: GuideConfig['pengertianSection'];
 }
 
 export function PengertianSection({ config }: PengertianSectionProps) {

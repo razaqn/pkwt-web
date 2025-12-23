@@ -1,8 +1,8 @@
 import { FileText, Briefcase, Scale } from 'lucide-react';
-import type { WelcomeConfig, ListItem } from '../../hooks/useWelcomeConfig';
+import type { GuideConfig, ListItem } from '../../hooks/useGuideConfig';
 
 interface SyaratKetentuanSectionProps {
-    config: WelcomeConfig['syaratKetentuanSection'];
+    config: GuideConfig['syaratKetentuanSection'];
 }
 
 export function SyaratKetentuanSection({ config }: SyaratKetentuanSectionProps) {

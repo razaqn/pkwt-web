@@ -1,13 +1,13 @@
 import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
-import type { WelcomeConfig, ListItem, QAItem } from '../../hooks/useWelcomeConfig';
+import type { GuideConfig, ListItem, QAItem } from '../../hooks/useGuideConfig';
 
 interface PengertianConfigProps {
-    config: WelcomeConfig;
-    onChange: (config: WelcomeConfig) => void;
+    config: GuideConfig;
+    onChange: (config: GuideConfig) => void;
 }
 
 export default function PengertianConfig({ config, onChange }: PengertianConfigProps) {
-    const updateSection = (field: keyof WelcomeConfig['pengertianSection'], value: any) => {
+    const updateSection = (field: keyof GuideConfig['pengertianSection'], value: any) => {
         onChange({
             ...config,
             pengertianSection: { ...config.pengertianSection, [field]: value },

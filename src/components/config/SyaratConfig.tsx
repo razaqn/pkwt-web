@@ -1,13 +1,13 @@
 import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
-import type { WelcomeConfig, ListItem } from '../../hooks/useWelcomeConfig';
+import type { GuideConfig, ListItem } from '../../hooks/useGuideConfig';
 
 interface SyaratConfigProps {
-    config: WelcomeConfig;
-    onChange: (config: WelcomeConfig) => void;
+    config: GuideConfig;
+    onChange: (config: GuideConfig) => void;
 }
 
 export default function SyaratConfig({ config, onChange }: SyaratConfigProps) {
-    const updateSection = (field: keyof WelcomeConfig['syaratKetentuanSection'], value: any) => {
+    const updateSection = (field: keyof GuideConfig['syaratKetentuanSection'], value: any) => {
         onChange({
             ...config,
             syaratKetentuanSection: { ...config.syaratKetentuanSection, [field]: value },

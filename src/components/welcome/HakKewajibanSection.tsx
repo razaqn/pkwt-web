@@ -1,8 +1,8 @@
 import { Heart, Shield } from 'lucide-react';
-import type { WelcomeConfig, ListItem } from '../../hooks/useWelcomeConfig';
+import type { GuideConfig, ListItem } from '../../hooks/useGuideConfig';
 
 interface HakKewajibanSectionProps {
-    config: WelcomeConfig['hakKewajibanSection'];
+    config: GuideConfig['hakKewajibanSection'];
 }
 
 export function HakKewajibanSection({ config }: HakKewajibanSectionProps) {

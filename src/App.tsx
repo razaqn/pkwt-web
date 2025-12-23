@@ -4,7 +4,8 @@ import LoginAdmin from './pages/LoginAdmin';
 import AppLayout from './layouts/AppLayout';
 import AdminDashboard from './pages/admin/Dashboard';
 import CompanyDashboard from './pages/company/Dashboard';
-import Welcome from './pages/company/Welcome';
+// Legacy company-only guide route (disabled):
+// import Welcome from './pages/company/Welcome';
 import ListEmployees from './pages/admin/ListEmployees';
 import AdminDetailKaryawan from './pages/admin/DetailKaryawan';
 import ListCompanies from './pages/admin/ListCompanies';
@@ -24,6 +25,8 @@ import { RequireAuth, RequireGuest } from './router/guards';
 import { getRole, getToken } from './store/auth';
 import { DialogProvider } from './hooks/useDialog';
 import Home from './pages/public/Home';
+import Pkwt from './pages/public/Pkwt';
+import Pkwtt from './pages/public/Pkwtt';
 
 function DashboardWrapper() {
   const role = getRole();
@@ -48,8 +51,11 @@ function App() {
         <Routes>
           <Route path="/" element={<RootRedirect />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/pkwt" element={<Pkwt />} />
+          <Route path="/pkwtt" element={<Pkwtt />} />
           <Route path="/dashboard" element={<RequireAuth><AppLayout><DashboardWrapper /></AppLayout></RequireAuth>} />
-          <Route path="/welcome" element={<RequireAuth><AppLayout><Welcome /></AppLayout></RequireAuth>} />
+          {/* Legacy company-only guide page (disabled; replaced by public /pkwt and /pkwtt) */}
+          {/* <Route path="/welcome" element={<RequireAuth><AppLayout><Welcome /></AppLayout></RequireAuth>} /> */}
           <Route path="/admin/list-employees" element={<RequireAuth><AppLayout><ListEmployees /></AppLayout></RequireAuth>} />
           <Route path="/admin/detail-karyawan/:id" element={<RequireAuth><AppLayout><AdminDetailKaryawan /></AppLayout></RequireAuth>} />
           <Route path="/admin/list-companies" element={<RequireAuth><AppLayout><ListCompanies /></AppLayout></RequireAuth>} />
@@ -74,4 +80,4 @@ function App() {
   );
 }
 
-export default App
+export default App;

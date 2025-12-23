@@ -1,9 +1,9 @@
 import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
-import type { WelcomeConfig, ListItem, ContactItem } from '../../hooks/useWelcomeConfig';
+import type { GuideConfig, ListItem, ContactItem } from '../../hooks/useGuideConfig';
 
 interface HakKonsultasiConfigProps {
-    config: WelcomeConfig;
-    onChange: (config: WelcomeConfig) => void;
+    config: GuideConfig;
+    onChange: (config: GuideConfig) => void;
 }
 
 const CONTACT_TYPES = [
@@ -25,7 +25,7 @@ const COLOR_OPTIONS = [
 
 export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiConfigProps) {
     // Hak & Kewajiban Section Updates
-    const updateHakKewajibanSection = (field: keyof WelcomeConfig['hakKewajibanSection'], value: any) => {
+    const updateHakKewajibanSection = (field: keyof GuideConfig['hakKewajibanSection'], value: any) => {
         onChange({
             ...config,
             hakKewajibanSection: { ...config.hakKewajibanSection, [field]: value },
@@ -90,7 +90,7 @@ export default function HakKonsultasiConfig({ config, onChange }: HakKonsultasiC
     };
 
     // Konsultasi Section Updates
-    const updateKonsultasiSection = (field: keyof WelcomeConfig['konsultasiSection'], value: any) => {
+    const updateKonsultasiSection = (field: keyof GuideConfig['konsultasiSection'], value: any) => {
         onChange({
             ...config,
             konsultasiSection: { ...config.konsultasiSection, [field]: value },

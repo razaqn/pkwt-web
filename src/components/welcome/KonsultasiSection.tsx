@@ -1,10 +1,10 @@
 import { Lightbulb, Phone, Mail, MapPin, Building, MessageCircle, Globe } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
-import type { WelcomeConfig, ListItem } from '../../hooks/useWelcomeConfig';
+import type { GuideConfig, ListItem } from '../../hooks/useGuideConfig';
 
 interface KonsultasiSectionProps {
-    config: WelcomeConfig['konsultasiSection'];
+    config: GuideConfig['konsultasiSection'];
 }
 
 // Color mapping for dynamic contacts

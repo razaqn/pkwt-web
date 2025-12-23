@@ -108,6 +108,20 @@ export default function Home() {
                     <div className="flex items-center gap-3">
                         {/* Desktop actions */}
                         <div className="hidden md:flex items-center gap-3">
+                            <div className="flex items-center gap-5 mr-2">
+                                <Link
+                                    to="/pkwt"
+                                    className="text-sm font-bold text-slate-700 hover:text-primary"
+                                >
+                                    Panduan PKWT
+                                </Link>
+                                <Link
+                                    to="/pkwtt"
+                                    className="text-sm font-bold text-slate-700 hover:text-primary"
+                                >
+                                    Panduan PKWTT
+                                </Link>
+                            </div>
                             <Link
                                 to="/login"
                                 className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-primary to-primary/90 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/30 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/40"
@@ -136,6 +150,21 @@ export default function Home() {
                 <div className="md:hidden fixed inset-0 z-20">
                     <div className="absolute inset-0 bg-black/40" onClick={() => setMobileMenuOpen(false)} />
                     <div className="absolute top-0 right-0 w-64 bg-white shadow-lg p-4">
+                        <Link
+                            to="/pkwt"
+                            className="block px-4 py-2 rounded text-base font-semibold text-slate-700 hover:bg-slate-50"
+                            onClick={() => setMobileMenuOpen(false)}
+                        >
+                            Panduan PKWT
+                        </Link>
+                        <Link
+                            to="/pkwtt"
+                            className="block px-4 py-2 rounded text-base font-semibold text-slate-700 hover:bg-slate-50"
+                            onClick={() => setMobileMenuOpen(false)}
+                        >
+                            Panduan PKWTT
+                        </Link>
+                        <div className="my-2 border-t border-slate-200" />
                         <Link to="/login" className="block px-4 py-2 rounded text-base font-semibold text-slate-700 hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>
                             Masuk Perusahaan
                         </Link>
