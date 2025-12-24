@@ -125,72 +125,74 @@ export default function Guide({ type }: { type: GuideType }) {
                     {!loading && !error && (
                         <div className="space-y-8">
                             {/* Hero */}
-                            <div className="group relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-white via-primary/5 to-secondary/10 p-10 shadow-2xl shadow-primary/10 transition-all duration-500 hover:shadow-3xl hover:shadow-primary/20">
-                                <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 blur-3xl transition-transform duration-700 group-hover:scale-150" />
-                                <div className="relative">
-                                    <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 px-4 py-2">
-                                        <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                                        <div className="text-xs font-black uppercase tracking-widest text-primary">Panduan</div>
-                                    </div>
-
-                                    <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                                        <div className="max-w-3xl">
-                                            <div className="flex items-start gap-4">
-                                                <div className="hidden sm:flex h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-primary/80 items-center justify-center shadow-lg shadow-primary/30">
-                                                    <BookOpen className="h-8 w-8 text-white" />
-                                                </div>
-                                                <div>
-                                                    <h1 className="text-3xl font-black tracking-tight text-slate-900 md:text-4xl">
-                                                        {(config.hero?.enabled && config.hero.title) ? config.hero.title : titleFallback}
-                                                    </h1>
-                                                    <p className="mt-3 text-base font-semibold text-slate-700 md:text-lg">
-                                                        {config.hero?.enabled ? config.hero.subtitle : pill}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            {config.hero?.enabled && (
-                                                <p className="mt-5 whitespace-pre-line text-sm leading-relaxed text-slate-700 md:text-base">
-                                                    {config.hero.description}
-                                                </p>
-                                            )}
-
-                                            <div className="mt-6 flex flex-wrap items-center gap-3">
-                                                <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 shadow-sm ring-1 ring-primary/10">
-                                                    {pill}
-                                                </div>
-                                                {config.updatedAt && (
-                                                    <div className="text-xs font-medium text-slate-500">
-                                                        Terakhir diperbarui: {new Date(config.updatedAt).toLocaleDateString('id-ID')}
-                                                    </div>
-                                                )}
-                                            </div>
+                            {config.hero?.enabled && (
+                                <div className="group relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-white via-primary/5 to-secondary/10 p-10 shadow-2xl shadow-primary/10 transition-all duration-500 hover:shadow-3xl hover:shadow-primary/20">
+                                    <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 blur-3xl transition-transform duration-700 group-hover:scale-150" />
+                                    <div className="relative">
+                                        <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 px-4 py-2">
+                                            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                                            <div className="text-xs font-black uppercase tracking-widest text-primary">Panduan</div>
                                         </div>
 
-                                        {/* Quick links */}
-                                        <div className="w-full lg:w-[320px]">
-                                            <div className="rounded-2xl border border-primary/15 bg-white/80 p-5 shadow-sm backdrop-blur">
-                                                <div className="text-sm font-black text-slate-900">Navigasi cepat</div>
-                                                <div className="mt-3 grid grid-cols-2 gap-2">
-                                                    <a href="#pengertian" className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Pengertian</a>
-                                                    <a href="#syarat" className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Syarat</a>
-                                                    <a href="#hak" className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Hak & Kewajiban</a>
-                                                    <a href="#konsultasi" className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Konsultasi</a>
+                                        <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                                            <div className="max-w-3xl">
+                                                <div className="flex items-start gap-4">
+                                                    <div className="hidden sm:flex h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-primary/80 items-center justify-center shadow-lg shadow-primary/30">
+                                                        <BookOpen className="h-8 w-8 text-white" />
+                                                    </div>
+                                                    <div>
+                                                        <h1 className="text-3xl font-black tracking-tight text-slate-900 md:text-4xl">
+                                                            {(config.hero?.enabled && config.hero.title) ? config.hero.title : titleFallback}
+                                                        </h1>
+                                                        <p className="mt-3 text-base font-semibold text-slate-700 md:text-lg">
+                                                            {config.hero?.enabled ? config.hero.subtitle : pill}
+                                                        </p>
+                                                    </div>
                                                 </div>
 
-                                                <div className="mt-4">
-                                                    <Link
-                                                        to="/login"
-                                                        className="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-primary to-primary/90 px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-primary/30 transition-all duration-300 hover:scale-[1.01] hover:shadow-xl hover:shadow-primary/40"
-                                                    >
-                                                        Masuk Perusahaan
-                                                    </Link>
+                                                {config.hero?.enabled && (
+                                                    <p className="mt-5 whitespace-pre-line text-sm leading-relaxed text-slate-700 md:text-base">
+                                                        {config.hero.description}
+                                                    </p>
+                                                )}
+
+                                                <div className="mt-6 flex flex-wrap items-center gap-3">
+                                                    <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 shadow-sm ring-1 ring-primary/10">
+                                                        {pill}
+                                                    </div>
+                                                    {config.updatedAt && (
+                                                        <div className="text-xs font-medium text-slate-500">
+                                                            Terakhir diperbarui: {new Date(config.updatedAt).toLocaleDateString('id-ID')}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Quick links */}
+                                            <div className="w-full lg:w-[320px]">
+                                                <div className="rounded-2xl border border-primary/15 bg-white/80 p-5 shadow-sm backdrop-blur">
+                                                    <div className="text-sm font-black text-slate-900">Navigasi cepat</div>
+                                                    <div className="mt-3 grid grid-cols-2 gap-2">
+                                                        <a href="#pengertian" className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Pengertian</a>
+                                                        <a href="#syarat" className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Syarat</a>
+                                                        <a href="#hak" className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Hak & Kewajiban</a>
+                                                        <a href="#konsultasi" className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Konsultasi</a>
+                                                    </div>
+
+                                                    <div className="mt-4">
+                                                        <Link
+                                                            to="/login"
+                                                            className="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-primary to-primary/90 px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-primary/30 transition-all duration-300 hover:scale-[1.01] hover:shadow-xl hover:shadow-primary/40"
+                                                        >
+                                                            Masuk Perusahaan
+                                                        </Link>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Sections */}
                             <section id="pengertian" className="scroll-mt-28">

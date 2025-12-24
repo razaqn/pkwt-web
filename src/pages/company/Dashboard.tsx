@@ -1,13 +1,16 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardSummary } from '../../hooks/useDashboardSummary';
+import { useCompanyTemplates } from '../../hooks/useCompanyTemplates';
 import { NotificationCenterCard } from '../../components/dashboard/NotificationCenterCard';
 import { ActiveEmployeesCard } from '../../components/dashboard/ActiveEmployeesCard';
 import { ExpiringSoonCard } from '../../components/dashboard/ExpiringSoonCard';
+import { TemplatesCard } from '../../components/dashboard/TemplatesCard';
 
 export default function CompanyDashboard() {
     const navigate = useNavigate();
     const { summary, loading, error, markAsRead, markAllAsRead, refetch } = useDashboardSummary();
+    const { data: templatesData, loading: templatesLoading, error: templatesError, refetch: refetchTemplates } = useCompanyTemplates();
 
     const notificationItems = useMemo(() => summary?.notifications.items.slice(0, 5) ?? [], [summary]);
     const totalUnread = summary?.notifications.total_unread ?? 0;
@@ -95,6 +98,19 @@ export default function CompanyDashboard() {
                         loading={loading}
                         error={error}
                         onRefetch={() => void refetch()}
+                    />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                <div className="lg:col-span-12">
+                    <TemplatesCard
+                        title={templatesData?.title || 'Template'}
+                        enabled={templatesData?.enabled ?? true}
+                        items={templatesData?.items || []}
+                        loading={templatesLoading}
+                        error={templatesError}
+                        onRefetch={() => void refetchTemplates()}
                     />
                 </div>
             </div>

@@ -1,4 +1,4 @@
-import { Trash2, Upload, FileText, AlertCircle, FileSpreadsheet, X, CheckCircle, Download } from 'lucide-react';
+import { Trash2, Upload, FileText, AlertCircle, FileSpreadsheet, X, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { parseExcelFile, mapExcelRowsToPKWT, MAX_FILE_SIZE_MB as EXCEL_MAX_SIZE_MB } from '../lib/excel';
 import { ClipLoader } from 'react-spinners';
@@ -170,14 +170,6 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                             <span className="text-sm font-semibold text-slate-900">Import dari Excel</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <a
-                                href="/templates/template-import-pkwt.xlsx"
-                                download
-                                className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-white px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/5 transition cursor-pointer"
-                            >
-                                <Download className="h-4 w-4" />
-                                Template
-                            </a>
                             <input
                                 type="file"
                                 accept=".xlsx,.xls,.csv"

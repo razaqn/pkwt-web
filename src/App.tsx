@@ -14,6 +14,7 @@ import ApprovalList from './pages/admin/ApprovalList';
 import ApprovalDetail from './pages/admin/ApprovalDetail';
 import Config from './pages/admin/Config';
 import LandingConfigPage from './pages/admin/LandingConfig';
+import AdminTemplatesPage from './pages/admin/Templates';
 import ListKaryawan from './pages/company/ListKaryawan';
 import DetailKaryawan from './pages/company/DetailKaryawan';
 import FormKontrak from './pages/company/FormKontrak';
@@ -64,6 +65,7 @@ function App() {
           <Route path="/admin/approvals/:contractId" element={<RequireAuth><AppLayout><ApprovalDetail /></AppLayout></RequireAuth>} />
           <Route path="/admin/config" element={<RequireAuth><AppLayout><Config /></AppLayout></RequireAuth>} />
           <Route path="/admin/landing-config" element={<RequireAuth><AppLayout><LandingConfigPage /></AppLayout></RequireAuth>} />
+          <Route path="/admin/templates" element={<RequireAuth><AppLayout><AdminTemplatesPage /></AppLayout></RequireAuth>} />
           <Route path="/list-karyawan" element={<RequireAuth><AppLayout><ListKaryawan /></AppLayout></RequireAuth>} />
           <Route path="/detail-karyawan/:id" element={<RequireAuth><AppLayout><DetailKaryawan /></AppLayout></RequireAuth>} />
           <Route path="/form-kontrak" element={<RequireAuth><AppLayout><FormKontrak /></AppLayout></RequireAuth>} />

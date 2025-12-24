@@ -319,6 +319,104 @@ export async function saveDraftContract(data: SaveDraftRequest): Promise<SaveDra
   });
 }
 
+// =========================
+// Templates (admin-managed, company-visible)
+// =========================
+
+export type TemplateKind = 'excel' | 'contract_sample';
+export type TemplateContractType = 'pkwt' | 'pkwtt' | 'general';
+
+export type TemplateItem = {
+  id: string;
+  name: string;
+  kind: TemplateKind;
+  contract_type: TemplateContractType;
+  file_path: string; // /uploads/templates/...
+  original_file_name?: string;
+  content_type?: string;
+  size_bytes?: number;
+  order: number;
+  enabled: boolean;
+};
+
+export type TemplatesConfig = {
+  id: string;
+  templates: {
+    enabled: boolean;
+    title?: string;
+    items: TemplateItem[];
+  };
+  updatedAt: string | null;
+  updatedBy: string | null;
+};
+
+export type CompanyTemplatesResponse = {
+  ok: boolean;
+  data: {
+    enabled: boolean;
+    title: string;
+    items: TemplateItem[];
+  };
+  message?: string;
+};
+
+export type TemplatesConfigResponse = {
+  ok: boolean;
+  data: TemplatesConfig;
+  message?: string;
+};
+
+export type UploadTemplateResponse = {
+  ok: boolean;
+  data: {
+    file_path: string;
+    original_file_name: string;
+    content_type: string;
+    size_bytes: number;
+  };
+  message?: string;
+};
+
+export async function getTemplatesConfigAdmin(): Promise<TemplatesConfigResponse> {
+  return request(`${API_BASE}/api/config/templates`);
+}
+
+export async function updateTemplatesConfigAdmin(config: TemplatesConfig): Promise<TemplatesConfigResponse> {
+  return request(`${API_BASE}/api/config/templates`, {
+    method: 'PUT',
+    body: JSON.stringify(config),
+  });
+}
+
+export async function getCompanyTemplates(): Promise<CompanyTemplatesResponse> {
+  return request(`${API_BASE}/api/company/templates`);
+}
+
+export async function uploadTemplateFile(file: File): Promise<UploadTemplateResponse> {
+  const lower = file.name.toLowerCase();
+  const isAllowed = lower.endsWith('.xlsx') || lower.endsWith('.docx') || lower.endsWith('.pdf');
+  if (!isAllowed) {
+    throw new Error('Hanya file .xlsx, .docx, atau .pdf yang didukung');
+  }
+
+  // Keep aligned with backend max 7MB.
+  const MAX_BYTES = 7 * 1024 * 1024;
+  if (file.size > MAX_BYTES) {
+    throw new Error('File terlalu besar. Maksimal 7MB');
+  }
+
+  const base64 = await fileToBase64(file);
+
+  return request(`${API_BASE}/api/uploads/templates`, {
+    method: 'POST',
+    body: JSON.stringify({
+      file_name: file.name,
+      file_content_base64: base64,
+      content_type: file.type,
+    }),
+  });
+}
+
 // Get draft contract detail
 export async function getDraftContractDetail(draftId: string): Promise<{ ok: boolean; data: DraftContractDetail }> {
   return request(`${API_BASE}/api/contracts/drafts/${draftId}`);
