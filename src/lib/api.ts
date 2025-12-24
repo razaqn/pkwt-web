@@ -906,7 +906,14 @@ export async function getAdminDashboardOverview(): Promise<GetAdminDashboardOver
 export type LandingConfig = {
   id: string;
   runningText: { enabled: boolean; text: string };
-  ucapan: { enabled: boolean; title: string; body: string };
+  ucapan: {
+    enabled: boolean;
+    title: string;
+    body: string;
+    image_path: string | null;
+    image_fit: 'cover' | 'contain';
+    image_position: 'side' | 'below';
+  };
   partners: {
     enabled: boolean;
     title: string;
@@ -960,6 +967,19 @@ export async function uploadLandingPartnerImage(file: File): Promise<{ ok: boole
   const base64 = await fileToBase64(file);
 
   return request(`${API_BASE}/api/uploads/landing/partners`, {
+    method: 'POST',
+    body: JSON.stringify({
+      file_name: file.name,
+      file_content_base64: base64,
+      content_type: file.type || 'application/octet-stream',
+    }),
+  });
+}
+
+export async function uploadLandingUcapanImage(file: File): Promise<{ ok: boolean; data: { image_path: string } }> {
+  const base64 = await fileToBase64(file);
+
+  return request(`${API_BASE}/api/uploads/landing/ucapan`, {
     method: 'POST',
     body: JSON.stringify({
       file_name: file.name,

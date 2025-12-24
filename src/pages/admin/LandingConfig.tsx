@@ -20,7 +20,7 @@ const TABS: Array<{ id: TabType; label: string }> = [
 
 export default function LandingConfigPage() {
     const [activeTab, setActiveTab] = useState<TabType>('running-text');
-    const { config, setConfig, loading, error, saving, saveConfig, uploadPartner } = useLandingConfig();
+    const { config, setConfig, loading, error, saving, saveConfig, uploadPartner, uploadUcapanImage } = useLandingConfig();
     const [saveSuccess, setSaveSuccess] = useState(false);
 
     const handleSave = async () => {
@@ -95,8 +95,8 @@ export default function LandingConfigPage() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${activeTab === tab.id
-                                    ? 'bg-primary text-white shadow-sm'
-                                    : 'bg-white text-slate-600 hover:bg-slate-50'
+                                ? 'bg-primary text-white shadow-sm'
+                                : 'bg-white text-slate-600 hover:bg-slate-50'
                                 }`}
                         >
                             {tab.label}
@@ -106,7 +106,7 @@ export default function LandingConfigPage() {
             </div>
 
             {activeTab === 'running-text' && <RunningTextConfig config={config} onChange={setConfig} />}
-            {activeTab === 'ucapan' && <UcapanConfig config={config} onChange={setConfig} />}
+            {activeTab === 'ucapan' && <UcapanConfig config={config} onChange={setConfig} onUploadImage={uploadUcapanImage} />}
             {activeTab === 'partners' && (
                 <PartnersConfig
                     config={config}

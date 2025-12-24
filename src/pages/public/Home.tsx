@@ -243,19 +243,62 @@ export default function Home() {
                     {config?.ucapan?.enabled && (
                         <div className="group relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-white via-primary/5 to-secondary/10 p-10 shadow-2xl shadow-primary/10 transition-all duration-500 hover:shadow-3xl hover:shadow-primary/20 md:p-12">
                             <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 blur-3xl transition-transform duration-700 group-hover:scale-150"></div>
-                            <div className="relative">
-                                <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 px-4 py-2">
-                                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
-                                    <div className="text-xs font-black uppercase tracking-widest text-primary">Sambutan</div>
-                                </div>
-                                <h1 className="mt-6 text-3xl font-black tracking-tight text-slate-900 md:text-4xl lg:text-5xl">
-                                    {config?.ucapan?.title || 'Selamat datang di E-PKWT'}
-                                </h1>
-                                <p className="mt-6 max-w-3xl whitespace-pre-line text-base leading-relaxed text-slate-700 md:text-lg">
-                                    {config?.ucapan?.body ||
-                                        'Platform ini membantu pencatatan dan pemantauan kontrak kerja secara lebih transparan, rapi, dan terukur.'}
-                                </p>
-                            </div>
+                            {(() => {
+                                const ucapanImageUrl = resolveUploadUrl(config?.ucapan?.image_path);
+                                const fit = config?.ucapan?.image_fit || 'cover';
+                                const position = config?.ucapan?.image_position || 'side';
+                                return (
+                                    <div className="relative flex flex-col gap-8">
+                                        <div className={position === 'side' ? 'flex flex-col gap-8 md:flex-row md:items-center md:justify-between' : ''}>
+                                            <div className="min-w-0">
+                                                <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 px-4 py-2">
+                                                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
+                                                    <div className="text-xs font-black uppercase tracking-widest text-primary">Sambutan</div>
+                                                </div>
+                                                <h1 className="mt-6 text-3xl font-black tracking-tight text-slate-900 md:text-4xl lg:text-5xl">
+                                                    {config?.ucapan?.title || 'Selamat datang di E-PKWT'}
+                                                </h1>
+                                                <p className="mt-6 max-w-3xl whitespace-pre-line text-base leading-relaxed text-slate-700 md:text-lg">
+                                                    {config?.ucapan?.body ||
+                                                        'Platform ini membantu pencatatan dan pemantauan kontrak kerja secara lebih transparan, rapi, dan terukur.'}
+                                                </p>
+                                            </div>
+
+                                            {position === 'side' && ucapanImageUrl && (
+                                                <div className="shrink-0">
+                                                    <div className="rounded-2xl border border-slate-200/80 bg-white/60 p-3 shadow-lg shadow-primary/10 backdrop-blur">
+                                                        <img
+                                                            src={ucapanImageUrl}
+                                                            alt={config?.ucapan?.title || 'Ucapan'}
+                                                            className={`h-40 w-40 rounded-2xl bg-slate-100 ${fit === 'contain' ? 'object-contain' : 'object-cover'} md:h-48 md:w-48`}
+                                                            loading="lazy"
+                                                            onError={(e) => {
+                                                                (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {position === 'below' && ucapanImageUrl && (
+                                            <div className="mt-2">
+                                                <div className="rounded-2xl border border-slate-200/80 bg-white/60 p-3 shadow-lg shadow-primary/10 backdrop-blur">
+                                                    <img
+                                                        src={ucapanImageUrl}
+                                                        alt={config?.ucapan?.title || 'Ucapan'}
+                                                        className={`h-60 w-full rounded-2xl bg-slate-100 ${fit === 'contain' ? 'object-contain' : 'object-cover'} md:h-80`}
+                                                        loading="lazy"
+                                                        onError={(e) => {
+                                                            (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })()}
                         </div>
                     )}
 

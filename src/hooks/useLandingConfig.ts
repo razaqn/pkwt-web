@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
     getLandingConfigAdmin,
     updateLandingConfigAdmin,
+    uploadLandingUcapanImage,
     uploadLandingPartnerImage,
     type LandingConfig,
 } from '../lib/api';
@@ -10,7 +11,7 @@ import { toUserMessage } from '../lib/errors';
 const initialLandingConfig: LandingConfig = {
     id: 'landing-config-default',
     runningText: { enabled: true, text: '' },
-    ucapan: { enabled: true, title: '', body: '' },
+    ucapan: { enabled: true, title: '', body: '', image_path: null, image_fit: 'cover', image_position: 'side' },
     partners: { enabled: true, title: 'Mitra', items: [] },
     faq: { enabled: true, title: 'FAQ', items: [] },
     contact: { enabled: true, title: 'Kontak', phone: '', email: '', address: '' },
@@ -84,6 +85,19 @@ export function useLandingConfig() {
         }
     };
 
+    const uploadUcapanImage = async (file: File) => {
+        try {
+            setError(null);
+            const res = await uploadLandingUcapanImage(file);
+            if (res?.ok && res.data?.image_path) {
+                return { success: true as const, imagePath: res.data.image_path };
+            }
+            return { success: false as const, error: 'Gagal upload gambar' };
+        } catch (err: any) {
+            return { success: false as const, error: toUserMessage(err, 'Gagal upload gambar') };
+        }
+    };
+
     return {
         config,
         setConfig,
@@ -92,5 +106,6 @@ export function useLandingConfig() {
         saving,
         saveConfig,
         uploadPartner,
+        uploadUcapanImage,
     };
 }
