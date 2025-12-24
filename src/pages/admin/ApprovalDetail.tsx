@@ -122,6 +122,23 @@ export default function ApprovalDetail() {
 
     const formatDate = (dateString: string): string => {
         const date = new Date(dateString);
+        if (Number.isNaN(date.getTime())) return '-';
+        return date.toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+        });
+    };
+
+    const formatYmdDate = (dateString?: string | null): string => {
+        if (!dateString) return '-';
+        // Handle YYYY-MM-DD safely without timezone shifting.
+        const m = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec(dateString);
+        const date = m
+            ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+            : new Date(dateString);
+
+        if (Number.isNaN(date.getTime())) return '-';
         return date.toLocaleDateString('id-ID', {
             day: 'numeric',
             month: 'long',
@@ -324,7 +341,7 @@ export default function ApprovalDetail() {
                                 <FileText className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                                <p className="text-xs text-slate-500">Jenis PKWT</p>
+                                <p className="text-xs text-slate-500">Jenis Kontrak</p>
                                 <p className="mt-0.5 font-medium text-slate-900">
                                     {contract.contract_type}
                                 </p>
@@ -363,6 +380,18 @@ export default function ApprovalDetail() {
                                 <p className="text-xs text-slate-500">Tanggal Pengajuan</p>
                                 <p className="mt-0.5 font-medium text-slate-900">
                                     {formatDate(contract.submitted_at)}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 ring-1 ring-slate-200">
+                                <Calendar className="h-5 w-5 text-slate-700" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-500">Tanggal Mulai</p>
+                                <p className="mt-0.5 font-medium text-slate-900">
+                                    {formatYmdDate(contract.start_date)}
                                 </p>
                             </div>
                         </div>
