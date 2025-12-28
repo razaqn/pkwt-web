@@ -17,7 +17,7 @@ export default function LoginAdmin() {
     setLoading(true);
     setError(null);
     try {
-      const res = await login(email, password);
+      const res = await login({ email, password });
       const r = String(res.role);
       if (r !== 'super_admin' && r !== 'disnaker') {
         throw new Error('Akun bukan admin DISNAKER. Silakan gunakan halaman login perusahaan.');

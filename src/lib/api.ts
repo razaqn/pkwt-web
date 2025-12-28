@@ -13,11 +13,17 @@ export interface LoginResponse {
   company_id?: string; // Only present for company role
 }
 
-export async function login(email: string, password: string): Promise<LoginResponse> {
+export interface LoginRequest {
+  email?: string;
+  no_handphone?: string;
+  password: string;
+}
+
+export async function login(credentials: LoginRequest): Promise<LoginResponse> {
   return request(`${API_BASE}/api/user/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify(credentials)
   });
 }
 
