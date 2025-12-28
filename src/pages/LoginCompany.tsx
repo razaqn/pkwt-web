@@ -74,7 +74,7 @@ export default function LoginCompany() {
             </div>
           </div>
         </div>
-        <p className="mt-4 text-center text-sm text-slate-600">Belum memiliki akun? <a className="text-primary hover:underline" href="#">Daftar Perusahaan</a></p>
+        <p className="mt-4 text-center text-sm text-slate-600">Belum memiliki akun? <a className="text-primary hover:underline" href="https://adikara.vercel.app/register/company" target="_blank" rel="noopener noreferrer">Daftar Perusahaan</a></p>
       </div>
     </div>
   );
