@@ -91,7 +91,7 @@ export function KonsultasiSection({ config }: KonsultasiSectionProps) {
                         </div>
                         {config.cards.layananKonsultasi.items.length > 0 ? (
                             <ul className="space-y-3">
-                                {config.cards.layananKonsultasi.items.map((item, index) => {
+                                {config.cards.layananKonsultasi.items.filter(i => i.enabled).map((item, index) => {
                                     const listItem = item as ListItem;
                                     return (
                                         <li key={item.id} className="flex items-start gap-3">

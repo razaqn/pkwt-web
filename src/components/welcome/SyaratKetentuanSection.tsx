@@ -25,7 +25,7 @@ export function SyaratKetentuanSection({ config }: SyaratKetentuanSectionProps) 
                         </div>
                         {config.cards.syaratSah.items.length > 0 ? (
                             <ul className="space-y-3">
-                                {config.cards.syaratSah.items.map((item, index) => {
+                                {config.cards.syaratSah.items.filter(i => i.enabled).map((item, index) => {
                                     const listItem = item as ListItem;
                                     return (
                                         <li key={item.id} className="flex items-start gap-3">
@@ -54,7 +54,7 @@ export function SyaratKetentuanSection({ config }: SyaratKetentuanSectionProps) 
                         </div>
                         {config.cards.jenisPekerjaan.items.length > 0 ? (
                             <ul className="space-y-3">
-                                {config.cards.jenisPekerjaan.items.map((item, index) => {
+                                {config.cards.jenisPekerjaan.items.filter(i => i.enabled).map((item, index) => {
                                     const listItem = item as ListItem;
                                     return (
                                         <li key={item.id} className="flex items-start gap-3">
@@ -84,7 +84,7 @@ export function SyaratKetentuanSection({ config }: SyaratKetentuanSectionProps) 
                     </div>
                     {config.cards.persyaratanLegal.items.length > 0 ? (
                         <div className="grid md:grid-cols-2 gap-4">
-                            {config.cards.persyaratanLegal.items.map((item) => {
+                            {config.cards.persyaratanLegal.items.filter(i => i.enabled).map((item) => {
                                 const listItem = item as ListItem;
                                 return (
                                     <div key={item.id} className="bg-white/10 rounded-lg p-4 backdrop-blur">

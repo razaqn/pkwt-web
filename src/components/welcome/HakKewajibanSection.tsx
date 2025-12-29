@@ -25,7 +25,7 @@ export function HakKewajibanSection({ config }: HakKewajibanSectionProps) {
                         </div>
                         {config.cards.hakPekerja.items.length > 0 ? (
                             <ul className="space-y-3">
-                                {config.cards.hakPekerja.items.map((item) => {
+                                {config.cards.hakPekerja.items.filter(i => i.enabled).map((item) => {
                                     const listItem = item as ListItem;
                                     return (
                                         <li key={item.id} className="flex items-start gap-3">
@@ -56,7 +56,7 @@ export function HakKewajibanSection({ config }: HakKewajibanSectionProps) {
                         </div>
                         {config.cards.kewajibanPekerja.items.length > 0 ? (
                             <ul className="space-y-3">
-                                {config.cards.kewajibanPekerja.items.map((item) => {
+                                {config.cards.kewajibanPekerja.items.filter(i => i.enabled).map((item) => {
                                     const listItem = item as ListItem;
                                     return (
                                         <li key={item.id} className="flex items-start gap-3">

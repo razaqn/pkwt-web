@@ -25,7 +25,7 @@ export function PengertianSection({ config }: PengertianSectionProps) {
                         </div>
                         {config.cards.karakteristik.items.length > 0 ? (
                             <ul className="space-y-3">
-                                {config.cards.karakteristik.items.map((item, index) => {
+                                {config.cards.karakteristik.items.filter(i => i.enabled).map((item, index) => {
                                     const listItem = item as ListItem;
                                     return (
                                         <li key={item.id} className="flex items-start gap-3">
@@ -54,7 +54,7 @@ export function PengertianSection({ config }: PengertianSectionProps) {
                         </div>
                         {config.cards.kapanDigunakan.items.length > 0 ? (
                             <ul className="space-y-3">
-                                {config.cards.kapanDigunakan.items.map((item) => {
+                                {config.cards.kapanDigunakan.items.filter(i => i.enabled).map((item) => {
                                     const listItem = item as ListItem;
                                     return (
                                         <li key={item.id} className="flex items-start gap-3">
@@ -84,7 +84,7 @@ export function PengertianSection({ config }: PengertianSectionProps) {
                     </div>
                     {config.cards.pertanyaanUmum.items.length > 0 ? (
                         <div className="space-y-4">
-                            {config.cards.pertanyaanUmum.items.map((item) => {
+                            {config.cards.pertanyaanUmum.items.filter(i => i.enabled).map((item) => {
                                 const qaItem = item as QAItem;
                                 return (
                                     <div key={item.id} className="border-l-4 border-[#419823] pl-4 py-2 bg-[#419823]/5 rounded-r">
