@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AlertCircle, ArrowLeft, RotateCcw } from 'lucide-react';
+import { AlertCircle, ArrowLeft, RotateCcw, Maximize, X } from 'lucide-react';
 import { useEmployeeDetail } from '../../hooks/useEmployeeDetail';
 import { MoonLoader } from 'react-spinners';
 import { EmptyState } from '../../components/dashboard/EmptyState';
+import { resolveUploadUrl } from '../../lib/url';
 
 // ============================================================================
 // Type Definitions - Ready for API Integration
@@ -44,6 +45,8 @@ export default function DetailKaryawan() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     const { data, loading, error, refetch } = useEmployeeDetail(id);
+    const [isFullImageOpen, setIsFullImageOpen] = useState(false);
+    const ktpImageUrl = resolveUploadUrl(data?.ktp_file_url ?? null);
 
     // NOTE: Hooks must be called unconditionally.
     // Keep derived values (useMemo) above all early returns, and make them null-safe.
@@ -237,40 +240,70 @@ export default function DetailKaryawan() {
                         <h3 className="text-sm font-semibold text-slate-800 mb-4 uppercase tracking-wider">
                             Informasi Pribadi
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* NIK */}
-                            <div>
-                                <label className="text-sm font-medium text-slate-600">NIK (Nomor Induk Kependudukan)</label>
-                                <p className="mt-2 text-slate-900">{data?.nik || '-'}</p>
+                        <div className="flex flex-col gap-6 md:flex-row md:items-start">
+                            <div className="w-full md:w-48">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Foto KTP</p>
+                                <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                                    {ktpImageUrl ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsFullImageOpen(true)}
+                                            className="group block w-full"
+                                        >
+                                            <div className="relative">
+                                                <img
+                                                    src={ktpImageUrl}
+                                                    alt={`Foto KTP ${data.full_name}`}
+                                                    className="h-32 w-full object-cover"
+                                                />
+                                                <span className="pointer-events-none absolute inset-0 flex items-center justify-end p-2 opacity-0 transition-opacity group-hover:opacity-100">
+                                                    <Maximize className="h-4 w-4 text-white drop-shadow" />
+                                                </span>
+                                            </div>
+                                        </button>
+                                    ) : (
+                                        <div className="flex h-32 items-center justify-center gap-2 text-slate-500">
+                                            <span className="text-sm font-semibold">Tidak tersedia</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
-                            {/* Alamat */}
-                            <div>
-                                <label className="text-sm font-medium text-slate-600">Alamat</label>
-                                <p className="mt-2 text-slate-900">{data?.address || '-'}</p>
-                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+                                {/* NIK */}
+                                <div>
+                                    <label className="text-sm font-medium text-slate-600">NIK (Nomor Induk Kependudukan)</label>
+                                    <p className="mt-2 text-slate-900">{data?.nik || '-'}</p>
+                                </div>
 
-                            {/* Kota/Kecamatan */}
-                            <div>
-                                <label className="text-sm font-medium text-slate-600">Kecamatan</label>
-                                <p className="mt-2 text-slate-900">{data.district || '-'}</p>
-                            </div>
+                                {/* Alamat */}
+                                <div>
+                                    <label className="text-sm font-medium text-slate-600">Alamat</label>
+                                    <p className="mt-2 text-slate-900">{data?.address || '-'}</p>
+                                </div>
 
-                            <div>
-                                <label className="text-sm font-medium text-slate-600">Kelurahan</label>
-                                <p className="mt-2 text-slate-900">{data.village || '-'}</p>
-                            </div>
+                                {/* Kota/Kecamatan */}
+                                <div>
+                                    <label className="text-sm font-medium text-slate-600">Kecamatan</label>
+                                    <p className="mt-2 text-slate-900">{data.district || '-'}</p>
+                                </div>
 
-                            {/* Tempat Lahir */}
-                            <div>
-                                <label className="text-sm font-medium text-slate-600">Tempat Lahir</label>
-                                <p className="mt-2 text-slate-900">{data?.place_of_birth || '-'}</p>
-                            </div>
+                                <div>
+                                    <label className="text-sm font-medium text-slate-600">Kelurahan</label>
+                                    <p className="mt-2 text-slate-900">{data.village || '-'}</p>
+                                </div>
 
-                            {/* Tanggal Lahir */}
-                            <div className="md:col-span-2">
-                                <label className="text-sm font-medium text-slate-600">Tanggal Lahir</label>
-                                <p className="mt-2 text-slate-900">{data?.birthdate_formatted || '-'}</p>
+                                {/* Tempat Lahir */}
+                                <div>
+                                    <label className="text-sm font-medium text-slate-600">Tempat Lahir</label>
+                                    <p className="mt-2 text-slate-900">{data?.place_of_birth || '-'}</p>
+                                </div>
+
+                                {/* Tanggal Lahir */}
+                                <div className="md:col-span-2">
+                                    <label className="text-sm font-medium text-slate-600">Tanggal Lahir</label>
+                                    <p className="mt-2 text-slate-900">{data?.birthdate_formatted || '-'}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -381,6 +414,35 @@ export default function DetailKaryawan() {
                     </table>
                 </div>
             </div>
+
+            {/* Full-screen KTP Image Overlay */}
+            {isFullImageOpen && ktpImageUrl && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+                    role="dialog"
+                    aria-modal="true"
+                    onClick={() => setIsFullImageOpen(false)}
+                >
+                    <div className="max-h-full w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-end">
+                            <button
+                                onClick={() => setIsFullImageOpen(false)}
+                                className="rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
+                                aria-label="Tutup tampilan penuh"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                        <div className="mt-3 overflow-hidden rounded-2xl border border-white/30 bg-black">
+                            <img
+                                src={ktpImageUrl}
+                                alt={`Foto KTP ${data.full_name}`}
+                                className="max-h-[80vh] w-full object-contain"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

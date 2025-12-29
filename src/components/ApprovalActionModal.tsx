@@ -6,7 +6,7 @@ import { toUserMessage } from '../lib/errors';
 interface ApprovalActionModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (data: { comment: string; file: File }) => Promise<void>;
+    onSubmit: (data: { comment: string; file: File | null }) => Promise<void>;
     actionType: 'approve' | 'reject';
     loading?: boolean;
 }
@@ -75,7 +75,8 @@ export default function ApprovalActionModal({
                 }
             }
 
-            if (!file) {
+            // File required only for approve
+            if (isApprove && !file) {
                 setFileError('File PDF wajib diunggah');
                 return;
             }
@@ -169,7 +170,7 @@ export default function ApprovalActionModal({
                         {/* File Upload */}
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-slate-700">
-                                Unggah Dokumen (PDF) <span className="text-red-600">*</span>
+                                Unggah Dokumen (PDF) {isApprove && <span className="text-red-600">*</span>}
                             </label>
                             <label
                                 className={`flex cursor-pointer items-center justify-between gap-3 rounded-lg border ${fileError ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white'} px-4 py-3 shadow-sm transition hover:border-primary`}

@@ -50,7 +50,7 @@ export default function ApprovalDetail() {
         setModalState({ isOpen: false, type: 'approve' });
     };
 
-    const handleSubmitAction = async ({ comment, file }: { comment: string; file: File }) => {
+    const handleSubmitAction = async ({ comment, file }: { comment: string; file: File | null }) => {
         if (!contractId) return;
 
         setActionLoading(true);
@@ -58,10 +58,10 @@ export default function ApprovalDetail() {
 
         try {
             if (modalState.type === 'approve') {
-                await approveContract(contractId, { comment, file });
+                await approveContract(contractId, { comment, file: file! });
                 setSuccessMessage('Kontrak berhasil disetujui');
             } else {
-                await rejectContract(contractId, { comment, file });
+                await rejectContract(contractId, { comment, file: file ?? undefined });
                 setSuccessMessage('Kontrak berhasil ditolak');
             }
 

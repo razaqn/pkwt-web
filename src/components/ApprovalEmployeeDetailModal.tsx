@@ -141,8 +141,8 @@ export default function ApprovalEmployeeDetailModal({
                                         <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-10 text-center">
                                             <ImageOff className="h-8 w-8 text-slate-400" />
                                             <div>
-                                                <p className="text-sm font-semibold text-slate-800">Foto KTP belum tersedia</p>
-                                                <p className="text-sm text-slate-600">Hubungi tim backend untuk menyediakan URL foto KTP.</p>
+                                                <p className="text-sm font-semibold text-slate-800">Foto KTP tidak tersedia</p>
+                                                <p className="text-sm text-slate-600">Perusahaan belum/tidak mengunggah foto KTP.</p>
                                             </div>
                                         </div>
                                     )}

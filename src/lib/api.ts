@@ -762,7 +762,7 @@ export interface ApprovalDetail {
 
 export interface ApprovalActionPayload {
   comment?: string;
-  file: File;
+  file?: File;
 }
 
 export interface GetApprovalListParams {
@@ -817,9 +817,9 @@ export async function getApprovalDetail(
 // Approve contract application (admin only)
 export async function approveContract(
   contractId: string,
-  payload: ApprovalActionPayload | string
+  payload: { comment?: string; file: File }
 ): Promise<{ ok: boolean; message: string }> {
-  if (typeof payload === 'string') {
+  if (!payload.file) {
     throw new Error('File PDF wajib diunggah untuk persetujuan');
   }
 
@@ -841,23 +841,24 @@ export async function approveContract(
 // Reject contract application (admin only)
 export async function rejectContract(
   contractId: string,
-  payload: ApprovalActionPayload | string
+  payload: { comment?: string; file?: File }
 ): Promise<{ ok: boolean; message: string }> {
-  if (typeof payload === 'string') {
-    throw new Error('File PDF wajib diunggah untuk penolakan');
-  }
+  const body: Record<string, string> = {
+    comment: payload.comment || '',
+  };
 
-  const fileBase64 = await fileToBase64(payload.file);
+  // Only include file fields if file is provided
+  if (payload.file) {
+    const fileBase64 = await fileToBase64(payload.file);
+    body.approval_file_name = payload.file.name;
+    body.approval_file_content_base64 = fileBase64;
+  }
 
   return request(
     `${API_BASE}/api/admin/contracts/approvals/${contractId}/reject`,
     {
       method: 'POST',
-      body: JSON.stringify({
-        comment: payload.comment || '',
-        approval_file_name: payload.file.name,
-        approval_file_content_base64: fileBase64,
-      }),
+      body: JSON.stringify(body),
     }
   );
 }
