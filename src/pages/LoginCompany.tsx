@@ -35,7 +35,7 @@ export default function LoginCompany() {
       if (String(res.role) !== 'company') {
         throw new Error('Akun bukan perusahaan. Silakan gunakan halaman admin.');
       }
-      setAuth(res.token, res.role, res.company_id);
+      setAuth(res.token!, res.role!, res.company_id);
       navigate('/dashboard');
     } catch (err: any) {
       setError(toUserMessage(err, 'Login gagal'));
@@ -59,8 +59,8 @@ export default function LoginCompany() {
                 type="button"
                 onClick={() => handleTabChange('email')}
                 className={`flex items-center justify-center gap-2 flex-1 py-3 text-sm font-medium transition-colors ${loginMethod === 'email'
-                    ? 'text-primary border-b-2 border-primary -mb-px'
-                    : 'text-slate-500 hover:text-slate-700'
+                  ? 'text-primary border-b-2 border-primary -mb-px'
+                  : 'text-slate-500 hover:text-slate-700'
                   }`}
               >
                 <Mail size={16} />
@@ -70,8 +70,8 @@ export default function LoginCompany() {
                 type="button"
                 onClick={() => handleTabChange('phone')}
                 className={`flex items-center justify-center gap-2 flex-1 py-3 text-sm font-medium transition-colors ${loginMethod === 'phone'
-                    ? 'text-primary border-b-2 border-primary -mb-px'
-                    : 'text-slate-500 hover:text-slate-700'
+                  ? 'text-primary border-b-2 border-primary -mb-px'
+                  : 'text-slate-500 hover:text-slate-700'
                   }`}
               >
                 <Phone size={16} />

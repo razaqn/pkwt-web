@@ -5,18 +5,20 @@ export const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Auth types
 export interface LoginResponse {
-  ok: boolean;
+  ok?: boolean;
   message: string;
-  id: string;
-  role: 'candidate' | 'company' | 'super_admin' | 'disnaker';
-  token: string;
+  id?: string;
+  role?: 'candidate' | 'company' | 'super_admin' | 'disnaker';
+  token?: string;
   company_id?: string; // Only present for company role
+  confirmation_required?: boolean; // True when existing session detected
 }
 
 export interface LoginRequest {
   email?: string;
   no_handphone?: string;
   password: string;
+  force_login?: boolean; // Force login even if session exists
 }
 
 export async function login(credentials: LoginRequest): Promise<LoginResponse> {
@@ -24,6 +26,13 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(credentials)
+  });
+}
+
+// Logout for admin - clears session from database
+export async function adminLogout(): Promise<{ ok: boolean }> {
+  return request(`${API_BASE}/api/session/logout`, {
+    method: 'POST'
   });
 }
 

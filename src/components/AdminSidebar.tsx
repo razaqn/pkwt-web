@@ -3,6 +3,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { clearAuth, getRole } from '../store/auth';
 import { LayoutDashboard, Users, FileText, FileCheck, Settings, Image, Folder, LogOut } from 'lucide-react';
+import { adminLogout } from '../lib/api';
 
 interface AdminSidebarProps {
     sidebarOpen: boolean;
@@ -13,9 +14,15 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSideb
     const navigate = useNavigate();
     const role = getRole();
 
-    function logout() {
+    async function logout() {
+        // Delete session from database first
+        try {
+            await adminLogout();
+        } catch {
+            // Ignore errors - continue with local logout
+        }
         clearAuth();
-        navigate('/login');
+        navigate('/login/admin');
     }
 
     return (
