@@ -140,15 +140,10 @@ export default function ModalKelengkapanData({
             newErrors.birthdate = 'Tanggal lahir harus diisi';
         }
 
-        // Require KTP if not already uploaded previously.
-        if (!hasExistingKtp && !formData.ktpFile) {
-            setKtpError('Upload KTP wajib diisi');
-        }
+        // KTP is optional - no validation needed
 
         setErrors(newErrors);
-        const fieldsOk = Object.keys(newErrors).length === 0;
-        const ktpOk = hasExistingKtp || Boolean(formData.ktpFile);
-        return fieldsOk && ktpOk;
+        return Object.keys(newErrors).length === 0;
     }
 
     function handleSubmit(e: React.FormEvent) {
@@ -310,8 +305,7 @@ export default function ModalKelengkapanData({
                             <div className="space-y-2">
                                 <label htmlFor="ktpFile" className="block">
                                     <span className="text-sm font-medium text-slate-700">Upload KTP (Foto/Scan)</span>
-                                    {!hasExistingKtp && <span className="text-red-500 ml-1">*</span>}
-                                    <span className="text-xs text-slate-500 ml-2">(JPG/JPEG/PNG, Maksimal 5MB)</span>
+                                    <span className="text-xs text-slate-500 ml-2">(Opsional, JPG/JPEG/PNG, Maksimal 5MB)</span>
                                 </label>
 
                                 <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -323,7 +317,7 @@ export default function ModalKelengkapanData({
                                             <div>
                                                 <p className="text-sm font-semibold text-slate-900">Dokumen KTP</p>
                                                 <p className="mt-0.5 text-sm text-slate-600">
-                                                    {hasExistingKtp ? 'Sudah ada file sebelumnya. Anda bisa mengganti jika perlu.' : 'Wajib diunggah untuk melengkapi data.'}
+                                                    {hasExistingKtp ? 'Sudah ada file sebelumnya. Anda bisa mengganti jika perlu.' : 'Upload KTP bersifat opsional.'}
                                                 </p>
                                             </div>
                                         </div>
