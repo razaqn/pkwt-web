@@ -296,6 +296,36 @@ export async function submitContractApplication(
   });
 }
 
+// Admin contract creation types (on behalf of company)
+export interface AdminContractApplicationPKWTRequest {
+  company_id: string;
+  contract_type: 'PKWT';
+  start_date: string;
+  duration_months: number;
+  employee_niks: string[];
+  file_name: string;
+  file_content_base64: string;
+}
+
+export interface AdminContractApplicationPKWTTRequest {
+  company_id: string;
+  contract_type: 'PKWTT';
+  start_date: string;
+  employee_nik: string;
+  file_name: string;
+  file_content_base64: string;
+}
+
+// Submit contract application as admin (on behalf of a company)
+export async function adminSubmitContractApplication(
+  data: AdminContractApplicationPKWTRequest | AdminContractApplicationPKWTTRequest
+): Promise<ContractApplicationPKWTResponse | ContractApplicationPKWTTResponse> {
+  return request(`${API_BASE}/api/admin/contracts/applications`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+}
+
 // Draft Contract types
 export interface SaveDraftRequest {
   contract_type: 'PKWT' | 'PKWTT';
@@ -829,7 +859,7 @@ export async function approveContract(
   payload: { comment?: string; file: File }
 ): Promise<{ ok: boolean; message: string }> {
   if (!payload.file) {
-    throw new Error('File PDF wajib diunggah untuk persetujuan');
+    throw new Error('Dokumen wajib diunggah untuk persetujuan (PDF atau Word)');
   }
 
   const fileBase64 = await fileToBase64(payload.file);

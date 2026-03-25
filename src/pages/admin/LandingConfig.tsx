@@ -4,23 +4,21 @@ import { ClipLoader, MoonLoader } from 'react-spinners';
 import { useLandingConfig } from '../../hooks/useLandingConfig';
 import RunningTextConfig from '../../components/landing-config/RunningTextConfig';
 import UcapanConfig from '../../components/landing-config/UcapanConfig';
-import PartnersConfig from '../../components/landing-config/PartnersConfig';
 import FaqConfig from '../../components/landing-config/FaqConfig';
 import ContactConfig from '../../components/landing-config/ContactConfig';
 
-type TabType = 'running-text' | 'ucapan' | 'partners' | 'faq' | 'contact';
+type TabType = 'running-text' | 'ucapan' | 'faq' | 'contact';
 
 const TABS: Array<{ id: TabType; label: string }> = [
     { id: 'running-text', label: 'Running Text' },
     { id: 'ucapan', label: 'Ucapan' },
-    { id: 'partners', label: 'Partner Logos' },
     { id: 'faq', label: 'FAQ' },
     { id: 'contact', label: 'Kontak' },
 ];
 
 export default function LandingConfigPage() {
     const [activeTab, setActiveTab] = useState<TabType>('running-text');
-    const { config, setConfig, loading, error, saving, saveConfig, uploadPartner, uploadUcapanImage } = useLandingConfig();
+    const { config, setConfig, loading, error, saving, saveConfig, uploadUcapanImage } = useLandingConfig();
     const [saveSuccess, setSaveSuccess] = useState(false);
 
     const handleSave = async () => {
@@ -107,13 +105,6 @@ export default function LandingConfigPage() {
 
             {activeTab === 'running-text' && <RunningTextConfig config={config} onChange={setConfig} />}
             {activeTab === 'ucapan' && <UcapanConfig config={config} onChange={setConfig} onUploadImage={uploadUcapanImage} />}
-            {activeTab === 'partners' && (
-                <PartnersConfig
-                    config={config}
-                    onChange={setConfig}
-                    onUpload={uploadPartner}
-                />
-            )}
             {activeTab === 'faq' && <FaqConfig config={config} onChange={setConfig} />}
             {activeTab === 'contact' && <ContactConfig config={config} onChange={setConfig} />}
         </div>

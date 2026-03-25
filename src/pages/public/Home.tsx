@@ -3,7 +3,6 @@ import { useState, useRef, useLayoutEffect } from 'react';
 import { getToken } from '../../store/auth';
 import { useLandingPublic } from '../../hooks/useLandingPublic';
 import { resolveUploadUrl } from '../../lib/url';
-import type { ReactNode } from 'react';
 
 function formatNumberId(n: number | null | undefined) {
     const num = typeof n === 'number' && Number.isFinite(n) ? n : 0;
@@ -17,19 +16,6 @@ function StatCard({ label, value }: { label: string; value: string }) {
             <div className="relative">
                 <div className="text-sm font-bold uppercase tracking-wider text-slate-600">{label}</div>
                 <div className="mt-3 text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-primary via-primary to-slate-900">{value}</div>
-            </div>
-        </div>
-    );
-}
-
-function Marquee({ children }: { children: ReactNode }) {
-    return (
-        <div className="landing-marquee">
-            <div className="landing-marquee__track">
-                <div className="landing-marquee__group">{children}</div>
-                <div className="landing-marquee__group" aria-hidden>
-                    {children}
-                </div>
             </div>
         </div>
     );
@@ -83,12 +69,6 @@ export default function Home() {
 
     const runningTextEnabled = Boolean(config?.runningText?.enabled);
     const runningText = String(config?.runningText?.text || '').trim();
-
-    const partnersEnabled = Boolean(config?.partners?.enabled);
-    const partnerItems = (config?.partners?.items || [])
-        .filter((x) => x && x.enabled)
-        .slice()
-        .sort((a, b) => (a.order || 0) - (b.order || 0));
 
     const faqEnabled = Boolean(config?.faq?.enabled);
     const faqItems = (config?.faq?.items || [])
@@ -358,50 +338,6 @@ export default function Home() {
                             <StatCard label="Total Karyawan PKWTT" value={formatNumberId(stats?.permanentEmployeesRegistered)} />
                         </div>
                     </div>
-
-                    {/* (6) Partner logos running images */}
-                    {partnersEnabled && (
-                        <div className="overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-white via-slate-50 to-primary/5 p-10 shadow-xl shadow-primary/10">
-                            <div className="flex items-center justify-between gap-4">
-                                <div>
-                                    <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 px-4 py-2">
-                                        <div className="h-2 w-2 rounded-full bg-secondary animate-pulse"></div>
-                                        <div className="text-xs font-black uppercase tracking-widest text-primary">Partners</div>
-                                    </div>
-                                    <h2 className="mt-4 text-2xl font-black text-slate-900">{config?.partners?.title || 'Mitra Kami'}</h2>
-                                </div>
-                            </div>
-
-                            {partnerItems.length > 0 ? (
-                                <div className="mt-5">
-                                    <Marquee>
-                                        <div className="flex items-center gap-10 pr-10">
-                                            {partnerItems.map((p) => {
-                                                const url = resolveUploadUrl(p.image_path);
-                                                return (
-                                                    <img
-                                                        key={p.id}
-                                                        src={url || ''}
-                                                        alt={p.alt || 'Partner'}
-                                                        className="h-10 w-auto opacity-80 grayscale transition hover:opacity-100 hover:grayscale-0"
-                                                        loading="lazy"
-                                                        onError={(e) => {
-                                                            // hide broken images to avoid layout shifts
-                                                            (e.currentTarget as HTMLImageElement).style.display = 'none';
-                                                        }}
-                                                    />
-                                                );
-                                            })}
-                                        </div>
-                                    </Marquee>
-                                </div>
-                            ) : (
-                                <div className="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-                                    Belum ada logo mitra yang ditampilkan.
-                                </div>
-                            )}
-                        </div>
-                    )}
 
                     {/* (7) FAQ */}
                     {faqEnabled && (

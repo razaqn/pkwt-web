@@ -449,6 +449,7 @@ export default function ApprovalDetail() {
                 onSubmit={handleSubmitAction}
                 actionType={modalState.type}
                 loading={actionLoading}
+                approvalData={approval}
             />
 
             <ApprovalEmployeeDetailModal

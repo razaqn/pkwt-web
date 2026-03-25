@@ -12,6 +12,8 @@ import ListCompanies from './pages/admin/ListCompanies';
 import DetailCompany from './pages/admin/DetailCompany';
 import ApprovalList from './pages/admin/ApprovalList';
 import ApprovalDetail from './pages/admin/ApprovalDetail';
+import CreateContract from './pages/admin/CreateContract';
+import CreateContractSubmit from './pages/admin/CreateContractSubmit';
 import Config from './pages/admin/Config';
 import LandingConfigPage from './pages/admin/LandingConfig';
 import AdminTemplatesPage from './pages/admin/Templates';
@@ -63,6 +65,8 @@ function App() {
           <Route path="/admin/detail-company/:id" element={<RequireAuth><AppLayout><DetailCompany /></AppLayout></RequireAuth>} />
           <Route path="/admin/approvals" element={<RequireAuth><AppLayout><ApprovalList /></AppLayout></RequireAuth>} />
           <Route path="/admin/approvals/:contractId" element={<RequireAuth><AppLayout><ApprovalDetail /></AppLayout></RequireAuth>} />
+          <Route path="/admin/create-contract" element={<RequireAuth><AppLayout><CreateContract /></AppLayout></RequireAuth>} />
+          <Route path="/admin/create-contract/submit" element={<RequireAuth><AppLayout><CreateContractSubmit /></AppLayout></RequireAuth>} />
           <Route path="/admin/config" element={<RequireAuth><AppLayout><Config /></AppLayout></RequireAuth>} />
           <Route path="/admin/landing-config" element={<RequireAuth><AppLayout><LandingConfigPage /></AppLayout></RequireAuth>} />
           <Route path="/admin/templates" element={<RequireAuth><AppLayout><AdminTemplatesPage /></AppLayout></RequireAuth>} />

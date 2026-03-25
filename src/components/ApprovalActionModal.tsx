@@ -1,7 +1,15 @@
-import { AlertCircle, Info, Paperclip, X } from 'lucide-react';
+import { AlertCircle, Info, Paperclip, X, Eye, Download as DownloadIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { ClipLoader } from 'react-spinners';
 import { toUserMessage } from '../lib/errors';
+import type { ApprovalDetail } from '../lib/api';
+import {
+    generateContractDocument,
+    approvalToDocData,
+    downloadBlob,
+    openBlobInNewTab,
+    getContractFileName,
+} from '../lib/word-generator';
 
 interface ApprovalActionModalProps {
     isOpen: boolean;
@@ -9,6 +17,7 @@ interface ApprovalActionModalProps {
     onSubmit: (data: { comment: string; file: File | null }) => Promise<void>;
     actionType: 'approve' | 'reject';
     loading?: boolean;
+    approvalData?: ApprovalDetail | null;
 }
 
 export default function ApprovalActionModal({
@@ -17,11 +26,14 @@ export default function ApprovalActionModal({
     onSubmit,
     actionType,
     loading = false,
+    approvalData = null,
 }: ApprovalActionModalProps) {
     const [comment, setComment] = useState('');
     const [error, setError] = useState('');
     const [fileError, setFileError] = useState('');
     const [file, setFile] = useState<File | null>(null);
+    const [generating, setGenerating] = useState(false);
+    const [generatedBlob, setGeneratedBlob] = useState<Blob | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
     const MAX_COMMENT_LENGTH = 500;
@@ -34,20 +46,45 @@ export default function ApprovalActionModal({
         : 'bg-red-600 hover:bg-red-700';
     const title = isApprove ? 'Setujui Permohonan' : 'Tolak Permohonan';
     const description = isApprove
-        ? 'Anda yakin ingin menyetujui permohonan kontrak ini?'
+        ? 'Anda yakin ingin menyetujui permohonan kontrak ini? Preview dan unduh dokumen, lalu unggah kembali setelah diedit.'
         : 'Anda yakin ingin menolak permohonan kontrak ini? Silakan berikan alasan penolakan.';
 
     const helperText = isApprove
-        ? 'Opsional: Tambahkan catatan singkat untuk perusahaan (jika perlu).'
+        ? 'Sistem akan generate dokumen kontrak otomatis. Silakan preview, unduh, edit, lalu unggah kembali dokumen yang sudah dikonfirmasi.'
         : 'Wajib diisi: Jelaskan alasan penolakan agar perusahaan bisa memperbaiki pengajuan.';
 
     const placeholder = isApprove ? 'Tambahkan catatan (opsional)' : 'Jelaskan alasan penolakan';
 
     const commentCount = useMemo(() => comment.length, [comment]);
 
+    // Generate Word document when modal opens in approve mode
+    useEffect(() => {
+        if (isOpen && isApprove && approvalData && !generatedBlob) {
+            let cancelled = false;
+            async function generate() {
+                if (!approvalData) return;
+                setGenerating(true);
+                try {
+                    const docData = approvalToDocData(approvalData);
+                    const blob = await generateContractDocument(docData);
+                    if (!cancelled) {
+                        setGeneratedBlob(blob);
+                    }
+                } catch {
+                    // Silently fail — user can still manually upload
+                } finally {
+                    if (!cancelled) setGenerating(false);
+                }
+            }
+            generate();
+            return () => { cancelled = true; };
+        }
+        return;
+    }, [isOpen, isApprove, approvalData, generatedBlob]);
+
+    // Focus textarea on open
     useEffect(() => {
         if (isOpen) {
-            // Small delay helps ensure the element is in the DOM before focus.
             const t = window.setTimeout(() => {
                 textareaRef.current?.focus();
             }, 0);
@@ -56,13 +93,36 @@ export default function ApprovalActionModal({
         return;
     }, [isOpen]);
 
+    // Reset state when modal closes
+    useEffect(() => {
+        if (!isOpen) {
+            setGeneratedBlob(null);
+            setGenerating(false);
+        }
+    }, [isOpen]);
+
+    const handlePreviewDocument = useCallback(() => {
+        if (generatedBlob) {
+            openBlobInNewTab(generatedBlob);
+        }
+    }, [generatedBlob]);
+
+    const handleDownloadDocument = useCallback(() => {
+        if (generatedBlob && approvalData) {
+            const filename = getContractFileName(
+                approvalData.company.company_name,
+                approvalData.contract.contract_type
+            );
+            downloadBlob(generatedBlob, filename);
+        }
+    }, [generatedBlob, approvalData]);
+
     const handleSubmit = useCallback(
         async (e: React.FormEvent) => {
             e.preventDefault();
             setError('');
             setFileError('');
 
-            // Validation: reject requires comment (min 5 chars)
             const trimmedComment = comment.trim();
             if (!isApprove) {
                 if (!trimmedComment) {
@@ -77,13 +137,13 @@ export default function ApprovalActionModal({
 
             // File required only for approve
             if (isApprove && !file) {
-                setFileError('File PDF wajib diunggah');
+                setFileError('Dokumen wajib diunggah (PDF atau Word)');
                 return;
             }
 
             try {
                 await onSubmit({ comment: trimmedComment, file });
-                setComment(''); // Reset on success
+                setComment('');
                 setFile(null);
             } catch (err: any) {
                 setError(toUserMessage(err, 'Terjadi kesalahan'));
@@ -98,6 +158,7 @@ export default function ApprovalActionModal({
             setError('');
             setFileError('');
             setFile(null);
+            setGeneratedBlob(null);
             onClose();
         }
     }, [loading, onClose]);
@@ -112,8 +173,12 @@ export default function ApprovalActionModal({
                 return;
             }
 
-            if (selected.type !== 'application/pdf') {
-                setFileError('Format file harus PDF');
+            const isPdf = selected.type === 'application/pdf';
+            const isDocx = selected.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+            const isDocxByExt = selected.name.toLowerCase().endsWith('.docx');
+
+            if (!isPdf && !isDocx && !isDocxByExt) {
+                setFileError('Format file harus PDF atau Word (.docx)');
                 setFile(null);
                 return;
             }
@@ -136,7 +201,7 @@ export default function ApprovalActionModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-md rounded-xl bg-white shadow-xl">
+            <div className="w-full max-w-lg rounded-xl bg-white shadow-xl">
                 {/* Header */}
                 <div className="flex items-start justify-between border-b border-slate-200 p-6">
                     <div className="flex items-center gap-3">
@@ -159,7 +224,7 @@ export default function ApprovalActionModal({
 
                 {/* Body */}
                 <form onSubmit={handleSubmit}>
-                    <div className="space-y-4 p-6">
+                    <div className="space-y-4 p-6 max-h-[70vh] overflow-y-auto">
                         <p className="text-sm text-slate-600">{description}</p>
 
                         <div className="flex items-start gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
@@ -167,10 +232,50 @@ export default function ApprovalActionModal({
                             <p className="text-sm text-slate-700">{helperText}</p>
                         </div>
 
+                        {/* Approve: Preview & Download section */}
+                        {isApprove && (
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-slate-700">
+                                    Dokumen Kontrak (Auto-Generated)
+                                </label>
+                                {generating ? (
+                                    <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                                        <ClipLoader size={16} color="#419823" />
+                                        <span className="text-sm text-slate-600">Menggenerate dokumen...</span>
+                                    </div>
+                                ) : generatedBlob ? (
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={handlePreviewDocument}
+                                            className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-white px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
+                                        >
+                                            <Eye className="h-4 w-4" />
+                                            Preview Dokumen
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={handleDownloadDocument}
+                                            className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-white px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
+                                        >
+                                            <DownloadIcon className="h-4 w-4" />
+                                            Unduh Dokumen
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3">
+                                        <p className="text-sm text-yellow-700">Gagal menggenerate dokumen. Silakan upload dokumen secara manual.</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* File Upload */}
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-slate-700">
-                                Unggah Dokumen (PDF) {isApprove && <span className="text-red-600">*</span>}
+                                {isApprove ? 'Unggah Dokumen yang Sudah Diedit' : 'Unggah Dokumen'}{' '}
+                                <span className="text-slate-500 font-normal">(PDF/Word)</span>
+                                {isApprove && <span className="text-red-600 ml-1">*</span>}
                             </label>
                             <label
                                 className={`flex cursor-pointer items-center justify-between gap-3 rounded-lg border ${fileError ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white'} px-4 py-3 shadow-sm transition hover:border-primary`}
@@ -181,7 +286,7 @@ export default function ApprovalActionModal({
                                     </span>
                                     <div className="flex flex-col">
                                         <span className="text-sm font-medium text-slate-900">
-                                            {file ? file.name : 'Pilih file PDF'}
+                                            {file ? file.name : 'Pilih file PDF atau Word'}
                                         </span>
                                         <span className="text-xs text-slate-500">
                                             {file ? formatFileSize(file.size) : 'Maksimal 5MB'}
@@ -190,7 +295,7 @@ export default function ApprovalActionModal({
                                 </div>
                                 <input
                                     type="file"
-                                    accept="application/pdf"
+                                    accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                                     onChange={handleFileChange}
                                     disabled={loading}
                                     className="hidden"
