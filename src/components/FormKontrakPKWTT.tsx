@@ -1,6 +1,6 @@
-import { Upload, X, AlertCircle, FileText, FileSpreadsheet, CheckCircle } from 'lucide-react';
-import { useState } from 'react';
-import { parseExcelFile, mapExcelRowsToPKWTT, MAX_FILE_SIZE_MB as EXCEL_MAX_SIZE_MB } from '../lib/excel';
+import { Upload, X, AlertCircle, FileText, CheckCircle } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { checkNIKs } from '../lib/api';
 import { ClipLoader } from 'react-spinners';
 import { toUserMessage } from '../lib/errors';
 
@@ -9,9 +9,13 @@ const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 export interface FormKontrakPKWTTData {
     nik: string;
+    fullName?: string;
+    gender?: 'Laki-laki' | 'Perempuan';
+    position?: string;
     startDate: string;
-    fileKontrak: File | null;
-    importedData?: Record<string, any>; // NIK -> additional Excel data mapping
+    address?: string;
+    fileSuratPermohonan?: File | null;
+    fileDraftPKWT?: File | null;
 }
 
 interface FormKontrakPKWTTProps {
@@ -22,219 +26,228 @@ interface FormKontrakPKWTTProps {
 }
 
 export default function FormKontrakPKWTT({ data, onChange, errors = {}, loading = false }: FormKontrakPKWTTProps) {
-    const [importError, setImportError] = useState<string | null>(null);
-    const [importSuccess, setImportSuccess] = useState<string | null>(null);
-    const [importWarnings, setImportWarnings] = useState<string[]>([]);
-    const [isImporting, setIsImporting] = useState(false);
+    const [isCheckingNIK, setIsCheckingNIK] = useState(false);
+    const [nikFound, setNikFound] = useState<boolean | null>(null);
+    const [nikCheckError, setNikCheckError] = useState<string | null>(null);
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    function updateNIK(value: string) {
-        onChange({
-            ...data,
-            nik: value
-        });
-    }
-
-    function updateStartDate(value: string) {
-        onChange({
-            ...data,
-            startDate: value
-        });
-    }
-
-    function handleFileChange(file: File | null) {
-        // Validate file type
-        if (file && !file.type.includes('pdf')) {
+    // Auto-populate when NIK is entered (debounced)
+    async function handleNIKCheck(nik: string) {
+        if (!/^[0-9]{16}$/.test(nik)) {
+            setNikFound(null);
+            setNikCheckError(null);
             return;
         }
-        // Validate file size
-        if (file && file.size > MAX_FILE_SIZE_BYTES) {
-            return;
-        }
-        onChange({
-            ...data,
-            fileKontrak: file
-        });
-    }
 
-    function onFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0] || null;
-        if (file && file.size > MAX_FILE_SIZE_BYTES) {
-            // Reset input
-            e.target.value = '';
-            return;
-        }
-        handleFileChange(file);
-    }
-
-    function clearFile() {
-        onChange({
-            ...data,
-            fileKontrak: null
-        });
-    }
-
-    async function handleExcelImport(file: File | null) {
-        if (!file) return;
-
-        setIsImporting(true);
-        setImportError(null);
-        setImportSuccess(null);
-        setImportWarnings([]);
+        setIsCheckingNIK(true);
+        setNikCheckError(null);
 
         try {
-            // Parse Excel file
-            const result = await parseExcelFile(file);
+            const response = await checkNIKs([nik]);
+            const employee = response.data.find(r => r.nik === nik);
 
-            // Map to PKWTT format (single NIK from first row)
-            const { nik, importedData, multipleRowsWarning } = mapExcelRowsToPKWTT(result.rows);
-
-            // Update NIK and imported data
-            onChange({
-                ...data,
-                nik,
-                importedData: { [nik]: importedData },
-            });
-
-            // Show success message
-            let successMsg = `✓ NIK berhasil diimpor dari ${result.fileName}`;
-            if (multipleRowsWarning) {
-                successMsg += ' (Hanya baris pertama yang digunakan untuk PKWTT)';
-            }
-            setImportSuccess(successMsg);
-
-            // Show warnings if any
-            if (result.warnings.length > 0 || multipleRowsWarning) {
-                const warnings = [...result.warnings];
-                if (multipleRowsWarning) {
-                    warnings.unshift('File memiliki multiple baris, hanya baris pertama yang digunakan');
+            if (employee?.exists) {
+                setNikFound(true);
+                // Auto-fill fields from existing data (only if current data is empty)
+                const updates: Partial<FormKontrakPKWTTData> = {};
+                if (!data.fullName && employee.full_name) {
+                    updates.fullName = employee.full_name;
                 }
-                setImportWarnings(warnings);
+                if (!data.gender && employee.gender) {
+                    updates.gender = employee.gender as 'Laki-laki' | 'Perempuan';
+                }
+                if (!data.position && employee.position) {
+                    updates.position = employee.position;
+                }
+                if (!data.address && employee.address) {
+                    updates.address = employee.address;
+                }
+                if (Object.keys(updates).length > 0) {
+                    onChange({ ...data, ...updates });
+                }
+            } else {
+                setNikFound(false);
             }
-
-            // Clear success message after 5 seconds
-            setTimeout(() => setImportSuccess(null), 5000);
         } catch (err: any) {
-            setImportError(toUserMessage(err, 'Gagal mengimpor file Excel'));
+            setNikCheckError(toUserMessage(err, 'Gagal memeriksa NIK'));
+            setNikFound(null);
         } finally {
-            setIsImporting(false);
+            setIsCheckingNIK(false);
         }
     }
 
-    function clearImportMessages() {
-        setImportError(null);
-        setImportSuccess(null);
-        setImportWarnings([]);
+    function handleNIKChange(value: string) {
+        onChange({ ...data, nik: value });
+        setNikFound(null);
+        setNikCheckError(null);
+
+        // Debounced NIK check
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+        if (/^[0-9]{16}$/.test(value)) {
+            debounceRef.current = setTimeout(() => {
+                handleNIKCheck(value);
+            }, 500);
+        }
+    }
+
+    useEffect(() => {
+        return () => {
+            if (debounceRef.current) {
+                clearTimeout(debounceRef.current);
+            }
+        };
+    }, []);
+
+    function updateField(field: keyof FormKontrakPKWTTData, value: string) {
+        onChange({ ...data, [field]: value });
+    }
+
+    function handleSuratPermohonanChange(file: File | null) {
+        if (file && file.size > MAX_FILE_SIZE_BYTES) {
+            onChange({ ...data, fileSuratPermohonan: null });
+            return;
+        }
+        onChange({ ...data, fileSuratPermohonan: file });
+    }
+
+    function handleDraftPKWTChange(file: File | null) {
+        if (file && file.size > MAX_FILE_SIZE_BYTES) {
+            onChange({ ...data, fileDraftPKWT: null });
+            return;
+        }
+        onChange({ ...data, fileDraftPKWT: file });
     }
 
     return (
         <div className="space-y-8">
-            {/* NIK Section */}
+            {/* NIK Section with auto-populate */}
             <div className="space-y-3">
                 <label htmlFor="nik" className="block">
                     <span className="text-sm font-medium text-slate-700">NIK Karyawan</span>
                     <span className="text-red-500 ml-1">*</span>
                 </label>
 
-                {/* Excel Import Section */}
-                <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <FileSpreadsheet className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-semibold text-slate-900">Import dari Excel</span>
+                <div className="relative">
+                    <input
+                        id="nik"
+                        type="text"
+                        value={data.nik}
+                        onChange={(e) => handleNIKChange(e.target.value)}
+                        placeholder="Masukkan 16 digit NIK"
+                        disabled={loading}
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
+                    />
+                    {isCheckingNIK && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <ClipLoader size={16} color="#419823" />
                         </div>
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="file"
-                                accept=".xlsx,.xls,.csv"
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0] || null;
-                                    if (file) {
-                                        handleExcelImport(file);
-                                        e.target.value = ''; // Reset input
-                                    }
-                                }}
-                                disabled={loading || isImporting}
-                                className="hidden"
-                                id="excelInputPKWTT"
-                            />
-                            <label
-                                htmlFor="excelInputPKWTT"
-                                className={`inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-white px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/5 transition cursor-pointer ${loading || isImporting ? 'opacity-50 cursor-not-allowed' : ''
-                                    }`}
-                            >
-                                {isImporting && <ClipLoader size={14} color="#419823" />}
-                                <Upload className="h-4 w-4" />
-                                {isImporting ? 'Mengimpor...' : 'Pilih File'}
-                            </label>
-                        </div>
-                    </div>
-                    <p className="text-xs text-slate-700">
-                        File Excel (.xlsx, .xls, .csv) dengan kolom "NIK" (wajib). Hanya baris pertama yang digunakan. Max {EXCEL_MAX_SIZE_MB}MB.
-                    </p>
+                    )}
                 </div>
 
-                {/* Import Success Message */}
-                {importSuccess && (
-                    <div className="flex items-start gap-2 rounded-lg bg-green-50 border border-green-200 p-3">
-                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1">
-                            <p className="text-sm text-green-700">{importSuccess}</p>
-                        </div>
-                        <button
-                            onClick={clearImportMessages}
-                            type="button"
-                            className="text-green-600 hover:text-green-800"
-                        >
-                            <X className="h-4 w-4" />
-                        </button>
-                    </div>
-                )}
-
-                {/* Import Error Message */}
-                {importError && (
-                    <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 p-3">
-                        <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1">
-                            <p className="text-sm text-red-700">{importError}</p>
-                        </div>
-                        <button
-                            onClick={clearImportMessages}
-                            type="button"
-                            className="text-red-600 hover:text-red-800"
-                        >
-                            <X className="h-4 w-4" />
-                        </button>
-                    </div>
-                )}
-
-                {/* Import Warnings */}
-                {importWarnings.length > 0 && (
-                    <div className="rounded-xl bg-secondary/20 border border-secondary/40 p-4 space-y-1">
-                        <div className="flex items-center gap-2">
-                            <AlertCircle className="h-4 w-4 text-slate-800" />
-                            <span className="text-sm font-semibold text-slate-900">Peringatan Import:</span>
-                        </div>
-                        <ul className="text-xs text-slate-700 list-disc list-inside space-y-0.5">
-                            {importWarnings.slice(0, 5).map((warning, idx) => (
-                                <li key={idx}>{warning}</li>
-                            ))}
-                            {importWarnings.length > 5 && (
-                                <li className="italic">...dan {importWarnings.length - 5} peringatan lainnya</li>
-                            )}
-                        </ul>
-                    </div>
-                )}
-
-                <input
-                    id="nik"
-                    type="text"
-                    value={data.nik}
-                    onChange={(e) => updateNIK(e.target.value)}
-                    placeholder="Masukkan NIK atau import dari Excel"
-                    disabled={loading}
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
-                />
                 {errors.nik && <p className="text-sm text-red-500">{errors.nik}</p>}
+
+                {/* NIK check status */}
+                {nikFound === true && (
+                    <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 p-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <p className="text-sm text-green-700">NIK ditemukan. Data karyawan telah diisi otomatis.</p>
+                    </div>
+                )}
+                {nikFound === false && (
+                    <div className="flex items-center gap-2 rounded-lg bg-yellow-50 border border-yellow-200 p-2">
+                        <AlertCircle className="h-4 w-4 text-yellow-600" />
+                        <p className="text-sm text-yellow-700">NIK baru. Silakan isi data karyawan di bawah ini.</p>
+                    </div>
+                )}
+                {nikCheckError && (
+                    <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 p-2">
+                        <AlertCircle className="h-4 w-4 text-red-600" />
+                        <p className="text-sm text-red-700">{nikCheckError}</p>
+                    </div>
+                )}
+            </div>
+
+            {/* Employee Data Fields (editable) */}
+            <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <p className="text-sm font-semibold text-slate-900">Data Karyawan</p>
+                <p className="text-xs text-slate-500">Data akan terisi otomatis jika NIK sudah terdaftar. Anda bisa mengubah jika ada perubahan.</p>
+
+                {/* Nama Lengkap */}
+                <div className="space-y-2">
+                    <label htmlFor="fullName" className="block">
+                        <span className="text-sm font-medium text-slate-700">Nama Lengkap</span>
+                        <span className="text-red-500 ml-1">*</span>
+                    </label>
+                    <input
+                        id="fullName"
+                        type="text"
+                        value={data.fullName || ''}
+                        onChange={(e) => updateField('fullName', e.target.value)}
+                        placeholder="Masukkan nama lengkap"
+                        disabled={loading}
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
+                    />
+                    {errors.fullName && <p className="text-sm text-red-600">{errors.fullName}</p>}
+                </div>
+
+                {/* Kelamin & Jabatan (Side by side) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label htmlFor="gender" className="block">
+                            <span className="text-sm font-medium text-slate-700">Kelamin</span>
+                            <span className="text-red-500 ml-1">*</span>
+                        </label>
+                        <select
+                            id="gender"
+                            value={data.gender || ''}
+                            onChange={(e) => updateField('gender', e.target.value)}
+                            disabled={loading}
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
+                        >
+                            <option value="">Pilih kelamin</option>
+                            <option value="Laki-laki">Laki-laki</option>
+                            <option value="Perempuan">Perempuan</option>
+                        </select>
+                        {errors.gender && <p className="text-sm text-red-600">{errors.gender}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                        <label htmlFor="position" className="block">
+                            <span className="text-sm font-medium text-slate-700">Jabatan</span>
+                            <span className="text-red-500 ml-1">*</span>
+                        </label>
+                        <input
+                            id="position"
+                            type="text"
+                            value={data.position || ''}
+                            onChange={(e) => updateField('position', e.target.value)}
+                            placeholder="Contoh: Staff Administrasi"
+                            disabled={loading}
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
+                        />
+                        {errors.position && <p className="text-sm text-red-600">{errors.position}</p>}
+                    </div>
+                </div>
+
+                {/* Alamat (Kelurahan) */}
+                <div className="space-y-2">
+                    <label htmlFor="address" className="block">
+                        <span className="text-sm font-medium text-slate-700">Alamat (Kelurahan)</span>
+                        <span className="text-red-500 ml-1">*</span>
+                    </label>
+                    <input
+                        id="address"
+                        type="text"
+                        value={data.address || ''}
+                        onChange={(e) => updateField('address', e.target.value)}
+                        placeholder="Masukkan kelurahan"
+                        disabled={loading}
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
+                    />
+                    {errors.address && <p className="text-sm text-red-600">{errors.address}</p>}
+                </div>
             </div>
 
             {/* Start Date */}
@@ -247,34 +260,35 @@ export default function FormKontrakPKWTT({ data, onChange, errors = {}, loading 
                     id="startDate"
                     type="date"
                     value={data.startDate}
-                    onChange={(e) => updateStartDate(e.target.value)}
+                    onChange={(e) => updateField('startDate', e.target.value)}
                     disabled={loading}
                     className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
                 />
+                <p className="text-xs text-slate-500">PKWTT (tetap) tidak memiliki tanggal berakhir.</p>
                 {errors.startDate && <p className="text-sm text-red-500">{errors.startDate}</p>}
             </div>
 
-            {/* File Kontrak */}
+            {/* Surat Permohonan */}
             <div className="space-y-2">
                 <label className="block">
-                    <span className="text-sm font-medium text-slate-700">File Kontrak</span>
+                    <span className="text-sm font-medium text-slate-700">Surat Permohonan (PDF)</span>
                     <span className="text-red-500 ml-1">*</span>
-                    <span className="text-xs text-slate-500 ml-2">(Format PDF, Maksimal 5MB)</span>
+                    <span className="text-xs text-slate-500 ml-2">(max {MAX_FILE_SIZE_MB}MB)</span>
                 </label>
 
-                {data.fileKontrak ? (
+                {data.fileSuratPermohonan ? (
                     <div className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
                         <div className="flex items-center gap-3">
                             <FileText className="h-5 w-5 text-primary" />
                             <div>
-                                <p className="text-sm font-semibold text-slate-900">{data.fileKontrak.name}</p>
+                                <p className="text-sm font-semibold text-slate-900">{data.fileSuratPermohonan.name}</p>
                                 <p className="text-xs text-slate-600">
-                                    {(data.fileKontrak.size / 1024 / 1024).toFixed(2)} MB
+                                    {(data.fileSuratPermohonan.size / 1024 / 1024).toFixed(2)} MB
                                 </p>
                             </div>
                         </div>
                         <button
-                            onClick={clearFile}
+                            onClick={() => handleSuratPermohonanChange(null)}
                             disabled={loading}
                             type="button"
                             className="rounded-lg p-2 hover:bg-primary/10 disabled:opacity-50 transition"
@@ -286,22 +300,86 @@ export default function FormKontrakPKWTT({ data, onChange, errors = {}, loading 
                 ) : (
                     <label className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-8 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition">
                         <Upload className="h-8 w-8 text-slate-400 mb-2" />
-                        <span className="text-sm font-medium text-slate-700">Pilih file PDF</span>
+                        <span className="text-sm font-medium text-slate-700">Pilih file Surat Permohonan</span>
                         <span className="text-xs text-slate-500 mt-1">atau drag and drop</span>
                         <input
                             type="file"
                             accept=".pdf"
-                            onChange={onFileInputChange}
+                            onChange={(e) => {
+                                const file = e.target.files?.[0] || null;
+                                handleSuratPermohonanChange(file);
+                                if (file && file.size > MAX_FILE_SIZE_BYTES) {
+                                    e.target.value = '';
+                                }
+                            }}
                             disabled={loading}
                             className="hidden"
                         />
                     </label>
                 )}
 
-                {errors.fileKontrak && (
+                {errors.fileSuratPermohonan && (
                     <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
                         <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-                        <p className="text-sm text-red-700">{errors.fileKontrak}</p>
+                        <p className="text-sm text-red-700">{errors.fileSuratPermohonan}</p>
+                    </div>
+                )}
+            </div>
+
+            {/* Draft PKWT */}
+            <div className="space-y-2">
+                <label className="block">
+                    <span className="text-sm font-medium text-slate-700">Draft PKWT (PDF)</span>
+                    <span className="text-red-500 ml-1">*</span>
+                    <span className="text-xs text-slate-500 ml-2">(max {MAX_FILE_SIZE_MB}MB)</span>
+                </label>
+
+                {data.fileDraftPKWT ? (
+                    <div className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+                        <div className="flex items-center gap-3">
+                            <FileText className="h-5 w-5 text-primary" />
+                            <div>
+                                <p className="text-sm font-semibold text-slate-900">{data.fileDraftPKWT.name}</p>
+                                <p className="text-xs text-slate-600">
+                                    {(data.fileDraftPKWT.size / 1024 / 1024).toFixed(2)} MB
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => handleDraftPKWTChange(null)}
+                            disabled={loading}
+                            type="button"
+                            className="rounded-lg p-2 hover:bg-primary/10 disabled:opacity-50 transition"
+                            title="Hapus file"
+                        >
+                            <X className="h-5 w-5 text-primary" />
+                        </button>
+                    </div>
+                ) : (
+                    <label className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-8 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition">
+                        <Upload className="h-8 w-8 text-slate-400 mb-2" />
+                        <span className="text-sm font-medium text-slate-700">Pilih file Draft PKWT</span>
+                        <span className="text-xs text-slate-500 mt-1">atau drag and drop</span>
+                        <input
+                            type="file"
+                            accept=".pdf"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0] || null;
+                                handleDraftPKWTChange(file);
+                                if (file && file.size > MAX_FILE_SIZE_BYTES) {
+                                    e.target.value = '';
+                                }
+                            }}
+                            disabled={loading}
+                            className="hidden"
+                        />
+                    </label>
+                )}
+
+                {errors.fileDraftPKWT && (
+                    <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+                        <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-red-700">{errors.fileDraftPKWT}</p>
                     </div>
                 )}
             </div>

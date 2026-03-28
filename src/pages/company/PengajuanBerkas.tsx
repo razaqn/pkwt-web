@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Calendar, Users, Clock, AlertCircle, Send, Upload, FileText, ArrowLeft } from 'lucide-react';
+import { Users, AlertCircle, Send, Upload, FileText, ArrowLeft } from 'lucide-react';
 import TabelNIKPengajuan from '../../components/TabelNIKPengajuan';
 import ModalKelengkapanData, { type KelengkapanDataForm } from '../../components/ModalKelengkapanData';
 import { useContractSubmission } from '../../hooks/useContractSubmission';
@@ -15,9 +15,8 @@ type ContractType = 'PKWT' | 'PKWTT';
 interface ContractData {
     contractType: ContractType;
     niks: string[];
-    startDate: string;
-    duration: number | null;
-    fileKontrak?: File | null;
+    fileSuratPermohonan?: File | null;
+    fileDraftPKWT?: File | null;
     importedData?: Record<string, any>;
     draftId?: string;
 }
@@ -28,7 +27,6 @@ export default function PengajuanBerkas() {
     const contractData = location.state as ContractData | null;
     const dialog = useDialog();
 
-    // Use custom hook for contract submission logic
     const {
         nikDataList,
         contractStatus,
@@ -41,43 +39,42 @@ export default function PengajuanBerkas() {
         allDataComplete,
     } = useContractSubmission(contractData);
 
-    // Local UI state
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedNIK, setSelectedNIK] = useState<string | null>(null);
     const [draftId, setDraftId] = useState<string | null>(contractData?.draftId ?? null);
-    const [fileKontrak, setFileKontrak] = useState<File | null>(contractData?.fileKontrak || null);
+    const [fileSuratPermohonan, setFileSuratPermohonan] = useState<File | null>(contractData?.fileSuratPermohonan || null);
+    const [fileDraftPKWT, setFileDraftPKWT] = useState<File | null>(contractData?.fileDraftPKWT || null);
     const [fileSizeError, setFileSizeError] = useState<string | null>(null);
 
     const allEmployeesCount = contractData?.niks?.length ?? 0;
-
-    const contractStartDateLabel = (() => {
-        if (!contractData?.startDate) return '-';
-        try {
-            return new Date(contractData.startDate).toLocaleDateString('id-ID', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-            });
-        } catch {
-            return contractData.startDate;
-        }
-    })();
 
     function handleEditNIK(nik: string) {
         setSelectedNIK(nik);
         setModalOpen(true);
     }
 
-    function handleFileChange(file: File | null) {
+    function handleSuratPermohonanChange(file: File | null) {
         setFileSizeError(null);
 
         if (file && file.size > MAX_FILE_SIZE_BYTES) {
             const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
-            setFileSizeError(`File terlalu besar. Maksimal 5MB, file Anda ${fileSizeMB}MB`);
+            setFileSizeError(`Surat Permohonan terlalu besar. Maksimal 5MB, file Anda ${fileSizeMB}MB`);
             return;
         }
 
-        setFileKontrak(file);
+        setFileSuratPermohonan(file);
+    }
+
+    function handleDraftPKWTChange(file: File | null) {
+        setFileSizeError(null);
+
+        if (file && file.size > MAX_FILE_SIZE_BYTES) {
+            const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
+            setFileSizeError(`Draft PKWT terlalu besar. Maksimal 5MB, file Anda ${fileSizeMB}MB`);
+            return;
+        }
+
+        setFileDraftPKWT(file);
     }
 
     async function handleSaveNIKData(formData: KelengkapanDataForm) {
@@ -93,15 +90,7 @@ export default function PengajuanBerkas() {
     async function handleSubmitContract() {
         if (!contractData) return;
 
-        // For PKWT, require file upload
-        if (contractData.contractType === 'PKWT' && !fileKontrak) {
-            // Error will be shown by hook
-            await submitContract(null);
-            return;
-        }
-
-        // Pass file to hook for submission
-        const success = await submitContract(fileKontrak);
+        const success = await submitContract(fileSuratPermohonan, fileDraftPKWT);
         if (success) {
             await dialog.alert({
                 title: 'Berhasil',
@@ -129,7 +118,7 @@ export default function PengajuanBerkas() {
                 <div className="flex flex-col items-center justify-center gap-4 text-center">
                     <MoonLoader size={40} color="#419823" />
                     <div>
-                        <p className="text-sm font-semibold text-slate-900">Mengalihkan ke Form Kontrak…</p>
+                        <p className="text-sm font-semibold text-slate-900">Mengalihkan ke Form Kontrak...</p>
                         <p className="mt-1 text-sm text-slate-600">Data pengajuan tidak ditemukan. Biasanya terjadi jika halaman di-refresh.</p>
                     </div>
                     <button
@@ -149,18 +138,16 @@ export default function PengajuanBerkas() {
     const initialModalData: KelengkapanDataForm | undefined = selectedNIKData
         ? {
             fullName: selectedNIKData.fullName || '',
+            gender: (selectedNIKData.gender as 'Laki-laki' | 'Perempuan' | '') || '',
+            position: selectedNIKData.position || '',
+            startDate: selectedNIKData.startDate || '',
+            endDate: selectedNIKData.endDate || '',
             address: selectedNIKData.address || '',
-            district: selectedNIKData.district || '',
-            village: selectedNIKData.village || '',
-            placeOfBirth: selectedNIKData.placeOfBirth || '',
-            birthdate: selectedNIKData.birthdate || '',
-            ktpFile: null, // File state handled separately in modal
+            pkwtSequence: '',
         }
         : undefined;
 
-    const fileRequiredMissing =
-        (contractData.contractType === 'PKWT' && !fileKontrak) ||
-        (contractData.contractType === 'PKWTT' && !contractData.fileKontrak);
+    const filesComplete = fileSuratPermohonan && fileDraftPKWT;
 
     return (
         <div className="space-y-6">
@@ -225,8 +212,7 @@ export default function PengajuanBerkas() {
                 </div>
 
                 <div className="px-6 py-6">
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Jenis Kontrak */}
                         <div>
                             <div className="text-sm text-slate-600 mb-1">Jenis Kontrak</div>
@@ -256,30 +242,7 @@ export default function PengajuanBerkas() {
                                 </span>
                             </div>
                         </div>
-
-                        {/* Durasi */}
-                        <div>
-                            <div className="text-sm text-slate-600 mb-1">Durasi</div>
-                            <div className="flex items-center gap-2 text-slate-900">
-                                <Clock className="h-4 w-4 text-slate-500" />
-                                <span className="font-medium">
-                                    {contractData.duration ? `${contractData.duration} Bulan` : contractData.contractType === 'PKWTT' ? 'Tetap' : '-'}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Tanggal Mulai */}
-                        <div>
-                            <div className="text-sm text-slate-600 mb-1">Tanggal Mulai</div>
-                            <div className="flex items-center gap-2 text-slate-900">
-                                <Calendar className="h-4 w-4 text-slate-500" />
-                                <span className="font-medium">
-                                    {contractStartDateLabel}
-                                </span>
-                            </div>
-                        </div>
                     </div>
-
                 </div>
             </div>
 
@@ -298,78 +261,133 @@ export default function PengajuanBerkas() {
                 <TabelNIKPengajuan data={nikDataList} onEdit={handleEditNIK} loading={loading} />
             </div>
 
-            {/* File Kontrak Section (for PKWT) */}
-            {contractData.contractType === 'PKWT' && (
-                <div className="space-y-4">
-                    <h2 className="text-lg font-semibold text-slate-900">File Kontrak</h2>
+            {/* File Upload Section (2 files) */}
+            <div className="space-y-4">
+                <h2 className="text-lg font-semibold text-slate-900">Dokumen Kontrak</h2>
 
-                    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-                        <div className="space-y-2">
-                            <label className="block">
-                                <span className="text-sm font-medium text-slate-700">Upload File Kontrak (PDF)</span>
-                                <span className="text-red-500 ml-1">*</span>
-                                <span className="text-xs text-slate-500 ml-2">(untuk semua {contractData.niks.length} karyawan)</span>
-                            </label>
+                <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
+                    {/* Surat Permohonan */}
+                    <div className="space-y-2">
+                        <label className="block">
+                            <span className="text-sm font-medium text-slate-700">Surat Permohonan (PDF)</span>
+                            <span className="text-red-500 ml-1">*</span>
+                            <span className="text-xs text-slate-500 ml-2">(max {MAX_FILE_SIZE_MB}MB)</span>
+                        </label>
 
+                        {fileSuratPermohonan ? (
+                            <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-3 py-2">
+                                <FileText className="h-4 w-4 text-green-600" />
+                                <div className="flex-1">
+                                    <span className="text-sm text-green-700 block">{fileSuratPermohonan.name}</span>
+                                    <span className="text-xs text-green-600">{(fileSuratPermohonan.size / 1024 / 1024).toFixed(2)} MB</span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setFileSuratPermohonan(null);
+                                        setFileSizeError(null);
+                                    }}
+                                    disabled={loading || submitLoading}
+                                    className="text-xs text-green-600 hover:text-green-800 font-medium"
+                                >
+                                    Hapus
+                                </button>
+                            </div>
+                        ) : (
                             <div className="relative">
                                 <input
                                     type="file"
                                     accept=".pdf"
                                     onChange={(e) => {
                                         const file = e.target.files?.[0] || null;
+                                        handleSuratPermohonanChange(file);
                                         if (file && file.size > MAX_FILE_SIZE_BYTES) {
                                             e.target.value = '';
                                         }
-                                        handleFileChange(file);
                                     }}
                                     disabled={loading || submitLoading}
                                     className="hidden"
-                                    id="fileInputPengajuan"
+                                    id="suratPermohonanInput"
                                 />
-
                                 <label
-                                    htmlFor="fileInputPengajuan"
+                                    htmlFor="suratPermohonanInput"
                                     className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 cursor-pointer transition hover:border-primary/60 hover:bg-primary/5 disabled:opacity-50"
                                 >
                                     <Upload className="h-5 w-5 text-slate-500" />
                                     <div className="text-center">
-                                        <span className="text-sm font-medium text-slate-700">Pilih file PDF</span>
-                                        <span className="text-xs text-slate-500 block">atau drag & drop (Maksimal 5MB)</span>
+                                        <span className="text-sm font-medium text-slate-700">Pilih file Surat Permohonan</span>
+                                        <span className="text-xs text-slate-500 block">atau drag & drop</span>
                                     </div>
                                 </label>
                             </div>
-
-                            {fileSizeError && (
-                                <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
-                                    <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-                                    <p className="text-sm text-red-700">{fileSizeError}</p>
-                                </div>
-                            )}
-
-                            {fileKontrak && (
-                                <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-3 py-2">
-                                    <FileText className="h-4 w-4 text-green-600" />
-                                    <div className="flex-1">
-                                        <span className="text-sm text-green-700 block">{fileKontrak.name}</span>
-                                        <span className="text-xs text-green-600">{(fileKontrak.size / 1024 / 1024).toFixed(2)} MB</span>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setFileKontrak(null);
-                                            setFileSizeError(null);
-                                        }}
-                                        disabled={loading || submitLoading}
-                                        className="text-xs text-green-600 hover:text-green-800 font-medium"
-                                    >
-                                        Hapus
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                        )}
                     </div>
+
+                    {/* Draft PKWT */}
+                    <div className="space-y-2">
+                        <label className="block">
+                            <span className="text-sm font-medium text-slate-700">Draft PKWT (PDF)</span>
+                            <span className="text-red-500 ml-1">*</span>
+                            <span className="text-xs text-slate-500 ml-2">(max {MAX_FILE_SIZE_MB}MB)</span>
+                        </label>
+
+                        {fileDraftPKWT ? (
+                            <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-3 py-2">
+                                <FileText className="h-4 w-4 text-green-600" />
+                                <div className="flex-1">
+                                    <span className="text-sm text-green-700 block">{fileDraftPKWT.name}</span>
+                                    <span className="text-xs text-green-600">{(fileDraftPKWT.size / 1024 / 1024).toFixed(2)} MB</span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setFileDraftPKWT(null);
+                                        setFileSizeError(null);
+                                    }}
+                                    disabled={loading || submitLoading}
+                                    className="text-xs text-green-600 hover:text-green-800 font-medium"
+                                >
+                                    Hapus
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="relative">
+                                <input
+                                    type="file"
+                                    accept=".pdf"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0] || null;
+                                        handleDraftPKWTChange(file);
+                                        if (file && file.size > MAX_FILE_SIZE_BYTES) {
+                                            e.target.value = '';
+                                        }
+                                    }}
+                                    disabled={loading || submitLoading}
+                                    className="hidden"
+                                    id="draftPKWTInput"
+                                />
+                                <label
+                                    htmlFor="draftPKWTInput"
+                                    className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 cursor-pointer transition hover:border-primary/60 hover:bg-primary/5 disabled:opacity-50"
+                                >
+                                    <Upload className="h-5 w-5 text-slate-500" />
+                                    <div className="text-center">
+                                        <span className="text-sm font-medium text-slate-700">Pilih file Draft PKWT</span>
+                                        <span className="text-xs text-slate-500 block">atau drag & drop</span>
+                                    </div>
+                                </label>
+                            </div>
+                        )}
+                    </div>
+
+                    {fileSizeError && (
+                        <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+                            <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                            <p className="text-sm text-red-700">{fileSizeError}</p>
+                        </div>
+                    )}
                 </div>
-            )}
+            </div>
 
             {/* Action Buttons */}
             <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
@@ -385,7 +403,7 @@ export default function PengajuanBerkas() {
                     </button>
                     <button
                         onClick={handleSubmitContract}
-                        disabled={!allDataComplete || fileRequiredMissing || submitLoading || contractStatus === 'pending'}
+                        disabled={!allDataComplete || !filesComplete || submitLoading || contractStatus === 'pending'}
                         className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                     >
                         {submitLoading && <ClipLoader size={14} color="#ffffff" />}
@@ -412,7 +430,6 @@ export default function PengajuanBerkas() {
                 onSave={handleSaveNIKData}
                 nik={selectedNIK || ''}
                 initialData={initialModalData}
-                ktpFileUrl={selectedNIKData?.ktpFileUrl || null}
                 loading={loading}
             />
         </div>

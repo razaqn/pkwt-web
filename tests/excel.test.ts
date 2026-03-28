@@ -280,8 +280,12 @@ describe('mapExcelRowsToPKWT', () => {
             {
                 nik: '1234567890123456',
                 fullName: 'John Doe',
+                gender: 'Laki-laki' as const,
+                position: 'Staff',
+                startDate: '2026-01-01',
+                endDate: '2026-12-31',
                 address: 'Jakarta',
-                birthdate: '2000-01-15',
+                pkwtSequence: 'I',
             },
         ];
 
@@ -290,10 +294,11 @@ describe('mapExcelRowsToPKWT', () => {
         const importedData = result.importedData['1234567890123456'];
         expect(importedData.fullName).toBe('John Doe');
         expect(importedData.address).toBe('Jakarta');
-        expect(importedData.birthdate).toBe('2000-01-15');
-        expect(importedData.placeOfBirth).toBeUndefined();
-        expect(importedData.district).toBeUndefined();
-        expect(importedData.village).toBeUndefined();
+        expect(importedData.gender).toBe('Laki-laki');
+        expect(importedData.position).toBe('Staff');
+        expect(importedData.startDate).toBe('2026-01-01');
+        expect(importedData.endDate).toBe('2026-12-31');
+        expect(importedData.pkwtSequence).toBe('I');
     });
 });
 

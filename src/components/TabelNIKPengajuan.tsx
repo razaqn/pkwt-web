@@ -1,4 +1,4 @@
-import { Edit, FileImage } from 'lucide-react';
+import { Edit } from 'lucide-react';
 import type { NIKData } from '../lib/utils';
 
 interface TabelNIKPengajuanProps {
@@ -26,8 +26,11 @@ export default function TabelNIKPengajuan({ data, onEdit, loading = false }: Tab
                             <th className="px-4 py-3 text-left font-medium text-slate-700">No</th>
                             <th className="px-4 py-3 text-left font-medium text-slate-700">NIK</th>
                             <th className="px-4 py-3 text-left font-medium text-slate-700">Nama Lengkap</th>
+                            <th className="px-4 py-3 text-left font-medium text-slate-700">Kelamin</th>
+                            <th className="px-4 py-3 text-left font-medium text-slate-700">Jabatan</th>
                             <th className="px-4 py-3 text-left font-medium text-slate-700">Alamat</th>
-                            <th className="px-4 py-3 text-center font-medium text-slate-700">KTP</th>
+                            <th className="px-4 py-3 text-left font-medium text-slate-700">Tgl Mulai</th>
+                            <th className="px-4 py-3 text-left font-medium text-slate-700">Tgl Berakhir</th>
                             <th className="px-4 py-3 text-left font-medium text-slate-700">Status</th>
                             <th className="px-4 py-3 text-center font-medium text-slate-700">Aksi</th>
                         </tr>
@@ -47,22 +50,27 @@ export default function TabelNIKPengajuan({ data, onEdit, loading = false }: Tab
                                     )}
                                 </td>
                                 <td className="px-4 py-3 text-slate-600">
+                                    {item.gender || (
+                                        <span className="text-slate-400 italic">-</span>
+                                    )}
+                                </td>
+                                <td className="px-4 py-3 text-slate-600">
+                                    {item.position || (
+                                        <span className="text-slate-400 italic">-</span>
+                                    )}
+                                </td>
+                                <td className="px-4 py-3 text-slate-600">
                                     {item.address ? (
                                         <span className="line-clamp-2">{item.address}</span>
                                     ) : (
                                         <span className="text-slate-400 italic">Belum diisi</span>
                                     )}
                                 </td>
-                                <td className="px-4 py-3 text-center">
-                                    {item.ktpFileUrl ? (
-                                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100">
-                                            <FileImage className="h-3.5 w-3.5 text-green-600" />
-                                        </span>
-                                    ) : (
-                                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-100">
-                                            <FileImage className="h-3.5 w-3.5 text-yellow-600" />
-                                        </span>
-                                    )}
+                                <td className="px-4 py-3 text-slate-600">
+                                    {item.startDate || <span className="text-slate-400 italic">-</span>}
+                                </td>
+                                <td className="px-4 py-3 text-slate-600">
+                                    {item.endDate || <span className="text-slate-400 italic">-</span>}
                                 </td>
                                 <td className="px-4 py-3">
                                     {item.isComplete ? (

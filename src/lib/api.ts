@@ -148,12 +148,8 @@ export interface EmployeeDetail {
   full_name: string;
   nik: string;
   address: string | null;
-  district: string | null;
-  village: string | null;
-  place_of_birth: string | null;
-  birthdate: string | null; // YYYY-MM-DD
-  birthdate_formatted: string | null; // e.g., "15 Januari 1990"
-  ktp_file_url?: string | null; // Optional: URL foto KTP jika tersedia
+  gender: string | null;
+  position: string | null;
   company_id: string;
   current_contract_id: string | null;
   contracts: Contract[];
@@ -176,11 +172,8 @@ export interface NIKCheckResult {
   exists: boolean;
   full_name: string | null;
   address: string | null;
-  district: string | null;
-  village: string | null;
-  place_of_birth: string | null;
-  birthdate: string | null; // YYYY-MM-DD
-  ktp_file_url: string | null; // URL to uploaded KTP image
+  gender: string | null;
+  position: string | null;
   is_complete: boolean;
 }
 
@@ -200,13 +193,10 @@ export async function checkNIKs(niks: string[]): Promise<CheckNIKsResponse> {
 // Save/Update Employee Data types
 export interface SaveEmployeeDataRequest {
   full_name: string;
-  address: string;
-  district: string;
-  village: string;
-  place_of_birth: string;
-  birthdate: string; // YYYY-MM-DD
-  ktp_file_name?: string; // Optional: filename of KTP image
-  ktp_file_content_base64?: string; // Optional: base64 encoded image (jpg/jpeg/png, max 5MB)
+  gender: string;
+  position: string;
+  address: string; // Kelurahan saja
+  company_id?: string; // Required for admin flow
 }
 
 export interface SaveEmployeeDataResponse {
@@ -215,12 +205,9 @@ export interface SaveEmployeeDataResponse {
     id: string;
     nik: string;
     full_name: string;
+    gender: string | null;
+    position: string | null;
     address: string;
-    district: string;
-    village: string;
-    place_of_birth: string;
-    birthdate: string;
-    ktp_file_url: string | null; // URL to uploaded KTP
     company_id: string;
     created_at?: string; // timestamp
     updated_at?: string; // timestamp
@@ -241,19 +228,34 @@ export async function saveEmployeeData(
 // Contract Application types
 export interface ContractApplicationPKWTRequest {
   contract_type: 'PKWT';
-  start_date: string; // YYYY-MM-DD
-  duration_months: number;
-  employee_niks: string[];
-  file_name: string; // PDF file name for batch contract
-  file_content_base64: string; // Base64 encoded PDF file
+  employees: Array<{
+    nik: string;
+    start_date: string;
+    end_date: string;
+    full_name?: string;
+    gender?: string;
+    position?: string;
+    address?: string;
+    pkwt_sequence?: string;
+  }>;
+  surat_permohonan_file_name: string;
+  surat_permohonan_file_content_base64: string;
+  draft_pkwt_file_name: string;
+  draft_pkwt_file_content_base64: string;
 }
 
 export interface ContractApplicationPKWTTRequest {
   contract_type: 'PKWTT';
-  start_date: string; // YYYY-MM-DD
   employee_nik: string;
-  file_name: string;
-  file_content_base64: string;
+  start_date: string;
+  full_name?: string;
+  gender?: string;
+  position?: string;
+  address?: string;
+  surat_permohonan_file_name: string;
+  surat_permohonan_file_content_base64: string;
+  draft_pkwt_file_name: string;
+  draft_pkwt_file_content_base64: string;
 }
 
 export interface ContractApplicationPKWTResponse {
@@ -300,20 +302,35 @@ export async function submitContractApplication(
 export interface AdminContractApplicationPKWTRequest {
   company_id: string;
   contract_type: 'PKWT';
-  start_date: string;
-  duration_months: number;
-  employee_niks: string[];
-  file_name: string;
-  file_content_base64: string;
+  employees: Array<{
+    nik: string;
+    start_date: string;
+    end_date: string;
+    full_name?: string;
+    gender?: string;
+    position?: string;
+    address?: string;
+    pkwt_sequence?: string;
+  }>;
+  surat_permohonan_file_name: string;
+  surat_permohonan_file_content_base64: string;
+  draft_pkwt_file_name: string;
+  draft_pkwt_file_content_base64: string;
 }
 
 export interface AdminContractApplicationPKWTTRequest {
   company_id: string;
   contract_type: 'PKWTT';
-  start_date: string;
   employee_nik: string;
-  file_name: string;
-  file_content_base64: string;
+  start_date: string;
+  full_name?: string;
+  gender?: string;
+  position?: string;
+  address?: string;
+  surat_permohonan_file_name: string;
+  surat_permohonan_file_content_base64: string;
+  draft_pkwt_file_name: string;
+  draft_pkwt_file_content_base64: string;
 }
 
 // Submit contract application as admin (on behalf of a company)
@@ -330,8 +347,13 @@ export async function adminSubmitContractApplication(
 export interface SaveDraftRequest {
   contract_type: 'PKWT' | 'PKWTT';
   start_date: string; // YYYY-MM-DD
-  duration_months: number | null;
-  employee_niks: string[]; // Array of NIKs
+  employees?: Array<{
+    nik: string;
+    start_date: string;
+    end_date: string;
+    pkwt_sequence?: string;
+  }>;
+  employee_nik?: string; // For PKWTT single NIK
 }
 
 export interface SaveDraftResponse {
@@ -769,7 +791,8 @@ export interface ApprovalEmployee {
   nik: string;
   full_name: string;
   address: string | null;
-  birthdate: string | null; // YYYY-MM-DD
+  gender: string | null;
+  position: string | null;
   previous_contract_count: number;
 }
 
@@ -788,6 +811,10 @@ export interface ApprovalDetail {
     submission_notes: string | null;
     file_url: string | null;
     submission_file_url?: string | null; // Company-uploaded contract PDF (alias: file_url)
+    surat_permohonan_file_url?: string | null; // Surat Permohonan PDF
+    surat_permohonan_file_name?: string | null;
+    draft_pkwt_file_url?: string | null; // Draft PKWT PDF
+    draft_pkwt_file_name?: string | null;
     approval_file_url?: string | null; // Admin-uploaded approval/rejection PDF
   };
   company: {
@@ -1026,6 +1053,175 @@ export async function uploadLandingUcapanImage(file: File): Promise<{ ok: boolea
   const base64 = await fileToBase64(file);
 
   return request(`${API_BASE}/api/uploads/landing/ucapan`, {
+    method: 'POST',
+    body: JSON.stringify({
+      file_name: file.name,
+      file_content_base64: base64,
+      content_type: file.type || 'application/octet-stream',
+    }),
+  });
+}
+
+// ============================================================
+// Document Template Types (Disnaker approval documents)
+// ============================================================
+
+export interface TextStyle {
+  fontSize?: number;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  color?: string;
+  align?: 'left' | 'center' | 'right' | 'justify';
+  lineHeight?: number;
+}
+
+export interface TextBlock {
+  id: string;
+  type: 'text';
+  content: string;
+  style: TextStyle;
+}
+
+export interface ImageBlock {
+  id: string;
+  type: 'image';
+  src: string;
+  width: number;
+  align: 'left' | 'center' | 'right' | 'justify';
+}
+
+export interface TableColumn {
+  key: string;
+  header: string;
+  width: string;
+  dataSource: string;
+  customValue?: string;
+}
+
+export interface TableBlock {
+  id: string;
+  type: 'table';
+  columns: TableColumn[];
+}
+
+export interface DividerBlock {
+  id: string;
+  type: 'divider';
+  style: 'solid' | 'dashed';
+  color: string;
+  thickness: number;
+}
+
+export interface SpacerBlock {
+  id: string;
+  type: 'spacer';
+  height: number;
+}
+
+export interface SignatureBlock {
+  id: string;
+  type: 'signature';
+  leftLabel: string;
+  rightLabel: string;
+  rightName: string;
+  rightTitle: string;
+}
+
+export type Block = TextBlock | ImageBlock | TableBlock | DividerBlock | SpacerBlock | SignatureBlock;
+
+export interface TemplatePage {
+  id: string;
+  orientation: 'portrait' | 'landscape';
+  size: 'A4';
+  blocks: Block[];
+}
+
+export interface TemplateData {
+  pages: TemplatePage[];
+}
+
+export interface DocumentTemplate {
+  id: string;
+  name: string;
+  description: string | null;
+  contract_type: 'PKWT' | 'PKWTT' | 'BOTH';
+  template_data: TemplateData;
+  is_active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ContractDataForTemplate {
+  nomor_surat: string;
+  tanggal_surat: string;
+  company_name: string;
+  company_address: string;
+  contract_type: string;
+  jumlah_karyawan: string;
+  start_date: string;
+  end_date: string;
+  employees: Array<{
+    id: string;
+    nik: string;
+    full_name: string;
+    gender: string | null;
+    position: string | null;
+    address: string | null;
+    start_date: string | null;
+    end_date: string | null;
+    pkwt_sequence: string | null;
+  }>;
+}
+
+// Document Template API functions
+export async function getDocumentTemplates(): Promise<{ ok: boolean; data: DocumentTemplate[] }> {
+  return request(`${API_BASE}/api/admin/document-templates`);
+}
+
+export async function getDocumentTemplate(id: string): Promise<{ ok: boolean; data: DocumentTemplate }> {
+  return request(`${API_BASE}/api/admin/document-templates/${id}`);
+}
+
+export async function createDocumentTemplate(body: {
+  name: string;
+  description?: string;
+  contract_type: 'PKWT' | 'PKWTT' | 'BOTH';
+  template_data: TemplateData;
+}): Promise<{ ok: boolean; data: DocumentTemplate }> {
+  return request(`${API_BASE}/api/admin/document-templates`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function updateDocumentTemplate(id: string, body: Partial<{
+  name: string;
+  description: string;
+  contract_type: 'PKWT' | 'PKWTT' | 'BOTH';
+  template_data: TemplateData;
+  is_active: boolean;
+}>): Promise<{ ok: boolean; data: DocumentTemplate }> {
+  return request(`${API_BASE}/api/admin/document-templates/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function deleteDocumentTemplate(id: string): Promise<{ ok: boolean; message: string }> {
+  return request(`${API_BASE}/api/admin/document-templates/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function getContractDataForTemplate(contractId: string): Promise<{ ok: boolean; data: ContractDataForTemplate }> {
+  return request(`${API_BASE}/api/admin/document-templates/contract-data/${contractId}`);
+}
+
+export async function uploadTemplateImage(file: File): Promise<{ ok: boolean; data: { file_path: string } }> {
+  const base64 = await fileToBase64(file);
+  return request(`${API_BASE}/api/admin/uploads/template-images`, {
     method: 'POST',
     body: JSON.stringify({
       file_name: file.name,

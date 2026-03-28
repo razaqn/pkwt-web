@@ -17,6 +17,8 @@ import CreateContractSubmit from './pages/admin/CreateContractSubmit';
 import Config from './pages/admin/Config';
 import LandingConfigPage from './pages/admin/LandingConfig';
 import AdminTemplatesPage from './pages/admin/Templates';
+import DocumentTemplatesPage from './pages/admin/DocumentTemplates';
+import DocumentTemplateEditorPage from './pages/admin/DocumentTemplateEditor';
 import ListKaryawan from './pages/company/ListKaryawan';
 import DetailKaryawan from './pages/company/DetailKaryawan';
 import FormKontrak from './pages/company/FormKontrak';
@@ -70,6 +72,9 @@ function App() {
           <Route path="/admin/config" element={<RequireAuth><AppLayout><Config /></AppLayout></RequireAuth>} />
           <Route path="/admin/landing-config" element={<RequireAuth><AppLayout><LandingConfigPage /></AppLayout></RequireAuth>} />
           <Route path="/admin/templates" element={<RequireAuth><AppLayout><AdminTemplatesPage /></AppLayout></RequireAuth>} />
+          <Route path="/admin/document-templates" element={<RequireAuth><AppLayout><DocumentTemplatesPage /></AppLayout></RequireAuth>} />
+          <Route path="/admin/document-templates/new" element={<RequireAuth><AppLayout><DocumentTemplateEditorPage /></AppLayout></RequireAuth>} />
+          <Route path="/admin/document-templates/:id/edit" element={<RequireAuth><AppLayout><DocumentTemplateEditorPage /></AppLayout></RequireAuth>} />
           <Route path="/list-karyawan" element={<RequireAuth><AppLayout><ListKaryawan /></AppLayout></RequireAuth>} />
           <Route path="/detail-karyawan/:id" element={<RequireAuth><AppLayout><DetailKaryawan /></AppLayout></RequireAuth>} />
           <Route path="/form-kontrak" element={<RequireAuth><AppLayout><FormKontrak /></AppLayout></RequireAuth>} />

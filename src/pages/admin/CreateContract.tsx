@@ -8,18 +8,19 @@ import type { Company } from '../../lib/api';
 import { toUserMessage } from '../../lib/errors';
 import { ClipLoader } from 'react-spinners';
 
-const MAX_FILE_SIZE_MB = 5;
-const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
-
 type ContractType = 'PKWT' | 'PKWTT';
 
 interface FormErrors {
     submit?: string;
     company?: string;
     niks?: string;
+    fullName?: string;
+    gender?: string;
+    position?: string;
+    address?: string;
     startDate?: string;
-    durasi?: string;
-    fileKontrak?: string;
+    fileSuratPermohonan?: string;
+    fileDraftPKWT?: string;
 }
 
 export default function CreateContract() {
@@ -38,14 +39,11 @@ export default function CreateContract() {
 
     const [pkwtData, setPkwtData] = useState<FormKontrakPKWTData>({
         niks: [],
-        startDate: '',
-        durasi: 0,
     });
 
     const [pkwttData, setPkwttData] = useState<FormKontrakPKWTTData>({
         nik: '',
         startDate: '',
-        fileKontrak: null,
     });
 
     // Fetch companies on mount
@@ -82,22 +80,16 @@ export default function CreateContract() {
 
         if (pkwtData.niks.length === 0) {
             newErrors.niks = 'Minimal 1 NIK harus ditambahkan';
-        } else if (pkwtData.niks.some((entry: any) => !entry.nik.trim())) {
+        } else if (pkwtData.niks.some((entry) => !entry.nik.trim())) {
             newErrors.niks = 'Semua NIK harus diisi';
         }
 
-        if (!pkwtData.startDate) {
-            newErrors.startDate = 'Tanggal mulai harus diisi';
+        if (!pkwtData.fileSuratPermohonan) {
+            newErrors.fileSuratPermohonan = 'Surat Permohonan harus diunggah';
         }
 
-        if (!pkwtData.durasi || pkwtData.durasi < 1) {
-            newErrors.durasi = 'Durasi harus lebih dari 0 bulan';
-        }
-
-        if (!pkwtData.fileKontrak) {
-            newErrors.fileKontrak = 'File kontrak harus diunggah';
-        } else if (pkwtData.fileKontrak.size > MAX_FILE_SIZE_BYTES) {
-            newErrors.fileKontrak = `File terlalu besar. Maksimal ${MAX_FILE_SIZE_MB}MB, file Anda ${(pkwtData.fileKontrak.size / 1024 / 1024).toFixed(2)}MB`;
+        if (!pkwtData.fileDraftPKWT) {
+            newErrors.fileDraftPKWT = 'Draft PKWT harus diunggah';
         }
 
         setErrors(newErrors);
@@ -119,8 +111,12 @@ export default function CreateContract() {
             newErrors.startDate = 'Tanggal mulai harus diisi';
         }
 
-        if (!pkwttData.fileKontrak) {
-            newErrors.fileKontrak = 'File kontrak harus diunggah';
+        if (!pkwttData.fileSuratPermohonan) {
+            newErrors.fileSuratPermohonan = 'Surat Permohonan harus diunggah';
+        }
+
+        if (!pkwttData.fileDraftPKWT) {
+            newErrors.fileDraftPKWT = 'Draft PKWT harus diunggah';
         }
 
         setErrors(newErrors);
@@ -135,7 +131,7 @@ export default function CreateContract() {
         setErrors({});
 
         try {
-            const nikList = pkwtData.niks.map((entry: any) => entry.nik);
+            const nikList = pkwtData.niks.map((entry) => entry.nik);
             const response = await checkNIKs(nikList);
             if (!response.ok) throw new Error('Gagal melakukan pengecekan NIK');
 
@@ -145,9 +141,8 @@ export default function CreateContract() {
                     companyName: selectedCompany?.company_name,
                     contractType: 'PKWT',
                     niks: nikList,
-                    startDate: pkwtData.startDate,
-                    duration: pkwtData.durasi,
-                    fileKontrak: pkwtData.fileKontrak,
+                    fileSuratPermohonan: pkwtData.fileSuratPermohonan,
+                    fileDraftPKWT: pkwtData.fileDraftPKWT,
                     importedData: pkwtData.importedData || {},
                 },
             });
@@ -175,10 +170,16 @@ export default function CreateContract() {
                     companyName: selectedCompany?.company_name,
                     contractType: 'PKWTT',
                     niks: [pkwttData.nik],
-                    startDate: pkwttData.startDate,
-                    duration: null,
-                    fileKontrak: pkwttData.fileKontrak,
-                    importedData: pkwttData.importedData || {},
+                    fileSuratPermohonan: pkwttData.fileSuratPermohonan,
+                    fileDraftPKWT: pkwttData.fileDraftPKWT,
+                    importedData: {
+                        [pkwttData.nik]: {
+                            fullName: pkwttData.fullName,
+                            gender: pkwttData.gender,
+                            position: pkwttData.position,
+                            address: pkwttData.address,
+                        },
+                    },
                 },
             });
         } catch (err: any) {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { checkNIKs, saveEmployeeData, submitContractApplication, saveDraftContract, type SaveDraftRequest } from '../lib/api';
-import { fileToBase64, mapNIKResultToData, mapEmployeeResponseToData, type NIKData } from '../lib/utils';
+import { fileToBase64, mapNIKResultToData, type NIKData } from '../lib/utils';
 import { toUserMessage } from '../lib/errors';
 import type { KelengkapanDataForm } from '../components/ModalKelengkapanData';
 
@@ -10,12 +10,12 @@ type ContractStatus = 'draft' | 'pending' | 'rejected' | 'approved' | null;
 
 interface ContractData {
     contractType: ContractType;
+    companyId?: string; // For admin flow
     niks: string[];
-    startDate: string;
-    duration: number | null;
-    fileKontrak?: File | null;
-    importedData?: Record<string, any>; // NIK -> imported Excel data mapping
-    draftId?: string; // For updating existing draft
+    fileSuratPermohonan?: File | null;
+    fileDraftPKWT?: File | null;
+    importedData?: Record<string, any>;
+    draftId?: string;
 }
 
 /**
@@ -40,6 +40,8 @@ export function useContractSubmission(contractData: ContractData | null) {
             return;
         }
 
+        let isMounted = true;
+
         async function fetchNIKData() {
             if (!contractData) return;
 
@@ -48,6 +50,8 @@ export function useContractSubmission(contractData: ContractData | null) {
 
             try {
                 const response = await checkNIKs(contractData.niks);
+
+                if (!isMounted) return;
 
                 // Map backend data
                 const nikData = response.data.map(result => {
@@ -59,13 +63,12 @@ export function useContractSubmission(contractData: ContractData | null) {
 
                         return {
                             ...backendData,
-                            // Use imported data only if backend field is null
                             fullName: backendData.fullName || imported.fullName || null,
                             address: backendData.address || imported.address || null,
-                            district: backendData.district || imported.district || null,
-                            village: backendData.village || imported.village || null,
-                            placeOfBirth: backendData.placeOfBirth || imported.placeOfBirth || null,
-                            birthdate: backendData.birthdate || imported.birthdate || null,
+                            gender: backendData.gender || imported.gender || null,
+                            position: backendData.position || imported.position || null,
+                            startDate: imported.startDate || backendData.startDate || null,
+                            endDate: imported.endDate || backendData.endDate || null,
                         };
                     }
 
@@ -74,14 +77,18 @@ export function useContractSubmission(contractData: ContractData | null) {
 
                 setNikDataList(nikData);
             } catch (err: any) {
-                setError(toUserMessage(err, 'Gagal mengecek data NIK'));
-                console.error('Error fetching NIK data:', err);
+                if (isMounted) {
+                    setError(toUserMessage(err, 'Gagal mengecek data NIK'));
+                }
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         }
 
         fetchNIKData();
+        return () => { isMounted = false; };
     }, [contractData, navigate]);
 
     // Save employee data
@@ -90,33 +97,33 @@ export function useContractSubmission(contractData: ContractData | null) {
         setError(null);
 
         try {
-            // Prepare base payload
             const payload: any = {
                 full_name: formData.fullName,
+                gender: formData.gender,
+                position: formData.position,
                 address: formData.address,
-                district: formData.district,
-                village: formData.village,
-                place_of_birth: formData.placeOfBirth,
-                birthdate: formData.birthdate,
             };
 
-            // If KTP file provided, convert to base64 and include in payload
-            if (formData.ktpFile) {
-                const fileBase64 = await fileToBase64(formData.ktpFile);
-                payload.ktp_file_name = formData.ktpFile.name;
-                payload.ktp_file_content_base64 = fileBase64;
+            // For admin flow, include company_id
+            if (contractData?.companyId) {
+                payload.company_id = contractData.companyId;
             }
 
             const response = await saveEmployeeData(nik, payload);
 
-            // Update local state with saved data
+            // Update local state with saved data + modal fields (startDate, endDate, pkwtSequence)
             setNikDataList(prev =>
                 prev.map(item =>
                     item.nik === nik
                         ? {
                             nik,
-                            ...mapEmployeeResponseToData(response.data),
-                            ktpFileUrl: response.data.ktp_file_url,
+                            fullName: response.data.full_name || formData.fullName,
+                            address: response.data.address || formData.address,
+                            gender: response.data.gender || formData.gender,
+                            position: response.data.position || formData.position,
+                            startDate: formData.startDate || item.startDate,
+                            endDate: formData.endDate || item.endDate,
+                            isComplete: true,
                         }
                         : item
                 )
@@ -140,14 +147,19 @@ export function useContractSubmission(contractData: ContractData | null) {
         try {
             const draftPayload: SaveDraftRequest = {
                 contract_type: contractData.contractType,
-                start_date: contractData.startDate,
-                duration_months: contractData.duration || 0,
-                employee_niks: contractData.niks,
+                start_date: new Date().toISOString().split('T')[0],
+                ...(contractData.contractType === 'PKWTT'
+                    ? { employee_nik: contractData.niks[0] }
+                    : { employees: contractData.niks.map(nik => {
+                        const d = nikDataList.find(x => x.nik === nik);
+                        return { nik, start_date: d?.startDate || '', end_date: d?.endDate || '' };
+                    })}
+                ),
             };
 
             const response = await saveDraftContract(draftPayload);
             setContractStatus('draft');
-            return response.data.id; // Return draft ID for subsequent saves
+            return response.data.id;
         } catch (err: any) {
             setError(toUserMessage(err, 'Gagal menyimpan draf'));
             return null;
@@ -155,7 +167,7 @@ export function useContractSubmission(contractData: ContractData | null) {
     }, [contractData]);
 
     // Submit contract application
-    const submitContract = useCallback(async (pkwtFile?: File | null) => {
+    const submitContract = useCallback(async (suratPermohonanFile?: File | null, draftPKWTFile?: File | null) => {
         if (!contractData) return false;
 
         const allComplete = nikDataList.every(data => data.isComplete);
@@ -164,56 +176,59 @@ export function useContractSubmission(contractData: ContractData | null) {
             return false;
         }
 
+        // Both files are required
+        if (!suratPermohonanFile || !draftPKWTFile) {
+            setError('Surat Permohonan dan Draft PKWT wajib diunggah');
+            return false;
+        }
+
         setSubmitLoading(true);
         setError(null);
 
         try {
+            const suratPermohonanBase64 = await fileToBase64(suratPermohonanFile);
+            const draftPKWTBase64 = await fileToBase64(draftPKWTFile);
+
             if (contractData.contractType === 'PKWT') {
-                // PKWT: Multiple contracts with file
-                if (!pkwtFile) {
-                    throw new Error('File kontrak harus diunggah untuk PKWT');
-                }
-
-                const fileBase64 = await fileToBase64(pkwtFile);
-
                 const payload = {
                     contract_type: 'PKWT' as const,
-                    start_date: contractData.startDate,
-                    duration_months: contractData.duration || 0,
-                    employee_niks: contractData.niks,
-                    file_name: pkwtFile.name,
-                    file_content_base64: fileBase64,
+                    employees: contractData.niks.map(nik => {
+                        const nikData = nikDataList.find(d => d.nik === nik);
+                        return {
+                            nik,
+                            start_date: nikData?.startDate || '',
+                            end_date: nikData?.endDate || '',
+                            full_name: nikData?.fullName || undefined,
+                            gender: nikData?.gender || undefined,
+                            position: nikData?.position || undefined,
+                            address: nikData?.address || undefined,
+                        };
+                    }),
+                    surat_permohonan_file_name: suratPermohonanFile.name,
+                    surat_permohonan_file_content_base64: suratPermohonanBase64,
+                    draft_pkwt_file_name: draftPKWTFile.name,
+                    draft_pkwt_file_content_base64: draftPKWTBase64,
                 };
-                const response = await submitContractApplication(payload);
-
-                if ('contract_ids' in response.data) {
-                    console.log('PKWT contracts created:', response.data.contract_ids);
-                }
+                await submitContractApplication(payload);
             } else {
-                // PKWTT: Single contract with file
-                if (!contractData.fileKontrak) {
-                    throw new Error('File kontrak wajib diisi untuk PKWTT');
-                }
-
-                const fileBase64 = await fileToBase64(contractData.fileKontrak);
-
                 const payload = {
                     contract_type: 'PKWTT' as const,
-                    start_date: contractData.startDate,
                     employee_nik: contractData.niks[0],
-                    file_name: contractData.fileKontrak.name,
-                    file_content_base64: fileBase64,
+                    start_date: new Date().toISOString().split('T')[0],
+                    full_name: nikDataList[0]?.fullName || undefined,
+                    gender: nikDataList[0]?.gender || undefined,
+                    position: nikDataList[0]?.position || undefined,
+                    address: nikDataList[0]?.address || undefined,
+                    surat_permohonan_file_name: suratPermohonanFile.name,
+                    surat_permohonan_file_content_base64: suratPermohonanBase64,
+                    draft_pkwt_file_name: draftPKWTFile.name,
+                    draft_pkwt_file_content_base64: draftPKWTBase64,
                 };
-                const response = await submitContractApplication(payload);
-
-                if ('contract_id' in response.data) {
-                    console.log('PKWTT contract created:', response.data.contract_id);
-                }
+                await submitContractApplication(payload);
             }
 
             setContractStatus('pending');
 
-            // Navigate after short delay to show success message
             setTimeout(() => {
                 navigate('/list-karyawan');
             }, 1500);

@@ -9,11 +9,12 @@ export const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 export interface ParsedExcelRow {
     nik: string;
     fullName?: string | null;
-    address?: string | null;
-    placeOfBirth?: string | null;
-    birthdate?: string | null; // ISO format YYYY-MM-DD
-    district?: string | null;
-    village?: string | null;
+    gender?: 'Laki-laki' | 'Perempuan' | null;
+    position?: string | null;
+    startDate?: string | null; // YYYY-MM-DD
+    endDate?: string | null; // YYYY-MM-DD
+    address?: string | null; // Kelurahan saja
+    pkwtSequence?: string | null; // Roman numeral (I, II, III, dst)
 }
 
 export interface ParseExcelResult {
@@ -30,12 +31,13 @@ export interface NIKEntry {
 // Column name mappings (case-insensitive)
 const COLUMN_MAPPINGS = {
     nik: ['nik'],
-    fullName: ['full_name', 'fullname', 'name', 'nama'],
-    address: ['address', 'alamat'],
-    placeOfBirth: ['place_of_birth', 'placeofbirth', 'tempat_lahir', 'tempatlahir'],
-    birthdate: ['birthdate', 'birth_date', 'tanggal_lahir', 'tanggallahir', 'date_of_birth'],
-    district: ['district', 'kecamatan'],
-    village: ['village', 'kelurahan', 'desa'],
+    fullName: ['nama', 'full_name', 'fullname', 'name'],
+    gender: ['kelamin', 'gender', 'jenis_kelamin'],
+    position: ['jabatan', 'posisi', 'position'],
+    startDate: ['tanggal_mulai', 'start_date', 'tanggalmulai'],
+    endDate: ['tanggal_berakhir', 'end_date', 'tanggalberakhir'],
+    address: ['alamat', 'address'], // Kelurahan saja
+    pkwtSequence: ['keterangan', 'pkwt_ke', 'sequence', 'pkwt_sequence'],
 };
 
 /**
@@ -181,6 +183,41 @@ export function validateNIKFormat(nik: string): { valid: boolean; error?: string
 }
 
 /**
+ * Normalize gender value to 'Laki-laki' or 'Perempuan'
+ * Accepts: L/Laki/Male → Laki-laki, P/Perempuan/Female → Perempuan
+ */
+function normalizeGender(value: string): 'Laki-laki' | 'Perempuan' | null {
+    const lower = value.toLowerCase().trim();
+    if (['l', 'laki', 'laki-laki', 'male', 'm', 'pria'].includes(lower)) {
+        return 'Laki-laki';
+    }
+    if (['p', 'perempuan', 'female', 'f', 'wanita'].includes(lower)) {
+        return 'Perempuan';
+    }
+    return null;
+}
+
+/**
+ * Normalize PKWT sequence to Roman numeral
+ * Accepts: "1" → "I", "2" → "II", "I" → "I", "II" → "II", etc.
+ */
+function normalizePkwtSequence(value: string): string | null {
+    const trimmed = value.trim().toUpperCase();
+
+    // Already a Roman numeral (I, II, III, IV, V)
+    if (/^I{1,3}V?$|^V$/.test(trimmed)) {
+        return trimmed;
+    }
+
+    // Numeric input — convert to Roman
+    const num = parseInt(trimmed, 10);
+    if (isNaN(num) || num < 1 || num > 5) return null;
+
+    const romanMap: Record<number, string> = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V' };
+    return romanMap[num];
+}
+
+/**
  * Parse date from various formats to ISO YYYY-MM-DD
  * Supports: dd/mm/yyyy, dd-mm-yyyy, yyyy-mm-dd, Excel serial dates
  */
@@ -308,11 +345,12 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
 
     // Optional columns
     const fullNameColumn = findColumnName(headers, COLUMN_MAPPINGS.fullName);
+    const genderColumn = findColumnName(headers, COLUMN_MAPPINGS.gender);
+    const positionColumn = findColumnName(headers, COLUMN_MAPPINGS.position);
+    const startDateColumn = findColumnName(headers, COLUMN_MAPPINGS.startDate);
+    const endDateColumn = findColumnName(headers, COLUMN_MAPPINGS.endDate);
     const addressColumn = findColumnName(headers, COLUMN_MAPPINGS.address);
-    const placeOfBirthColumn = findColumnName(headers, COLUMN_MAPPINGS.placeOfBirth);
-    const birthdateColumn = findColumnName(headers, COLUMN_MAPPINGS.birthdate);
-    const districtColumn = findColumnName(headers, COLUMN_MAPPINGS.district);
-    const villageColumn = findColumnName(headers, COLUMN_MAPPINGS.village);
+    const pkwtSequenceColumn = findColumnName(headers, COLUMN_MAPPINGS.pkwtSequence);
 
     // Parse rows
     const parsedRows: ParsedExcelRow[] = [];
@@ -394,14 +432,18 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
         seenNIKs.add(nik);
 
         // Extract optional fields
+        const rawGender = genderColumn && row[genderColumn] ? String(row[genderColumn]).trim() : null;
+        const rawSequence = pkwtSequenceColumn && row[pkwtSequenceColumn] ? String(row[pkwtSequenceColumn]).trim() : null;
+
         const parsedRow: ParsedExcelRow = {
             nik,
             fullName: fullNameColumn && row[fullNameColumn] ? String(row[fullNameColumn]).trim() : null,
+            gender: rawGender ? normalizeGender(rawGender) : null,
+            position: positionColumn && row[positionColumn] ? String(row[positionColumn]).trim() : null,
+            startDate: startDateColumn ? parseDateFlexible(row[startDateColumn]) : null,
+            endDate: endDateColumn ? parseDateFlexible(row[endDateColumn]) : null,
             address: addressColumn && row[addressColumn] ? String(row[addressColumn]).trim() : null,
-            placeOfBirth: placeOfBirthColumn && row[placeOfBirthColumn] ? String(row[placeOfBirthColumn]).trim() : null,
-            birthdate: birthdateColumn ? parseDateFlexible(row[birthdateColumn]) : null,
-            district: districtColumn && row[districtColumn] ? String(row[districtColumn]).trim() : null,
-            village: villageColumn && row[villageColumn] ? String(row[villageColumn]).trim() : null,
+            pkwtSequence: rawSequence ? normalizePkwtSequence(rawSequence) : null,
         };
 
         parsedRows.push(parsedRow);
@@ -426,7 +468,7 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
 }
 
 /**
- * Map Excel rows to PKWT format (array of NIKEntry)
+ * Map Excel rows to PKWT format (array of NIKEntry with imported data)
  */
 export function mapExcelRowsToPKWT(
     parsedRows: ParsedExcelRow[],
@@ -453,11 +495,12 @@ export function mapExcelRowsToPKWT(
         // Store additional data for merging later
         importedData[row.nik] = {
             fullName: row.fullName,
+            gender: row.gender,
+            position: row.position,
+            startDate: row.startDate,
+            endDate: row.endDate,
             address: row.address,
-            placeOfBirth: row.placeOfBirth,
-            birthdate: row.birthdate,
-            district: row.district,
-            village: row.village,
+            pkwtSequence: row.pkwtSequence,
         };
     }
 
@@ -466,6 +509,8 @@ export function mapExcelRowsToPKWT(
 
 /**
  * Map Excel rows to PKWTT format (single NIK from first row)
+ * NOTE: PKWTT now auto-populates from existing PKWT data via checkNIKs API.
+ * This function is kept for backward compatibility but may be unused.
  */
 export function mapExcelRowsToPKWTT(
     parsedRows: ParsedExcelRow[]
@@ -481,11 +526,11 @@ export function mapExcelRowsToPKWTT(
         nik: firstRow.nik,
         importedData: {
             fullName: firstRow.fullName,
+            gender: firstRow.gender,
+            position: firstRow.position,
+            startDate: firstRow.startDate,
             address: firstRow.address,
-            placeOfBirth: firstRow.placeOfBirth,
-            birthdate: firstRow.birthdate,
-            district: firstRow.district,
-            village: firstRow.village,
+            pkwtSequence: firstRow.pkwtSequence,
         },
         multipleRowsWarning,
     };

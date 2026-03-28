@@ -14,9 +14,8 @@ export interface NIKEntry {
 
 export interface FormKontrakPKWTData {
     niks: NIKEntry[];
-    startDate: string;
-    durasi: number;
-    fileKontrak?: File | null;
+    fileSuratPermohonan?: File | null;
+    fileDraftPKWT?: File | null;
     importedData?: Record<string, any>; // NIK -> additional Excel data mapping
 }
 
@@ -60,37 +59,20 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
         });
     }
 
-    function updateStartDate(value: string) {
-        onChange({
-            ...data,
-            startDate: value
-        });
-    }
-
-    function updateDurasi(value: string) {
-        const durasiNum = parseInt(value, 10);
-        onChange({
-            ...data,
-            durasi: isNaN(durasiNum) ? 0 : durasiNum
-        });
-    }
-
-    function handleFileChange(file: File | null) {
-        // Validate file size (max 7MB)
+    function handleSuratPermohonanChange(file: File | null) {
         if (file && file.size > MAX_FILE_SIZE_BYTES) {
-            // Show error by passing null and triggering error in parent
-            onChange({
-                ...data,
-                fileKontrak: null
-            });
-            // Error will be set by parent component based on file validation
+            onChange({ ...data, fileSuratPermohonan: null });
             return;
         }
+        onChange({ ...data, fileSuratPermohonan: file });
+    }
 
-        onChange({
-            ...data,
-            fileKontrak: file
-        });
+    function handleDraftPKWTChange(file: File | null) {
+        if (file && file.size > MAX_FILE_SIZE_BYTES) {
+            onChange({ ...data, fileDraftPKWT: null });
+            return;
+        }
+        onChange({ ...data, fileDraftPKWT: file });
     }
 
     async function handleExcelImport(file: File | null) {
@@ -102,10 +84,7 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
         setImportWarnings([]);
 
         try {
-            // Parse Excel file
             const result = await parseExcelFile(file);
-
-            // Map to PKWT format and check for duplicates with existing NIKs
             const { niks: newNIKs, importedData, duplicates } = mapExcelRowsToPKWT(result.rows, data.niks);
 
             if (newNIKs.length === 0 && duplicates.length === 0) {
@@ -113,10 +92,7 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                 return;
             }
 
-            // Merge with existing NIKs
             const updatedNIKs = [...data.niks, ...newNIKs];
-
-            // Merge imported data
             const updatedImportedData = { ...data.importedData, ...importedData };
 
             onChange({
@@ -125,19 +101,16 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                 importedData: updatedImportedData,
             });
 
-            // Show success message
             let successMsg = `✓ ${newNIKs.length} NIK berhasil diimpor dari ${result.fileName}`;
             if (duplicates.length > 0) {
                 successMsg += ` (${duplicates.length} NIK duplikat dilewati)`;
             }
             setImportSuccess(successMsg);
 
-            // Show warnings if any
             if (result.warnings.length > 0) {
                 setImportWarnings(result.warnings);
             }
 
-            // Clear success message after 5 seconds
             setTimeout(() => setImportSuccess(null), 5000);
         } catch (err: any) {
             setImportError(toUserMessage(err, 'Gagal mengimpor file Excel'));
@@ -177,7 +150,7 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                                     const file = e.target.files?.[0] || null;
                                     if (file) {
                                         handleExcelImport(file);
-                                        e.target.value = ''; // Reset input
+                                        e.target.value = '';
                                     }
                                 }}
                                 disabled={loading || isImporting}
@@ -196,7 +169,7 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                         </div>
                     </div>
                     <p className="text-xs text-slate-700">
-                        File Excel (.xlsx, .xls, .csv) dengan kolom "NIK" (wajib). Max {EXCEL_MAX_SIZE_MB}MB, 500 baris. Data diproses di browser Anda.
+                        File Excel (.xlsx, .xls, .csv) dengan kolom: NIK, Nama, Kelamin, Jabatan, Tanggal Mulai, Tanggal Berakhir, Alamat, Keterangan. Max {EXCEL_MAX_SIZE_MB}MB, 500 baris.
                     </p>
                 </div>
 
@@ -292,52 +265,12 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                 {errors.niks && <p className="text-sm text-red-500">{errors.niks}</p>}
             </div>
 
-            {/* Start Date */}
-            <div className="space-y-2">
-                <label htmlFor="startDate" className="block">
-                    <span className="text-sm font-medium text-slate-700">Tanggal Mulai</span>
-                    <span className="text-red-500 ml-1">*</span>
-                </label>
-                <input
-                    id="startDate"
-                    type="date"
-                    value={data.startDate}
-                    onChange={(e) => updateStartDate(e.target.value)}
-                    disabled={loading}
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
-                />
-                {errors.startDate && <p className="text-sm text-red-500">{errors.startDate}</p>}
-            </div>
-
-            {/* Durasi */}
-            <div className="space-y-2">
-                <label htmlFor="durasi" className="block">
-                    <span className="text-sm font-medium text-slate-700">Durasi Kontrak</span>
-                    <span className="text-red-500 ml-1">*</span>
-                    <span className="text-xs text-slate-500 ml-2">(dalam bulan)</span>
-                </label>
-                <div className="flex items-center gap-2">
-                    <input
-                        id="durasi"
-                        type="number"
-                        value={data.durasi || ''}
-                        onChange={(e) => updateDurasi(e.target.value)}
-                        placeholder="Contoh: 12"
-                        disabled={loading}
-                        min="1"
-                        className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
-                    />
-                    <span className="text-sm text-slate-600">bulan</span>
-                </div>
-                {errors.durasi && <p className="text-sm text-red-500">{errors.durasi}</p>}
-            </div>
-
-            {/* File Kontrak */}
+            {/* Surat Permohonan */}
             <div className="space-y-2">
                 <label className="block">
-                    <span className="text-sm font-medium text-slate-700">File Kontrak (PDF)</span>
+                    <span className="text-sm font-medium text-slate-700">Surat Permohonan (PDF)</span>
                     <span className="text-red-500 ml-1">*</span>
-                    <span className="text-xs text-slate-500 ml-2">(untuk semua karyawan, max {MAX_FILE_SIZE_MB}MB)</span>
+                    <span className="text-xs text-slate-500 ml-2">(max {MAX_FILE_SIZE_MB}MB)</span>
                 </label>
 
                 <div className="relative">
@@ -346,47 +279,40 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                         accept=".pdf"
                         onChange={(e) => {
                             const file = e.target.files?.[0] || null;
+                            handleSuratPermohonanChange(file);
                             if (file && file.size > MAX_FILE_SIZE_BYTES) {
-                                // Reset input
                                 e.target.value = '';
-                                // Trigger change with error message in parent
-                                onChange({
-                                    ...data,
-                                    fileKontrak: null
-                                });
-                            } else {
-                                handleFileChange(file);
                             }
                         }}
                         disabled={loading}
                         className="hidden"
-                        id="fileInput"
+                        id="suratPermohonanInput"
                     />
 
                     <label
-                        htmlFor="fileInput"
+                        htmlFor="suratPermohonanInput"
                         className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 cursor-pointer hover:bg-primary/5 hover:border-primary/40 transition disabled:opacity-50"
                     >
                         <Upload className="h-5 w-5 text-slate-500" />
                         <div className="text-center">
-                            <span className="text-sm font-medium text-slate-700">Pilih file PDF</span>
+                            <span className="text-sm font-medium text-slate-700">Pilih file Surat Permohonan</span>
                             <span className="text-xs text-slate-500 block">atau drag & drop</span>
                         </div>
                     </label>
                 </div>
 
-                {data.fileKontrak && (
+                {data.fileSuratPermohonan && (
                     <div className="flex items-center gap-2 rounded-xl bg-primary/5 border border-primary/20 px-4 py-3">
                         <FileText className="h-4 w-4 text-primary" />
                         <div className="flex-1">
-                            <p className="text-sm font-medium text-slate-900">{data.fileKontrak.name}</p>
+                            <p className="text-sm font-medium text-slate-900">{data.fileSuratPermohonan.name}</p>
                             <p className="text-xs text-slate-600">
-                                {(data.fileKontrak.size / 1024 / 1024).toFixed(2)} MB
+                                {(data.fileSuratPermohonan.size / 1024 / 1024).toFixed(2)} MB
                             </p>
                         </div>
                         <button
                             type="button"
-                            onClick={() => handleFileChange(null)}
+                            onClick={() => handleSuratPermohonanChange(null)}
                             disabled={loading}
                             className="text-xs font-semibold text-primary hover:text-primary"
                         >
@@ -395,10 +321,74 @@ export default function FormKontrakPKWT({ data, onChange, errors = {}, loading =
                     </div>
                 )}
 
-                {errors.fileKontrak && (
+                {errors.fileSuratPermohonan && (
                     <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 p-2">
                         <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
-                        <p className="text-sm text-red-600">{errors.fileKontrak}</p>
+                        <p className="text-sm text-red-600">{errors.fileSuratPermohonan}</p>
+                    </div>
+                )}
+            </div>
+
+            {/* Draft PKWT */}
+            <div className="space-y-2">
+                <label className="block">
+                    <span className="text-sm font-medium text-slate-700">Draft PKWT (PDF)</span>
+                    <span className="text-red-500 ml-1">*</span>
+                    <span className="text-xs text-slate-500 ml-2">(max {MAX_FILE_SIZE_MB}MB)</span>
+                </label>
+
+                <div className="relative">
+                    <input
+                        type="file"
+                        accept=".pdf"
+                        onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            handleDraftPKWTChange(file);
+                            if (file && file.size > MAX_FILE_SIZE_BYTES) {
+                                e.target.value = '';
+                            }
+                        }}
+                        disabled={loading}
+                        className="hidden"
+                        id="draftPKWTInput"
+                    />
+
+                    <label
+                        htmlFor="draftPKWTInput"
+                        className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 cursor-pointer hover:bg-primary/5 hover:border-primary/40 transition disabled:opacity-50"
+                    >
+                        <Upload className="h-5 w-5 text-slate-500" />
+                        <div className="text-center">
+                            <span className="text-sm font-medium text-slate-700">Pilih file Draft PKWT</span>
+                            <span className="text-xs text-slate-500 block">atau drag & drop</span>
+                        </div>
+                    </label>
+                </div>
+
+                {data.fileDraftPKWT && (
+                    <div className="flex items-center gap-2 rounded-xl bg-primary/5 border border-primary/20 px-4 py-3">
+                        <FileText className="h-4 w-4 text-primary" />
+                        <div className="flex-1">
+                            <p className="text-sm font-medium text-slate-900">{data.fileDraftPKWT.name}</p>
+                            <p className="text-xs text-slate-600">
+                                {(data.fileDraftPKWT.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => handleDraftPKWTChange(null)}
+                            disabled={loading}
+                            className="text-xs font-semibold text-primary hover:text-primary"
+                        >
+                            Hapus
+                        </button>
+                    </div>
+                )}
+
+                {errors.fileDraftPKWT && (
+                    <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 p-2">
+                        <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-red-600">{errors.fileDraftPKWT}</p>
                     </div>
                 )}
             </div>

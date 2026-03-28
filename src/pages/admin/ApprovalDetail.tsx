@@ -7,9 +7,9 @@ import {
     FileText,
     Calendar,
     Users,
-    Clock,
     AlertCircle,
     RotateCcw,
+    ChevronDown,
 } from 'lucide-react';
 import { useState } from 'react';
 import { MoonLoader } from 'react-spinners';
@@ -39,6 +39,7 @@ export default function ApprovalDetail() {
     const [employeeDetail, setEmployeeDetail] = useState<EmployeeDetail | null>(null);
     const [employeeDetailLoading, setEmployeeDetailLoading] = useState(false);
     const [employeeDetailError, setEmployeeDetailError] = useState('');
+    const [downloadDropdownOpen, setDownloadDropdownOpen] = useState(false);
 
     const handleOpenModal = (type: 'approve' | 'reject') => {
         setModalState({ isOpen: true, type });
@@ -110,11 +111,6 @@ export default function ApprovalDetail() {
         setSelectedEmployee(null);
     };
 
-    const handleDownloadSubmission = () => {
-        const url = approval?.contract.submission_file_url || approval?.contract.file_url;
-        if (url) window.open(url, '_blank');
-    };
-
     const handleDownloadApproval = () => {
         const url = approval?.contract.approval_file_url;
         if (url) window.open(url, '_blank');
@@ -144,14 +140,6 @@ export default function ApprovalDetail() {
             month: 'long',
             year: 'numeric',
         });
-    };
-
-    const formatDuration = (
-        months: number | null,
-        type: string
-    ): string => {
-        if (type === 'PKWTT') return 'Tetap';
-        return months ? `${months} bulan` : '-';
     };
 
     if (loading) {
@@ -239,7 +227,7 @@ export default function ApprovalDetail() {
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-slate-900">{company.company_name}</h1>
                             <p className="mt-1 text-sm text-slate-600">
-                                Permohonan {contract.contract_type} - {formatDuration(contract.duration_months, contract.contract_type)}
+                                Permohonan {contract.contract_type}
                             </p>
 
                             {/* Status Badges */}
@@ -282,14 +270,53 @@ export default function ApprovalDetail() {
 
                         {/* Action Buttons */}
                         <div className="flex flex-wrap gap-2">
-                            {(contract.submission_file_url || contract.file_url) && (
-                                <button
-                                    onClick={handleDownloadSubmission}
-                                    className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
-                                >
-                                    <Download className="h-4 w-4" />
-                                    Unduh Dokumen
-                                </button>
+                            {/* Download Dokumen Perusahaan (dropdown: Surat Permohonan / Draft PKWT) */}
+                            {(contract.surat_permohonan_file_url || contract.draft_pkwt_file_url || contract.submission_file_url) && (
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setDownloadDropdownOpen(!downloadDropdownOpen)}
+                                        className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                                    >
+                                        <Download className="h-4 w-4" />
+                                        Unduh Dokumen
+                                        <ChevronDown className="h-3 w-3" />
+                                    </button>
+                                    {downloadDropdownOpen && (
+                                        <div className="absolute left-0 top-full z-10 mt-1 w-56 rounded-lg border border-slate-200 bg-white shadow-lg">
+                                            {contract.surat_permohonan_file_url && (
+                                                <button
+                                                    onClick={() => { window.open(contract.surat_permohonan_file_url!, '_blank'); setDownloadDropdownOpen(false); }}
+                                                    className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-t-lg border-b border-slate-100"
+                                                >
+                                                    Surat Permohonan
+                                                    {contract.surat_permohonan_file_name && (
+                                                        <span className="block text-xs text-slate-400 truncate">{contract.surat_permohonan_file_name}</span>
+                                                    )}
+                                                </button>
+                                            )}
+                                            {contract.draft_pkwt_file_url && (
+                                                <button
+                                                    onClick={() => { window.open(contract.draft_pkwt_file_url!, '_blank'); setDownloadDropdownOpen(false); }}
+                                                    className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-b-lg"
+                                                >
+                                                    Draft PKWT
+                                                    {contract.draft_pkwt_file_name && (
+                                                        <span className="block text-xs text-slate-400 truncate">{contract.draft_pkwt_file_name}</span>
+                                                    )}
+                                                </button>
+                                            )}
+                                            {/* Legacy fallback */}
+                                            {!contract.surat_permohonan_file_url && !contract.draft_pkwt_file_url && contract.submission_file_url && (
+                                                <button
+                                                    onClick={() => { window.open(contract.submission_file_url!, '_blank'); setDownloadDropdownOpen(false); }}
+                                                    className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-lg"
+                                                >
+                                                    Dokumen Kontrak
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             )}
                             {contract.approval_file_url && (
                                 <button
@@ -335,7 +362,7 @@ export default function ApprovalDetail() {
 
                 <div className="p-6">
 
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         <div className="flex items-start gap-3">
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/10">
                                 <FileText className="h-5 w-5 text-primary" />
@@ -344,18 +371,6 @@ export default function ApprovalDetail() {
                                 <p className="text-xs text-slate-500">Jenis Kontrak</p>
                                 <p className="mt-0.5 font-medium text-slate-900">
                                     {contract.contract_type}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-start gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/25 ring-1 ring-secondary/20">
-                                <Clock className="h-5 w-5 text-slate-900" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-slate-500">Durasi Kontrak</p>
-                                <p className="mt-0.5 font-medium text-slate-900">
-                                    {formatDuration(contract.duration_months, contract.contract_type)}
                                 </p>
                             </div>
                         </div>

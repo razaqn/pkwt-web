@@ -63,11 +63,6 @@ export default function ApprovalTable({
         });
     };
 
-    const formatDuration = (months: number | null, type: string): string => {
-        if (type === 'PKWTT') return 'Tetap';
-        return months ? `${months} bulan` : '-';
-    };
-
     return (
         <div className="space-y-4">
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -123,9 +118,6 @@ export default function ApprovalTable({
                                     Jenis PKWT
                                 </th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
-                                    Durasi Kontrak
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
                                     Jumlah Karyawan
                                 </th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
@@ -173,9 +165,6 @@ export default function ApprovalTable({
                                             >
                                                 {approval.contract_type}
                                             </span>
-                                        </td>
-                                        <td className="px-4 py-4 text-slate-700">
-                                            {formatDuration(approval.duration_months, approval.contract_type)}
                                         </td>
                                         <td className="px-4 py-4 text-slate-700">
                                             {approval.employee_count}

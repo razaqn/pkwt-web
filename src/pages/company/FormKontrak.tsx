@@ -4,20 +4,20 @@ import FormKontrakPKWT, { type FormKontrakPKWTData } from '../../components/Form
 import FormKontrakPKWTT, { type FormKontrakPKWTTData } from '../../components/FormKontrakPKWTT';
 import { checkNIKs, getDraftContractDetail } from '../../lib/api';
 import { toUserMessage } from '../../lib/errors';
-import { formatDateToYMD } from '../../lib/date';
 import { MoonLoader, ClipLoader } from 'react-spinners';
-
-const MAX_FILE_SIZE_MB = 5;
-const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 type ContractType = 'PKWT' | 'PKWTT';
 
 interface FormErrors {
     submit?: string;
     niks?: string;
+    fullName?: string;
+    gender?: string;
+    position?: string;
+    address?: string;
     startDate?: string;
-    durasi?: string;
-    fileKontrak?: string;
+    fileSuratPermohonan?: string;
+    fileDraftPKWT?: string;
 }
 
 export default function FormKontrak() {
@@ -28,18 +28,15 @@ export default function FormKontrak() {
     const [activeTab, setActiveTab] = useState<ContractType>('PKWT');
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<FormErrors>({});
-    const [draftLoading, setDraftLoading] = useState(!!draftId); // Show loading if draftId exists
+    const [draftLoading, setDraftLoading] = useState(!!draftId);
 
     const [pkwtData, setPkwtData] = useState<FormKontrakPKWTData>({
         niks: [],
-        startDate: '',
-        durasi: 0,
     });
 
     const [pkwttData, setPkwttData] = useState<FormKontrakPKWTTData>({
         nik: '',
         startDate: '',
-        fileKontrak: null,
     });
 
     // Load draft data on mount if draftId provided
@@ -49,40 +46,45 @@ export default function FormKontrak() {
             return;
         }
 
+        let isMounted = true;
+
         async function loadDraft() {
             try {
                 const response = await getDraftContractDetail(draftId as string);
                 const draft = response.data;
 
-                // Pre-fill form based on contract type
+                if (!isMounted) return;
+
                 if (draft.contract_type === 'PKWT') {
                     setActiveTab('PKWT');
                     setPkwtData({
-                        niks: draft.employee_niks.map((nik: string) => ({
+                        niks: (draft.employee_niks || []).map((nik: string) => ({
                             id: crypto.randomUUID(),
                             nik
                         })),
-                        startDate: formatDateToYMD(draft.start_date) || draft.start_date,
-                        durasi: draft.duration_months || 0,
                     });
                 } else {
                     setActiveTab('PKWTT');
                     setPkwttData({
-                        nik: draft.employee_niks[0] || '',
-                        startDate: formatDateToYMD(draft.start_date) || draft.start_date,
-                        fileKontrak: null, // File cannot be pre-filled
+                        nik: draft.employee_niks?.[0] || '',
+                        startDate: '',
                     });
                 }
             } catch (err: any) {
-                setErrors({
-                    submit: toUserMessage(err, 'Gagal memuat draft'),
-                });
+                if (isMounted) {
+                    setErrors({
+                        submit: toUserMessage(err, 'Gagal memuat draft'),
+                    });
+                }
             } finally {
-                setDraftLoading(false);
+                if (isMounted) {
+                    setDraftLoading(false);
+                }
             }
         }
 
         loadDraft();
+        return () => { isMounted = false; };
     }, [draftId]);
 
     const validatePKWT = useCallback((): boolean => {
@@ -90,22 +92,16 @@ export default function FormKontrak() {
 
         if (pkwtData.niks.length === 0) {
             newErrors.niks = 'Minimal 1 NIK harus ditambahkan';
-        } else if (pkwtData.niks.some((entry: any) => !entry.nik.trim())) {
+        } else if (pkwtData.niks.some((entry) => !entry.nik.trim())) {
             newErrors.niks = 'Semua NIK harus diisi';
         }
 
-        if (!pkwtData.startDate) {
-            newErrors.startDate = 'Tanggal mulai harus diisi';
+        if (!pkwtData.fileSuratPermohonan) {
+            newErrors.fileSuratPermohonan = 'Surat Permohonan harus diunggah';
         }
 
-        if (!pkwtData.durasi || pkwtData.durasi < 1) {
-            newErrors.durasi = 'Durasi harus lebih dari 0 bulan';
-        }
-
-        if (!pkwtData.fileKontrak) {
-            newErrors.fileKontrak = 'File kontrak harus diunggah';
-        } else if (pkwtData.fileKontrak.size > MAX_FILE_SIZE_BYTES) {
-            newErrors.fileKontrak = `File terlalu besar. Maksimal ${MAX_FILE_SIZE_MB}MB, file Anda ${(pkwtData.fileKontrak.size / 1024 / 1024).toFixed(2)}MB`;
+        if (!pkwtData.fileDraftPKWT) {
+            newErrors.fileDraftPKWT = 'Draft PKWT harus diunggah';
         }
 
         setErrors(newErrors);
@@ -117,14 +113,36 @@ export default function FormKontrak() {
 
         if (!pkwttData.nik.trim()) {
             newErrors.niks = 'NIK harus diisi';
+        } else if (!/^[0-9]{16}$/.test(pkwttData.nik.trim())) {
+            newErrors.niks = 'NIK harus 16 digit angka';
+        }
+
+        if (!pkwttData.fullName?.trim()) {
+            newErrors.fullName = 'Nama lengkap harus diisi';
+        }
+
+        if (!pkwttData.gender) {
+            newErrors.gender = 'Kelamin harus dipilih';
+        }
+
+        if (!pkwttData.position?.trim()) {
+            newErrors.position = 'Jabatan harus diisi';
+        }
+
+        if (!pkwttData.address?.trim()) {
+            newErrors.address = 'Alamat harus diisi';
         }
 
         if (!pkwttData.startDate) {
             newErrors.startDate = 'Tanggal mulai harus diisi';
         }
 
-        if (!pkwttData.fileKontrak) {
-            newErrors.fileKontrak = 'File kontrak harus diunggah';
+        if (!pkwttData.fileSuratPermohonan) {
+            newErrors.fileSuratPermohonan = 'Surat Permohonan harus diunggah';
+        }
+
+        if (!pkwttData.fileDraftPKWT) {
+            newErrors.fileDraftPKWT = 'Draft PKWT harus diunggah';
         }
 
         setErrors(newErrors);
@@ -142,22 +160,19 @@ export default function FormKontrak() {
         setErrors({});
 
         try {
-            // Lakukan pengecekan NIK ke backend
-            const nikList = pkwtData.niks.map((entry: any) => entry.nik);
+            const nikList = pkwtData.niks.map((entry) => entry.nik);
             const response = await checkNIKs(nikList);
 
             if (!response.ok) {
                 throw new Error('Gagal melakukan pengecekan NIK');
             }
 
-            // Navigate to pengajuan berkas page with contract data
             navigate('/pengajuan-berkas', {
                 state: {
                     contractType: 'PKWT',
                     niks: nikList,
-                    startDate: pkwtData.startDate,
-                    duration: pkwtData.durasi,
-                    fileKontrak: pkwtData.fileKontrak,
+                    fileSuratPermohonan: pkwtData.fileSuratPermohonan,
+                    fileDraftPKWT: pkwtData.fileDraftPKWT,
                     importedData: pkwtData.importedData || {},
                 },
             });
@@ -181,22 +196,26 @@ export default function FormKontrak() {
         setErrors({});
 
         try {
-            // Lakukan pengecekan NIK ke backend
             const response = await checkNIKs([pkwttData.nik]);
 
             if (!response.ok) {
                 throw new Error('Gagal melakukan pengecekan NIK');
             }
 
-            // Navigate to pengajuan berkas page with contract data
             navigate('/pengajuan-berkas', {
                 state: {
                     contractType: 'PKWTT',
                     niks: [pkwttData.nik],
-                    startDate: pkwttData.startDate,
-                    duration: null, // PKWTT has no duration
-                    fileKontrak: pkwttData.fileKontrak,
-                    importedData: pkwttData.importedData || {},
+                    fileSuratPermohonan: pkwttData.fileSuratPermohonan,
+                    fileDraftPKWT: pkwttData.fileDraftPKWT,
+                    importedData: {
+                        [pkwttData.nik]: {
+                            fullName: pkwttData.fullName,
+                            gender: pkwttData.gender,
+                            position: pkwttData.position,
+                            address: pkwttData.address,
+                        },
+                    },
                 },
             });
         } catch (err: any) {
@@ -288,7 +307,12 @@ export default function FormKontrak() {
                             <p className="text-sm font-semibold text-slate-900">
                                 {activeTab === 'PKWT' ? 'PKWT (Banyak Karyawan)' : 'PKWTT (Satu Karyawan)'}
                             </p>
-                            <p className="mt-1 text-sm text-slate-600">Lengkapi data di bawah, lalu lanjutkan ke tahap pengajuan berkas.</p>
+                            <p className="mt-1 text-sm text-slate-600">
+                                {activeTab === 'PKWT'
+                                    ? 'Lengkapi data NIK dan upload 2 dokumen (Surat Permohonan + Draft PKWT).'
+                                    : 'Masukkan NIK, data akan terisi otomatis jika sudah terdaftar. Upload 2 dokumen.'
+                                }
+                            </p>
                         </div>
 
                         <form onSubmit={activeTab === 'PKWT' ? handleSubmitPKWT : handleSubmitPKWTT} className="space-y-6 px-6 py-6">

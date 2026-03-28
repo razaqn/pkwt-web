@@ -49,7 +49,7 @@ function buildEmployeeTable(employees: ApprovalEmployee[]): Table {
     { children: [new Paragraph({ children: [new TextRun({ text: 'NIK', bold: true, size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 22, type: WidthType.PERCENTAGE }, shading: { fill: 'E8F5E9' } },
     { children: [new Paragraph({ children: [new TextRun({ text: 'Nama Lengkap', bold: true, size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 30, type: WidthType.PERCENTAGE }, shading: { fill: 'E8F5E9' } },
     { children: [new Paragraph({ children: [new TextRun({ text: 'Alamat', bold: true, size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 25, type: WidthType.PERCENTAGE }, shading: { fill: 'E8F5E9' } },
-    { children: [new Paragraph({ children: [new TextRun({ text: 'Tanggal Lahir', bold: true, size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 15, type: WidthType.PERCENTAGE }, shading: { fill: 'E8F5E9' } },
+    { children: [new Paragraph({ children: [new TextRun({ text: 'Jabatan', bold: true, size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 15, type: WidthType.PERCENTAGE }, shading: { fill: 'E8F5E9' } },
   ];
 
   const headerRow = new TableRow({
@@ -63,7 +63,7 @@ function buildEmployeeTable(employees: ApprovalEmployee[]): Table {
       { children: [new Paragraph({ children: [new TextRun({ text: emp.nik, size: 20 })] })], width: { size: 22, type: WidthType.PERCENTAGE } },
       { children: [new Paragraph({ children: [new TextRun({ text: emp.full_name, size: 20 })] })], width: { size: 30, type: WidthType.PERCENTAGE } },
       { children: [new Paragraph({ children: [new TextRun({ text: emp.address || '-', size: 20 })] })], width: { size: 25, type: WidthType.PERCENTAGE } },
-      { children: [new Paragraph({ children: [new TextRun({ text: emp.birthdate ? formatDateToIndonesian(emp.birthdate) : '-', size: 20 })] })], width: { size: 15, type: WidthType.PERCENTAGE } },
+      { children: [new Paragraph({ children: [new TextRun({ text: emp.position || '-', size: 20 })] })], width: { size: 15, type: WidthType.PERCENTAGE } },
     ];
     return new TableRow({
       children: cells.map(c => new TableCell({ ...c, borders: { top: { style: BorderStyle.SINGLE, size: 1 }, bottom: { style: BorderStyle.SINGLE, size: 1 }, left: { style: BorderStyle.SINGLE, size: 1 }, right: { style: BorderStyle.SINGLE, size: 1 } } })),

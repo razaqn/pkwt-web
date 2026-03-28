@@ -25,11 +25,8 @@ export interface NIKCheckResult {
     nik: string;
     full_name: string | null;
     address: string | null;
-    district: string | null;
-    village: string | null;
-    place_of_birth: string | null;
-    birthdate: string | null;
-    ktp_file_url: string | null;
+    gender: string | null;
+    position: string | null;
     is_complete: boolean;
 }
 
@@ -37,11 +34,10 @@ export interface NIKData {
     nik: string;
     fullName: string | null;
     address: string | null;
-    district: string | null;
-    village: string | null;
-    placeOfBirth: string | null;
-    birthdate: string | null;
-    ktpFileUrl: string | null; // URL to KTP image
+    gender: string | null;
+    position: string | null;
+    startDate: string | null;
+    endDate: string | null;
     isComplete: boolean;
 }
 
@@ -53,11 +49,10 @@ export function mapNIKResultToData(result: NIKCheckResult): NIKData {
         nik: result.nik,
         fullName: result.full_name,
         address: result.address,
-        district: result.district,
-        village: result.village,
-        placeOfBirth: result.place_of_birth,
-        birthdate: result.birthdate,
-        ktpFileUrl: result.ktp_file_url,
+        gender: result.gender,
+        position: result.position,
+        startDate: null,
+        endDate: null,
         isComplete: result.is_complete,
     };
 }
@@ -70,11 +65,8 @@ export interface EmployeeDataResponse {
     nik: string;
     full_name: string;
     address: string;
-    district: string;
-    village: string;
-    place_of_birth: string;
-    birthdate: string;
-    ktp_file_url: string | null;
+    gender: string | null;
+    position: string | null;
     company_id: string;
 }
 
@@ -82,11 +74,10 @@ export function mapEmployeeResponseToData(data: EmployeeDataResponse): Omit<NIKD
     return {
         fullName: data.full_name,
         address: data.address,
-        district: data.district,
-        village: data.village,
-        placeOfBirth: data.place_of_birth,
-        birthdate: data.birthdate,
-        ktpFileUrl: data.ktp_file_url,
+        gender: data.gender,
+        position: data.position,
+        startDate: null,
+        endDate: null,
         isComplete: true,
     };
 }

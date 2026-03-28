@@ -29,16 +29,6 @@ export default function ApprovalEmployeeTable({ employees, onViewDetail }: Appro
         }
     }, [currentPage, totalPages]);
 
-    const formatDate = (dateString: string | null): string => {
-        if (!dateString) return '-';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('id-ID', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-        });
-    };
-
     return (
         <div className="space-y-4">
             <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -53,7 +43,10 @@ export default function ApprovalEmployeeTable({ employees, onViewDetail }: Appro
                                     NIK
                                 </th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
-                                    Tanggal Lahir
+                                    Kelamin
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
+                                    Jabatan
                                 </th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
                                     Jumlah Kontrak Sebelumnya
@@ -83,7 +76,10 @@ export default function ApprovalEmployeeTable({ employees, onViewDetail }: Appro
                                         </td>
                                         <td className="px-4 py-4 text-slate-700">{employee.nik}</td>
                                         <td className="px-4 py-4 text-slate-700">
-                                            {formatDate(employee.birthdate)}
+                                            {employee.gender || '-'}
+                                        </td>
+                                        <td className="px-4 py-4 text-slate-700">
+                                            {employee.position || '-'}
                                         </td>
                                         <td className="px-4 py-4 text-slate-700">
                                             {employee.previous_contract_count}

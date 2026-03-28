@@ -13,6 +13,12 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.3.2",
+    "@tiptap/extension-text-align": "^3.21.0",
+    "@tiptap/extension-underline": "^3.21.0",
+    "@tiptap/pm": "^3.21.0",
+    "@tiptap/react": "^3.21.0",
+    "@tiptap/starter-kit": "^3.21.0",
     "chart.js": "^4.5.1",
     "docx": "^9.6.1",
     "lucide-react": "^0.555.0",
