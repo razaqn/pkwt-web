@@ -1,8 +1,9 @@
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-  AlignmentType, WidthType, BorderStyle, PageOrientation,
+  AlignmentType, WidthType, BorderStyle, PageOrientation, ImageRun,
 } from 'docx';
-import type { TemplateData, TemplatePage, Block, TextBlock, TableBlock, DividerBlock, SpacerBlock, SignatureBlock, ContractDataForTemplate } from './api';
+import type { TemplateData, TemplatePage, Block, TextBlock, ImageBlock, TableBlock, DividerBlock, SpacerBlock, SignatureBlock, ContractDataForTemplate } from './api';
+import { API_BASE } from './api';
 
 function toRoman(num: number): string {
   const map: Record<number, string> = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI', 7: 'VII', 8: 'VIII', 9: 'IX', 10: 'X' };
@@ -52,8 +53,20 @@ function getEmployeeValue(emp: any, dataSource: string, customValue?: string, ro
   return String(val);
 }
 
-function blockToDocxParagraphs(block: Block, data: ContractDataForTemplate): Paragraph[] {
-  const result: Paragraph[] = [];
+async function fetchImageAsBuffer(src: string): Promise<Buffer | null> {
+  try {
+    const url = src.startsWith('http') ? src : `${API_BASE}${src.startsWith('/') ? '' : '/'}${src}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const arrayBuf = await res.arrayBuffer();
+    return Buffer.from(arrayBuf);
+  } catch {
+    return null;
+  }
+}
+
+async function blockToDocx(block: Block, data: ContractDataForTemplate): Promise<(Paragraph | Table)[]> {
+  const result: (Paragraph | Table)[] = [];
 
   switch (block.type) {
     case 'text': {
@@ -82,17 +95,50 @@ function blockToDocxParagraphs(block: Block, data: ContractDataForTemplate): Par
       break;
     }
 
+    case 'image': {
+      const b = block as ImageBlock;
+      if (!b.src) break;
+      const imgBuffer = await fetchImageAsBuffer(b.src);
+      if (imgBuffer) {
+        const ext = b.src.toLowerCase().split('.').pop() || 'png';
+        const imgType = ext === 'jpg' ? 'jpg' : ext === 'png' ? 'png' : ext === 'gif' ? 'gif' : 'png';
+        result.push(new Paragraph({
+          alignment: b.align === 'center' ? AlignmentType.CENTER
+            : b.align === 'right' ? AlignmentType.RIGHT : AlignmentType.LEFT,
+          children: [
+            new ImageRun({
+              data: imgBuffer,
+              type: imgType,
+              transformation: { width: b.width || 100, height: Math.round((b.width || 100) * 0.5) },
+            }),
+          ],
+        }));
+      }
+      break;
+    }
+
     case 'table': {
       const b = block as TableBlock;
       const cols = b.columns;
       if (!cols.length) break;
 
-      // Header
+      // Normalize widths
+      const parsedWidths = cols.map(c => {
+        const n = parseFloat(c.width);
+        return isNaN(n) || n <= 0 ? 100 / cols.length : n;
+      });
+      const totalWidth = parsedWidths.reduce((a, b) => a + b, 0);
+      const widths = totalWidth > 0 && totalWidth < 100
+        ? parsedWidths.map((w, i) => i === parsedWidths.length - 1 ? 100 - parsedWidths.slice(0, -1).reduce((a, b) => a + b, 0) : w)
+        : parsedWidths;
+
+      // Header row
       const headerRow = new TableRow({
         tableHeader: true,
-        children: cols.map(col => new TableCell({
-          width: { size: Math.round(parseFloat(col.width) || 100 / cols.length), type: WidthType.PERCENTAGE },
+        children: cols.map((col, ci) => new TableCell({
+          width: { size: Math.round(widths[ci]), type: WidthType.PERCENTAGE },
           shading: { fill: 'E8F5E9' },
+          borders: { top: { style: BorderStyle.SINGLE, size: 1, color: '999999' }, bottom: { style: BorderStyle.SINGLE, size: 1, color: '999999' }, left: { style: BorderStyle.SINGLE, size: 1, color: '999999' }, right: { style: BorderStyle.SINGLE, size: 1, color: '999999' } },
           children: [new Paragraph({
             alignment: AlignmentType.CENTER,
             children: [new TextRun({ text: col.header, bold: true, size: 20 })],
@@ -103,8 +149,9 @@ function blockToDocxParagraphs(block: Block, data: ContractDataForTemplate): Par
       // Data rows
       const dataRows = data.employees.map((emp, idx) =>
         new TableRow({
-          children: cols.map(col => new TableCell({
-            width: { size: Math.round(parseFloat(col.width) || 100 / cols.length), type: WidthType.PERCENTAGE },
+          children: cols.map((col, ci) => new TableCell({
+            width: { size: Math.round(widths[ci]), type: WidthType.PERCENTAGE },
+            borders: { top: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' }, bottom: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' }, left: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' }, right: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' } },
             children: [new Paragraph({
               children: [new TextRun({
                 text: getEmployeeValue(emp, col.dataSource, col.customValue, idx),
@@ -115,13 +162,10 @@ function blockToDocxParagraphs(block: Block, data: ContractDataForTemplate): Par
         })
       );
 
-      result.push(new Paragraph({
-        children: [
-          new Table({
-            width: { size: 100, type: WidthType.PERCENTAGE },
-            rows: [headerRow, ...dataRows],
-          }),
-        ],
+      // Table as direct section child, NOT inside Paragraph
+      result.push(new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [headerRow, ...dataRows],
       }));
       break;
     }
@@ -154,41 +198,35 @@ function blockToDocxParagraphs(block: Block, data: ContractDataForTemplate): Par
 
     case 'signature': {
       const b = block as SignatureBlock;
-      // Use a table with 2 columns for signature layout
       const noBorder = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
       const borders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
 
-      result.push(new Paragraph({
-        spacing: { before: 400 },
-        children: [
-          new Table({
-            width: { size: 100, type: WidthType.PERCENTAGE },
-            rows: [
-              new TableRow({
-                children: [
-                  new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, borders, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: b.leftLabel || '', size: 24 })] })] }),
-                  new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, borders, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: b.rightLabel || '', size: 24 })] })] }),
-                ],
-              }),
-              new TableRow({
-                height: { value: 1200, rule: 'atLeast' as const },
-                children: [
-                  new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, borders, children: [new Paragraph({ children: [] })] }),
-                  new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, borders, children: [new Paragraph({ children: [] })] }),
-                ],
-              }),
-              new TableRow({
-                children: [
-                  new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, borders, children: [new Paragraph({ children: [] })] }),
-                  new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, borders, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: b.rightName || '', bold: true, size: 24, underline: {} })] })] }),
-                ],
-              }),
-              new TableRow({
-                children: [
-                  new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, borders, children: [new Paragraph({ children: [] })] }),
-                  new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, borders, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: b.rightTitle || '', size: 22 })] })] }),
-                ],
-              }),
+      result.push(new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [
+          new TableRow({
+            children: [
+              new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, borders, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: b.leftLabel || '', size: 24 })] })] }),
+              new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, borders, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: b.rightLabel || '', size: 24 })] })] }),
+            ],
+          }),
+          new TableRow({
+            height: { value: 1200, rule: 'atLeast' as const },
+            children: [
+              new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, borders, children: [new Paragraph({ children: [] })] }),
+              new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, borders, children: [new Paragraph({ children: [] })] }),
+            ],
+          }),
+          new TableRow({
+            children: [
+              new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, borders, children: [new Paragraph({ children: [] })] }),
+              new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, borders, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: b.rightName || '', bold: true, size: 24, underline: {} })] })] }),
+            ],
+          }),
+          new TableRow({
+            children: [
+              new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, borders, children: [new Paragraph({ children: [] })] }),
+              new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE }, borders, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: b.rightTitle || '', size: 22 })] })] }),
             ],
           }),
         ],
@@ -200,10 +238,10 @@ function blockToDocxParagraphs(block: Block, data: ContractDataForTemplate): Par
   return result;
 }
 
-function pageToDocxSection(page: TemplatePage, data: ContractDataForTemplate) {
-  const paragraphs: Paragraph[] = [];
+async function pageToDocxSection(page: TemplatePage, data: ContractDataForTemplate) {
+  const children: (Paragraph | Table)[] = [];
   for (const block of page.blocks) {
-    paragraphs.push(...blockToDocxParagraphs(block, data));
+    children.push(...(await blockToDocx(block, data)));
   }
 
   return {
@@ -217,12 +255,12 @@ function pageToDocxSection(page: TemplatePage, data: ContractDataForTemplate) {
         margin: { top: 1134, right: 1134, bottom: 1134, left: 1134 },
       },
     },
-    children: paragraphs,
+    children,
   };
 }
 
 export async function generateDOCXBlob(templateData: TemplateData, contractData: ContractDataForTemplate): Promise<Blob> {
-  const sections = templateData.pages.map(page => pageToDocxSection(page, contractData));
+  const sections = await Promise.all(templateData.pages.map(page => pageToDocxSection(page, contractData)));
 
   const doc = new Document({
     sections,
