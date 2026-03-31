@@ -5,7 +5,8 @@ import { toUserMessage } from '../lib/errors';
 import { getDocumentTemplates, getContractDataForTemplate } from '../lib/api';
 import type { ApprovalDetail, DocumentTemplate, ContractDataForTemplate } from '../lib/api';
 import { generatePDFBlob } from '../lib/pdf-generator';
-import { generateDOCXBlob, downloadBlob as downloadDocxBlob } from '../lib/docx-generator';
+import { API_BASE } from '../lib/api';
+import { getToken } from '../store/auth';
 
 interface ApprovalActionModalProps {
     isOpen: boolean;
@@ -131,25 +132,31 @@ export default function ApprovalActionModal({
     }, [generatedBlob]);
 
     const handleDownloadDocument = useCallback(async () => {
-        const tpl = templates.find(t => t.id === selectedTemplateId);
-        if (!tpl || !contractData || !approvalData) return;
+        if (!selectedTemplateId || !approvalData) return;
         try {
-            const blob = await generateDOCXBlob(tpl.template_data, contractData);
+            const contractId = approvalData.contract.id;
+            const url = `${API_BASE}/api/admin/document-templates/${selectedTemplateId}/download-docx/${contractId}`;
+            const token = getToken();
+            const headers: Record<string, string> = {};
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const res = await fetch(url, { headers });
+            if (!res.ok) throw new Error('Gagal download');
+
+            const blob = await res.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
             const name = approvalData.company.company_name.replace(/[^a-zA-Z0-9]/g, '_');
-            const type = approvalData.contract.contract_type;
-            downloadDocxBlob(blob, `${type}_${name}_disnaker.docx`);
+            a.download = `${approvalData.contract.contract_type}_${name}_disnaker.docx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(blobUrl);
         } catch {
-            // fallback: download the preview blob as PDF if DOCX fails
-            if (generatedBlob) {
-                const url = URL.createObjectURL(generatedBlob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'document.pdf';
-                a.click();
-                URL.revokeObjectURL(url);
-            }
+            // Silently fail
         }
-    }, [selectedTemplateId, contractData, approvalData, templates, generatedBlob]);
+    }, [selectedTemplateId, approvalData]);
 
     const handleSubmit = useCallback(
         async (e: React.FormEvent) => {
