@@ -107,11 +107,14 @@ export default function CreateContractSubmit() {
                 await adminSubmitContractApplication({
                     company_id: contractData.companyId,
                     contract_type: 'PKWT',
-                    employees: contractData.niks.map(nik => ({
-                        nik,
-                        start_date: '',
-                        end_date: '',
-                    })),
+                    employees: contractData.niks.map(nik => {
+                        const d = nikDataList.find(x => x.nik === nik);
+                        return {
+                            nik,
+                            start_date: d?.startDate || '',
+                            end_date: d?.endDate || '',
+                        };
+                    }),
                     surat_permohonan_file_name: fileSuratPermohonan.name,
                     surat_permohonan_file_content_base64: suratPermohonanBase64,
                     draft_pkwt_file_name: fileDraftPKWT.name,
