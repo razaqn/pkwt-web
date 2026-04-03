@@ -7,7 +7,7 @@ export const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 // Type definitions
 export interface ParsedExcelRow {
-    nik: string;
+    nik?: string;
     fullName?: string | null;
     gender?: 'Laki-laki' | 'Perempuan' | null;
     position?: string | null;
@@ -30,14 +30,17 @@ export interface NIKEntry {
 
 // Column name mappings (case-insensitive)
 const COLUMN_MAPPINGS = {
-    nik: ['nik'],
+    nik: ['nik', 'no_ktp', 'no_ktp_nik'],
     fullName: ['nama', 'full_name', 'fullname', 'name'],
     gender: ['kelamin', 'gender', 'jenis_kelamin'],
+    // Gender L/P separate columns (from PKWT template: "Jenis Kelamin L", "Jenis Kelamin P")
+    genderL: ['jenis_kelamin_l', 'kelamin_l', 'l'],
+    genderP: ['jenis_kelamin_p', 'kelamin_p', 'p'],
     position: ['jabatan', 'posisi', 'position'],
-    startDate: ['tanggal_mulai', 'start_date', 'tanggalmulai'],
-    endDate: ['tanggal_berakhir', 'end_date', 'tanggalberakhir'],
+    startDate: ['tmt_mulai', 'tanggal_mulai', 'start_date', 'tanggalmulai'],
+    endDate: ['tmt_akhir', 'tanggal_berakhir', 'end_date', 'tanggalberakhir'],
     address: ['alamat', 'address'], // Kelurahan saja
-    pkwtSequence: ['keterangan', 'pkwt_ke', 'sequence', 'pkwt_sequence'],
+    pkwtSequence: ['no_pkwt', 'keterangan', 'pkwt_ke', 'sequence', 'pkwt_sequence'],
 };
 
 /**
@@ -198,6 +201,24 @@ function normalizeGender(value: string): 'Laki-laki' | 'Perempuan' | null {
 }
 
 /**
+ * Resolve gender from separate L/P columns (PKWT template format)
+ * Returns 'Laki-laki' if L column has value, 'Perempuan' if P column has value
+ */
+function resolveGenderFromLP(
+    row: Record<string, any>,
+    genderLColumn: string | null,
+    genderPColumn: string | null
+): 'Laki-laki' | 'Perempuan' | null {
+    const hasL = genderLColumn && row[genderLColumn] != null && String(row[genderLColumn]).trim() !== '';
+    const hasP = genderPColumn && row[genderPColumn] != null && String(row[genderPColumn]).trim() !== '';
+
+    if (hasL && !hasP) return 'Laki-laki';
+    if (hasP && !hasL) return 'Perempuan';
+    if (hasL && hasP) return null; // Ambiguous — both filled
+    return null;
+}
+
+/**
  * Normalize PKWT sequence to Roman numeral
  * Accepts: "1" → "I", "2" → "II", "I" → "I", "II" → "II", etc.
  */
@@ -338,19 +359,22 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
 
     // Find column names
     const nikColumn = findColumnName(headers, COLUMN_MAPPINGS.nik);
-
-    if (!nikColumn) {
-        throw new Error('Kolom "NIK" tidak ditemukan. Pastikan file Excel memiliki kolom dengan nama "NIK" atau "nik"');
-    }
+    const hasNikColumn = nikColumn !== null;
 
     // Optional columns
     const fullNameColumn = findColumnName(headers, COLUMN_MAPPINGS.fullName);
     const genderColumn = findColumnName(headers, COLUMN_MAPPINGS.gender);
+    const genderLColumn = findColumnName(headers, COLUMN_MAPPINGS.genderL);
+    const genderPColumn = findColumnName(headers, COLUMN_MAPPINGS.genderP);
     const positionColumn = findColumnName(headers, COLUMN_MAPPINGS.position);
     const startDateColumn = findColumnName(headers, COLUMN_MAPPINGS.startDate);
     const endDateColumn = findColumnName(headers, COLUMN_MAPPINGS.endDate);
     const addressColumn = findColumnName(headers, COLUMN_MAPPINGS.address);
     const pkwtSequenceColumn = findColumnName(headers, COLUMN_MAPPINGS.pkwtSequence);
+
+    if (!hasNikColumn) {
+        warnings.push('Kolom NIK tidak ditemukan. Pastikan NIK diisi manual di form setelah impor');
+    }
 
     // Parse rows
     const parsedRows: ParsedExcelRow[] = [];
@@ -358,87 +382,90 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
     const duplicateNIKs: string[] = [];
     const invalidNIKs: Array<{ row: number; nik: string; error: string }> = [];
 
-    const nikColumnIndex = headers.indexOf(nikColumn);
-
     for (let i = 0; i < jsonData.length; i++) {
         const row = jsonData[i];
         const rowNumber = i + 2; // Excel rows are 1-indexed, header is row 1
 
-        // Extract raw cell text to mitigate Excel precision loss on long numbers
-        let cellText: string | undefined;
-        let cellType: string | undefined;
-        if (nikColumnIndex >= 0) {
-            const cellAddress = XLSX.utils.encode_cell({ c: nikColumnIndex, r: i + 1 });
-            const cell = worksheet[cellAddress];
-            if (cell && typeof cell.w === 'string') {
-                cellText = cell.w;
+        // Extract NIK (optional — may not exist in template)
+        let nik: string | undefined;
+
+        if (hasNikColumn && nikColumn) {
+            // Extract raw cell text to mitigate Excel precision loss on long numbers
+            const nikColumnIndex = headers.indexOf(nikColumn);
+            let cellText: string | undefined;
+            let cellType: string | undefined;
+            if (nikColumnIndex >= 0) {
+                const cellAddress = XLSX.utils.encode_cell({ c: nikColumnIndex, r: i + 1 });
+                const cell = worksheet[cellAddress];
+                if (cell && typeof cell.w === 'string') {
+                    cellText = cell.w;
+                }
+                if (cell && typeof cell.t === 'string') {
+                    cellType = cell.t;
+                }
             }
-            if (cell && typeof cell.t === 'string') {
-                cellType = cell.t;
+
+            const nikValue = row[nikColumn];
+            if (nikValue) {
+                // If Excel stored NIK as numeric, it is unsafe (Excel trims after 15 digits).
+                if (cellType === 'n' || typeof nikValue === 'number') {
+                    const shown = cellText || String(nikValue);
+                    const expandedFromText = expandScientificNotation(shown) || shown.replace(/[^0-9]/g, '');
+                    if (expandedFromText && validateNIKFormat(expandedFromText).valid) {
+                        nik = expandedFromText;
+                        warnings.push(`Baris ${rowNumber}: Kolom NIK diformat angka, tetapi berhasil dibaca sebagai ${nik}. Disarankan ubah kolom NIK menjadi Text agar aman.`);
+                    } else {
+                        invalidNIKs.push({
+                            row: rowNumber,
+                            nik: shown,
+                            error: 'Kolom NIK terbaca sebagai angka. Ubah format kolom NIK menjadi Text di Excel lalu isi ulang agar 16 digit tidak terpotong.',
+                        });
+                        continue;
+                    }
+                } else {
+                    nik = normalizeNIKValue(nikValue, cellText);
+                }
+
+                // Validate NIK format
+                const nikValidation = validateNIKFormat(nik);
+                if (!nikValidation.valid) {
+                    invalidNIKs.push({ row: rowNumber, nik, error: nikValidation.error || 'Invalid' });
+                    continue;
+                }
+
+                // Check for duplicates within file
+                if (seenNIKs.has(nik)) {
+                    duplicateNIKs.push(nik);
+                    warnings.push(`Baris ${rowNumber}: NIK ${nik} duplikat, baris dilewati`);
+                    continue;
+                }
+                seenNIKs.add(nik);
             }
         }
 
-        // Extract NIK
-        const nikValue = row[nikColumn];
-        if (!nikValue) {
-            warnings.push(`Baris ${rowNumber}: NIK kosong, baris dilewati`);
-            continue;
+        // If no NIK column at all, generate a placeholder (user must fill NIK manually in form)
+        if (!nik) {
+            const fullName = fullNameColumn && row[fullNameColumn] ? String(row[fullNameColumn]).trim() : '';
+            nik = `TEMP_${rowNumber}_${fullName || i}`;
+            warnings.push(`Baris ${rowNumber}: NIK tidak ada, menggunakan ID sementara. Isi NIK manual di form.`);
         }
 
-        console.debug('[excel] row value', {
-            row: rowNumber,
-            nikValue,
-            cellText,
-            cellType,
-        });
-
-        // If Excel stored NIK as numeric, it is unsafe (Excel trims after 15 digits).
-        // We block these rows and ask user to reformat column as Text to prevent corruption.
-        let nik: string;
-
-        if (cellType === 'n' || typeof nikValue === 'number') {
-            const shown = cellText || String(nikValue);
-            const expandedFromText = expandScientificNotation(shown) || shown.replace(/[^0-9]/g, '');
-            if (expandedFromText && validateNIKFormat(expandedFromText).valid) {
-                nik = expandedFromText;
-                warnings.push(`Baris ${rowNumber}: Kolom NIK diformat angka, tetapi berhasil dibaca sebagai ${nik}. Disarankan ubah kolom NIK menjadi Text agar aman.`);
-            } else {
-                invalidNIKs.push({
-                    row: rowNumber,
-                    nik: shown,
-                    error: 'Kolom NIK terbaca sebagai angka. Ubah format kolom NIK menjadi Text di Excel lalu isi ulang agar 16 digit tidak terpotong.',
-                });
-                continue;
-            }
-        } else {
-            // Convert to string and trim (handles numbers/scientific notation)
-            nik = normalizeNIKValue(nikValue, cellText);
+        // Resolve gender: prefer explicit gender column, fall back to L/P columns
+        let gender: 'Laki-laki' | 'Perempuan' | null = null;
+        if (genderColumn && row[genderColumn]) {
+            gender = normalizeGender(String(row[genderColumn]).trim());
         }
-        console.debug('[excel] normalized NIK', { row: rowNumber, nik });
-
-        // Validate NIK format
-        const nikValidation = validateNIKFormat(nik);
-        if (!nikValidation.valid) {
-            invalidNIKs.push({ row: rowNumber, nik, error: nikValidation.error || 'Invalid' });
-            continue;
+        if (!gender && (genderLColumn || genderPColumn)) {
+            gender = resolveGenderFromLP(row, genderLColumn, genderPColumn);
         }
-
-        // Check for duplicates within file
-        if (seenNIKs.has(nik)) {
-            duplicateNIKs.push(nik);
-            warnings.push(`Baris ${rowNumber}: NIK ${nik} duplikat, baris dilewati`);
-            continue;
-        }
-        seenNIKs.add(nik);
 
         // Extract optional fields
-        const rawGender = genderColumn && row[genderColumn] ? String(row[genderColumn]).trim() : null;
         const rawSequence = pkwtSequenceColumn && row[pkwtSequenceColumn] ? String(row[pkwtSequenceColumn]).trim() : null;
 
         const parsedRow: ParsedExcelRow = {
             nik,
             fullName: fullNameColumn && row[fullNameColumn] ? String(row[fullNameColumn]).trim() : null,
-            gender: rawGender ? normalizeGender(rawGender) : null,
+            gender,
             position: positionColumn && row[positionColumn] ? String(row[positionColumn]).trim() : null,
             startDate: startDateColumn ? parseDateFlexible(row[startDateColumn]) : null,
             endDate: endDateColumn ? parseDateFlexible(row[endDateColumn]) : null,
@@ -457,7 +484,7 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
     }
 
     if (parsedRows.length === 0) {
-        throw new Error('Tidak ada baris yang valid setelah parsing. Periksa format NIK Anda (harus 16 digit)');
+        throw new Error('Tidak ada baris yang valid setelah parsing. Periksa format file Excel Anda');
     }
 
     return {
@@ -480,6 +507,8 @@ export function mapExcelRowsToPKWT(
     const importedData: Record<string, Partial<ParsedExcelRow>> = {};
 
     for (const row of parsedRows) {
+        if (!row.nik) continue;
+
         // Check for duplicates with existing entries
         if (existingNIKSet.has(row.nik)) {
             duplicates.push(row.nik);
@@ -523,7 +552,7 @@ export function mapExcelRowsToPKWTT(
     const multipleRowsWarning = parsedRows.length > 1;
 
     return {
-        nik: firstRow.nik,
+        nik: firstRow.nik ?? '',
         importedData: {
             fullName: firstRow.fullName,
             gender: firstRow.gender,
