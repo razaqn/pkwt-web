@@ -1,4 +1,4 @@
-type Role = 'candidate' | 'company' | 'super_admin' | 'disnaker';
+type Role = 'candidate' | 'company' | 'super_admin' | 'disnaker' | 'petugas_bpjs';
 
 export function setAuth(token: string, role: Role, companyId?: string) {
   localStorage.setItem('auth_token', token);

@@ -32,6 +32,10 @@ import { DialogProvider } from './hooks/useDialog';
 import Home from './pages/public/Home';
 import Pkwt from './pages/public/Pkwt';
 import Pkwtt from './pages/public/Pkwtt';
+import FormBPJS from './pages/bpjs/FormBPJS';
+import PengajuanBPJS from './pages/bpjs/PengajuanBPJS';
+import ListBPJS from './pages/bpjs/ListBPJS';
+import BpjsDashboard from './pages/bpjs/Dashboard';
 
 function DashboardWrapper() {
   const role = getRole();
@@ -39,6 +43,10 @@ function DashboardWrapper() {
   // Route to appropriate dashboard based on role
   if (role === 'super_admin' || role === 'disnaker') {
     return <AdminDashboard />;
+  }
+
+  if (role === 'petugas_bpjs') {
+    return <BpjsDashboard />;
   }
 
   return <CompanyDashboard />;
@@ -81,6 +89,9 @@ function App() {
           <Route path="/pengajuan-berkas" element={<RequireAuth><AppLayout><PengajuanBerkas /></AppLayout></RequireAuth>} />
           <Route path="/status-pantau" element={<RequireAuth><AppLayout><StatusPantau /></AppLayout></RequireAuth>} />
           <Route path="/status-pantau/:contractId" element={<RequireAuth><AppLayout><DetailPantau /></AppLayout></RequireAuth>} />
+          <Route path="/bpjs/form" element={<RequireAuth><AppLayout><FormBPJS /></AppLayout></RequireAuth>} />
+          <Route path="/bpjs/submit" element={<RequireAuth><AppLayout><PengajuanBPJS /></AppLayout></RequireAuth>} />
+          <Route path="/bpjs/data" element={<RequireAuth><AppLayout><ListBPJS /></AppLayout></RequireAuth>} />
           <Route path="/profil-perusahaan" element={<RequireAuth><AppLayout><ProfilePerusahaan /></AppLayout></RequireAuth>} />
           <Route path="/login" element={<RequireGuest><LoginCompany /></RequireGuest>} />
           <Route path="/login/admin" element={<RequireGuest><LoginAdmin /></RequireGuest>} />

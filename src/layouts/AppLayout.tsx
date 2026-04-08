@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { getRole } from '../store/auth';
 import CompanySidebar from '../components/CompanySidebar';
 import AdminSidebar from '../components/AdminSidebar';
+import BpjsSidebar from '../components/BpjsSidebar';
 import { Menu } from 'lucide-react';
 import { useSessionValidator } from '../hooks/useSessionValidator';
 import { SessionInvalidatedModal } from '../components/SessionInvalidatedModal';
@@ -35,7 +36,10 @@ export default function AppLayout({ children }: Props) {
   }, []);
 
   // Pilih sidebar berdasarkan role
-  const SidebarComponent = role === 'super_admin' || role === 'disnaker' ? AdminSidebar : CompanySidebar;
+  const SidebarComponent = 
+    role === 'super_admin' || role === 'disnaker' ? AdminSidebar : 
+    role === 'petugas_bpjs' ? BpjsSidebar : 
+    CompanySidebar;
 
   return (
     <>

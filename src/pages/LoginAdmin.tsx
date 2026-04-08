@@ -29,8 +29,8 @@ export default function LoginAdmin() {
       }
 
       const r = String(res.role);
-      if (r !== 'super_admin' && r !== 'disnaker') {
-        throw new Error('Akun bukan admin DISNAKER. Silakan gunakan halaman login perusahaan.');
+      if (r !== 'super_admin' && r !== 'disnaker' && r !== 'petugas_bpjs') {
+        throw new Error('Akun bukan admin DISNAKER/BPJS. Silakan gunakan halaman login perusahaan.');
       }
       setAuth(res.token!, res.role!);
       navigate('/dashboard');
@@ -47,8 +47,8 @@ export default function LoginAdmin() {
     try {
       const res = await login({ email, password, force_login: true });
       const r = String(res.role);
-      if (r !== 'super_admin' && r !== 'disnaker') {
-        throw new Error('Akun bukan admin DISNAKER. Silakan gunakan halaman login perusahaan.');
+      if (r !== 'super_admin' && r !== 'disnaker' && r !== 'petugas_bpjs') {
+        throw new Error('Akun bukan admin DISNAKER/BPJS. Silakan gunakan halaman login perusahaan.');
       }
       setAuth(res.token!, res.role!);
       setShowConfirmModal(false);
@@ -72,8 +72,8 @@ export default function LoginAdmin() {
           <div className="flex justify-center mb-6">
             <img src="/siap-pkwt-logo-1.png" alt="siap PKWT Logo" className="h-30 w-auto" />
           </div>
-          <h1 className="text-center text-3xl font-bold tracking-tight text-primary">Masuk Admin DISNAKER</h1>
-          <p className="mt-2 text-center text-slate-600">Akses administrasi verifikasi kontrak</p>
+          <h1 className="text-center text-3xl font-bold tracking-tight text-primary">Masuk Admin / BPJS</h1>
+          <p className="mt-2 text-center text-slate-600">Akses administrasi sistem pencatatan</p>
           <div className="mt-6 mx-auto w-full max-w-md rounded-2xl bg-white shadow-xl border border-slate-200">
             <div className="p-6">
               <form onSubmit={onSubmit} className="space-y-4">
