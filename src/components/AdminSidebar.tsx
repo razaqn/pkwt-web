@@ -2,7 +2,7 @@
 
 import { NavLink, useNavigate } from 'react-router-dom';
 import { clearAuth, getRole } from '../store/auth';
-import { LayoutDashboard, Users, FileText, FileCheck, FilePlus, Settings, Image, Folder, LogOut, BookTemplate } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, FileCheck, FilePlus, Settings, Image, Folder, LogOut, BookTemplate, Shield } from 'lucide-react';
 import { adminLogout } from '../lib/api';
 
 interface AdminSidebarProps {
@@ -59,6 +59,16 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSideb
                         <span className="flex-1">
                             <div className="text-sm font-medium">Lists Employee</div>
                             <div className="text-[11px] text-white/70">Daftar karyawan</div>
+                        </span>
+                    </NavLink>
+                    
+                    <NavLink to="/admin/petugas-bpjs" className={({ isActive }) => `flex items-start gap-3 rounded-xl px-3 py-3 ${isActive ? 'bg-white/10 ring-1 ring-white/15 shadow-inner' : 'hover:bg-white/5'} transition`}>
+                        <span className="mt-0.5 text-white/90">
+                            <Shield className="h-5 w-5" />
+                        </span>
+                        <span className="flex-1">
+                            <div className="text-sm font-medium">Akun BPJS</div>
+                            <div className="text-[11px] text-white/70">Kelola petugas BPJS</div>
                         </span>
                     </NavLink>
 

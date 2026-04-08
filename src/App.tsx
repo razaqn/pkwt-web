@@ -19,6 +19,7 @@ import LandingConfigPage from './pages/admin/LandingConfig';
 import AdminTemplatesPage from './pages/admin/Templates';
 import DocumentTemplatesPage from './pages/admin/DocumentTemplates';
 import DocumentTemplateEditorPage from './pages/admin/DocumentTemplateEditor';
+import ListPetugasBPJS from './pages/admin/ListPetugasBPJS';
 import ListKaryawan from './pages/company/ListKaryawan';
 import DetailKaryawan from './pages/company/DetailKaryawan';
 import FormKontrak from './pages/company/FormKontrak';
@@ -26,7 +27,7 @@ import PengajuanBerkas from './pages/company/PengajuanBerkas';
 import StatusPantau from './pages/company/StatusPantau';
 import DetailPantau from './pages/company/DetailPantau';
 import ProfilePerusahaan from './pages/company/ProfilePerusahaan';
-import { RequireAuth, RequireGuest } from './router/guards';
+import { RequireAuth, RequireGuest, RequireRole } from './router/guards';
 import { getRole, getToken } from './store/auth';
 import { DialogProvider } from './hooks/useDialog';
 import Home from './pages/public/Home';
@@ -70,6 +71,7 @@ function App() {
           {/* Legacy company-only guide page (disabled; replaced by public /pkwt and /pkwtt) */}
           {/* <Route path="/welcome" element={<RequireAuth><AppLayout><Welcome /></AppLayout></RequireAuth>} /> */}
           <Route path="/admin/list-employees" element={<RequireAuth><AppLayout><ListEmployees /></AppLayout></RequireAuth>} />
+          <Route path="/admin/petugas-bpjs" element={<RequireAuth><AppLayout><ListPetugasBPJS /></AppLayout></RequireAuth>} />
           <Route path="/admin/detail-karyawan/:id" element={<RequireAuth><AppLayout><AdminDetailKaryawan /></AppLayout></RequireAuth>} />
           <Route path="/admin/list-companies" element={<RequireAuth><AppLayout><ListCompanies /></AppLayout></RequireAuth>} />
           <Route path="/admin/detail-company/:id" element={<RequireAuth><AppLayout><DetailCompany /></AppLayout></RequireAuth>} />
@@ -89,9 +91,9 @@ function App() {
           <Route path="/pengajuan-berkas" element={<RequireAuth><AppLayout><PengajuanBerkas /></AppLayout></RequireAuth>} />
           <Route path="/status-pantau" element={<RequireAuth><AppLayout><StatusPantau /></AppLayout></RequireAuth>} />
           <Route path="/status-pantau/:contractId" element={<RequireAuth><AppLayout><DetailPantau /></AppLayout></RequireAuth>} />
-          <Route path="/bpjs/form" element={<RequireAuth><AppLayout><FormBPJS /></AppLayout></RequireAuth>} />
-          <Route path="/bpjs/submit" element={<RequireAuth><AppLayout><PengajuanBPJS /></AppLayout></RequireAuth>} />
-          <Route path="/bpjs/data" element={<RequireAuth><AppLayout><ListBPJS /></AppLayout></RequireAuth>} />
+          <Route path="/bpjs/form" element={<RequireRole roles={['petugas_bpjs']}><AppLayout><FormBPJS /></AppLayout></RequireRole>} />
+          <Route path="/bpjs/submit" element={<RequireRole roles={['petugas_bpjs']}><AppLayout><PengajuanBPJS /></AppLayout></RequireRole>} />
+          <Route path="/bpjs/data" element={<RequireRole roles={['petugas_bpjs']}><AppLayout><ListBPJS /></AppLayout></RequireRole>} />
           <Route path="/profil-perusahaan" element={<RequireAuth><AppLayout><ProfilePerusahaan /></AppLayout></RequireAuth>} />
           <Route path="/login" element={<RequireGuest><LoginCompany /></RequireGuest>} />
           <Route path="/login/admin" element={<RequireGuest><LoginAdmin /></RequireGuest>} />

@@ -1230,3 +1230,62 @@ export async function uploadTemplateImage(file: File): Promise<{ ok: boolean; da
     }),
   });
 }
+
+// ============================================================
+// User Management Types (Admin)
+// ============================================================
+
+export interface UserItem {
+  id: string;
+  email: string | null;
+  no_handphone: string | null;
+  full_name: string | null;
+  role: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AdminGetUsersParams {
+  limit?: number;
+  page?: number;
+  role?: string;
+}
+
+export interface AdminGetUsersResponse {
+  ok: boolean;
+  data: UserItem[];
+  pagination: {
+    limit: number;
+    page: number;
+    total: number;
+  };
+}
+
+export async function adminGetUsers(params: AdminGetUsersParams): Promise<AdminGetUsersResponse> {
+  const queryParams = new URLSearchParams();
+  if (params.limit !== undefined) queryParams.append('limit', String(params.limit));
+  if (params.page !== undefined) queryParams.append('page', String(params.page));
+  if (params.role) queryParams.append('role', params.role);
+  
+  return request(`${API_BASE}/api/users?${queryParams.toString()}`);
+}
+
+export async function adminCreateUser(data: any): Promise<{ ok: boolean; message: string; id: string }> {
+  return request(`${API_BASE}/api/users`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function adminUpdateUser(id: string, data: any): Promise<{ ok: boolean; message: string }> {
+  return request(`${API_BASE}/api/users/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function adminDeleteUser(id: string): Promise<{ ok: boolean; message: string }> {
+  return request(`${API_BASE}/api/users/${id}`, {
+    method: 'DELETE',
+  });
+}

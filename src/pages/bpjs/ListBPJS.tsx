@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { request } from '../../lib/http';
 import { toUserMessage } from '../../lib/errors';
-import { AlertCircle, Search, RefreshCw, FileSpreadsheet } from 'lucide-react';
+import { AlertCircle, Search, RefreshCw, FileSpreadsheet, Eye, X } from 'lucide-react';
 
 interface BpjsRecord {
   id: string;
@@ -14,6 +14,7 @@ interface BpjsRecord {
   jenis_pekerjaan?: string;
   biaya_iuran_apbd?: string;
   jenis_kepesertaan?: string;
+  status_kepesertaan?: string;
   keterangan?: string;
   created_at: string;
 }
@@ -26,6 +27,7 @@ export default function ListBPJS() {
   const [total, setTotal] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSearch, setActiveSearch] = useState('');
+  const [selectedDetail, setSelectedDetail] = useState<BpjsRecord | null>(null);
   
   const limit = 10;
 
@@ -39,7 +41,8 @@ export default function ListBPJS() {
       });
       if (activeSearch) url.append('search', activeSearch);
 
-      const res = await request(`/api/bpjs/records?${url.toString()}`);
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+      const res = await request(`${API_BASE}/api/bpjs/records?${url.toString()}`);
       setData(res.data);
       setTotal(res.pagination.total);
     } catch (err: any) {
@@ -109,19 +112,20 @@ export default function ListBPJS() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Lokasi</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Pekerjaan</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Kepesertaan & Tgl Masuk</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-200">
               {loading && data.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-10 text-center">
+                  <td colSpan={5} className="px-6 py-10 text-center">
                     <RefreshCw className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
                     <p className="text-slate-500 text-sm">Memuat data...</p>
                   </td>
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-10 text-center">
+                  <td colSpan={5} className="px-6 py-10 text-center">
                     <FileSpreadsheet className="h-10 w-10 text-slate-300 mx-auto mb-3" />
                     <h3 className="text-slate-900 font-medium">Tidak ada data</h3>
                     <p className="text-slate-500 text-sm mt-1">Data BPJS belum ditambahkan atau tidak ditemukan.</p>
@@ -150,8 +154,18 @@ export default function ListBPJS() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-500">
-                      <div>{item.jenis_kepesertaan || '-'}</div>
+                      <div className="font-medium text-slate-900">{item.status_kepesertaan || '-'}</div>
+                      <div className="text-xs">{item.jenis_kepesertaan || '-'}</div>
                       <div className="mt-1 text-xs">{new Date(item.created_at).toLocaleDateString('id-ID')}</div>
+                    </td>
+                    <td className="px-6 py-4 text-right text-sm">
+                      <button
+                        onClick={() => setSelectedDetail(item)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 rounded-md font-medium transition-colors"
+                      >
+                        <Eye className="h-4 w-4" />
+                        Detail
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -194,6 +208,83 @@ export default function ListBPJS() {
           </div>
         )}
       </div>
+
+      {/* Detail Modal */}
+      {selectedDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm cursor-pointer" onClick={() => setSelectedDetail(null)}>
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col cursor-default" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+              <h3 className="text-lg font-semibold text-slate-900">Detail Peserta BPJS</h3>
+              <button 
+                onClick={() => setSelectedDetail(null)}
+                className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-200"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1 bg-white">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
+                <div>
+                  <h4 className="text-sm font-medium text-slate-500">NIK</h4>
+                  <p className="mt-1 text-base font-medium text-slate-900">{selectedDetail.nik}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-slate-500">Nama Lengkap</h4>
+                  <p className="mt-1 text-base font-medium text-slate-900">{selectedDetail.nama}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-slate-500">Tanggal Lahir</h4>
+                  <p className="mt-1 text-base text-slate-900">{selectedDetail.tanggal_lahir || '-'}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-slate-500">Jenis Kelamin</h4>
+                  <p className="mt-1 text-base text-slate-900">{selectedDetail.jenis_kelamin || '-'}</p>
+                </div>
+                <div className="col-span-1 md:col-span-2 border-t border-slate-100 pt-4 mt-2">
+                  <h4 className="text-sm font-medium text-slate-500">Alamat Lengkap</h4>
+                  <p className="mt-1 text-base text-slate-900">
+                    {selectedDetail.desa || '-'}, Kecamatan {selectedDetail.kecamatan || '-'}
+                  </p>
+                </div>
+                <div className="border-t border-slate-100 pt-4 mt-2">
+                  <h4 className="text-sm font-medium text-slate-500">Pekerjaan</h4>
+                  <p className="mt-1 text-base text-slate-900">{selectedDetail.jenis_pekerjaan || '-'}</p>
+                </div>
+                <div className="border-t border-slate-100 pt-4 mt-2">
+                  <h4 className="text-sm font-medium text-slate-500">Biaya Iuran APBD</h4>
+                  <p className="mt-1 text-base text-slate-900">{selectedDetail.biaya_iuran_apbd || '-'}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-slate-500">Status Kepesertaan</h4>
+                  <p className="mt-1 text-base text-slate-900">{selectedDetail.status_kepesertaan || '-'}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-slate-500">Jenis Kepesertaan</h4>
+                  <p className="mt-1 text-base text-slate-900">{selectedDetail.jenis_kepesertaan || '-'}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-slate-500">Tanggal Diinput</h4>
+                  <p className="mt-1 text-base text-slate-900">{new Date(selectedDetail.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                </div>
+                <div className="col-span-1 md:col-span-2 border-t border-slate-100 pt-4 mt-2">
+                  <h4 className="text-sm font-medium text-slate-500">Keterangan</h4>
+                  <p className="mt-1 text-base text-slate-900">{selectedDetail.keterangan || 'Tidak ada keterangan tambahan.'}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end">
+              <button 
+                onClick={() => setSelectedDetail(null)} 
+                className="px-5 py-2 text-sm font-medium text-white bg-slate-800 hover:bg-slate-900 rounded-lg shadow-sm"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

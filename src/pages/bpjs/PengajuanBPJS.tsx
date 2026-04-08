@@ -84,9 +84,9 @@ export default function PengajuanBPJS() {
         keterangan: r.keterangan
       }));
 
-      // NOTE: Using direct fetch to avoid rewriting api.ts just for one endpoint,
-      // but if you prefer api.ts we can use it. We'll use request from http.ts
-      await request('/api/bpjs/submissions', {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+
+      await request(`${API_BASE}/api/bpjs/submissions`, {
         method: 'POST',
         body: JSON.stringify({ records })
       });
@@ -173,6 +173,7 @@ export default function PengajuanBPJS() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">NIK & Nama</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Kelamin</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Pekerjaan</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Status & Kelas</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Lokasi</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase">Aksi</th>
               </tr>
@@ -200,6 +201,10 @@ export default function PengajuanBPJS() {
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-500">
                     {row.jenis_pekerjaan || '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                    <div className="font-medium text-slate-900">{row.status_kepesertaan || '-'}</div>
+                    <div className="text-xs">{row.jenis_kepesertaan || '-'}</div>
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-500">
                     <div>{row.desa || '-'}</div>
@@ -265,7 +270,7 @@ export default function PengajuanBPJS() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Tanggal Lahir (YYYY-MM-DD)</label>
-                  <input type="text" value={selectedRow.tanggal_lahir || ''} onChange={e => updateSelectedRow('tanggal_lahir', e.target.value)} className="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                  <input type="date" value={selectedRow.tanggal_lahir || ''} onChange={e => updateSelectedRow('tanggal_lahir', e.target.value)} className="w-full h-10 rounded-lg border border-slate-300 px-3" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Jenis Kelamin</label>
@@ -282,6 +287,26 @@ export default function PengajuanBPJS() {
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Desa / Kelurahan</label>
                   <input type="text" value={selectedRow.desa || ''} onChange={e => updateSelectedRow('desa', e.target.value)} className="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Kecamatan</label>
+                  <input type="text" value={selectedRow.kecamatan || ''} onChange={e => updateSelectedRow('kecamatan', e.target.value)} className="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Biaya Iuran APBD</label>
+                  <input type="text" value={selectedRow.biaya_iuran_apbd || ''} onChange={e => updateSelectedRow('biaya_iuran_apbd', e.target.value)} className="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Status Kepesertaan</label>
+                  <input type="text" value={selectedRow.status_kepesertaan || ''} onChange={e => updateSelectedRow('status_kepesertaan', e.target.value)} className="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Jenis Kepesertaan</label>
+                  <input type="text" value={selectedRow.jenis_kepesertaan || ''} onChange={e => updateSelectedRow('jenis_kepesertaan', e.target.value)} className="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Keterangan</label>
+                  <textarea value={selectedRow.keterangan || ''} onChange={e => updateSelectedRow('keterangan', e.target.value)} className="w-full rounded-lg border border-slate-300 p-3" rows={2} />
                 </div>
               </div>
             </div>
