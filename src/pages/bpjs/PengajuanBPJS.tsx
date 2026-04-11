@@ -81,6 +81,7 @@ export default function PengajuanBPJS() {
         jenis_pekerjaan: r.jenis_pekerjaan,
         biaya_iuran_apbd: r.biaya_iuran_apbd,
         jenis_kepesertaan: r.jenis_kepesertaan,
+        status_kepesertaan: r.status_kepesertaan,
         keterangan: r.keterangan
       }));
 
