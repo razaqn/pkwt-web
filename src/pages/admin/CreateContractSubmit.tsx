@@ -7,7 +7,7 @@ import { useContractSubmission } from '../../hooks/useContractSubmission';
 import { ClipLoader, MoonLoader } from 'react-spinners';
 import { useDialog } from '../../hooks/useDialog';
 import { fileToBase64 } from '../../lib/utils';
-import { adminSubmitContractApplication } from '../../lib/api';
+import { adminSubmitContractApplication, saveEmployeeData } from '../../lib/api';
 import { toUserMessage } from '../../lib/errors';
 
 const MAX_FILE_SIZE_MB = 5;
@@ -100,6 +100,20 @@ export default function CreateContractSubmit() {
         setSubmitError(null);
 
         try {
+            // AUTO-SAVE: Ensure all employees are saved in backend
+            const savePromises = nikDataList.map(async (nikData) => {
+                const payload: any = {
+                    full_name: nikData.fullName,
+                    gender: nikData.gender,
+                    position: nikData.position,
+                    address: nikData.address,
+                    company_id: contractData.companyId,
+                };
+                return saveEmployeeData(nikData.nik, payload);
+            });
+
+            await Promise.all(savePromises);
+
             const suratPermohonanBase64 = await fileToBase64(fileSuratPermohonan);
             const draftPKWTBase64 = await fileToBase64(fileDraftPKWT);
 
@@ -113,6 +127,12 @@ export default function CreateContractSubmit() {
                             nik,
                             start_date: d?.startDate || '',
                             end_date: d?.endDate || '',
+                            full_name: d?.fullName || undefined,
+                            gender: d?.gender || undefined,
+                            position: d?.position || undefined,
+                            address: d?.address || undefined,
+                            pkwt_sequence: d?.pkwtSequence || undefined,
+                            keterangan: d?.keterangan || undefined,
                         };
                     }),
                     surat_permohonan_file_name: fileSuratPermohonan.name,
@@ -125,7 +145,12 @@ export default function CreateContractSubmit() {
                     company_id: contractData.companyId,
                     contract_type: 'PKWTT',
                     employee_nik: contractData.niks[0],
-                    start_date: new Date().toISOString().split('T')[0],
+                    start_date: nikDataList[0]?.startDate || new Date().toISOString().split('T')[0],
+                    full_name: nikDataList[0]?.fullName || undefined,
+                    gender: nikDataList[0]?.gender || undefined,
+                    position: nikDataList[0]?.position || undefined,
+                    address: nikDataList[0]?.address || undefined,
+                    keterangan: nikDataList[0]?.keterangan || undefined,
                     surat_permohonan_file_name: fileSuratPermohonan.name,
                     surat_permohonan_file_content_base64: suratPermohonanBase64,
                     draft_pkwt_file_name: fileDraftPKWT.name,
@@ -178,7 +203,8 @@ export default function CreateContractSubmit() {
             startDate: selectedNIKData.startDate || '',
             endDate: selectedNIKData.endDate || '',
             address: selectedNIKData.address || '',
-            pkwtSequence: '',
+            pkwtSequence: selectedNIKData.pkwtSequence || '',
+            keterangan: selectedNIKData.keterangan || '',
         }
         : undefined;
 
@@ -374,6 +400,7 @@ export default function CreateContractSubmit() {
                 nik={selectedNIK || ''}
                 initialData={initialModalData}
                 loading={loading}
+                contractType={contractData.contractType}
             />
         </div>
     );

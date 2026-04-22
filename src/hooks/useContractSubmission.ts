@@ -61,7 +61,7 @@ export function useContractSubmission(contractData: ContractData | null) {
                     if (contractData.importedData && contractData.importedData[result.nik]) {
                         const imported = contractData.importedData[result.nik];
 
-                        return {
+                        const mergedData = {
                             ...backendData,
                             fullName: backendData.fullName || imported.fullName || null,
                             address: backendData.address || imported.address || null,
@@ -69,8 +69,38 @@ export function useContractSubmission(contractData: ContractData | null) {
                             position: backendData.position || imported.position || null,
                             startDate: imported.startDate || backendData.startDate || null,
                             endDate: imported.endDate || backendData.endDate || null,
+                            pkwtSequence: imported.pkwtSequence || backendData.pkwtSequence || null,
+                            keterangan: imported.keterangan || backendData.keterangan || null,
                         };
+
+                        // Dynamically evaluate completeness based on contract type
+                        let isComplete = true;
+                        if (!mergedData.fullName || !mergedData.address || !mergedData.gender || !mergedData.position) {
+                            isComplete = false;
+                        }
+
+                        if (contractData.contractType === 'PKWT') {
+                            if (!mergedData.startDate || !mergedData.endDate || !mergedData.pkwtSequence) {
+                                isComplete = false;
+                            }
+                        }
+
+                        mergedData.isComplete = isComplete;
+                        return mergedData;
                     }
+
+                    // If no imported data, calculate completeness on purely backend data
+                    let isComplete = true;
+                    if (!backendData.fullName || !backendData.address || !backendData.gender || !backendData.position) {
+                        isComplete = false;
+                    }
+
+                    if (contractData.contractType === 'PKWT') {
+                        if (!backendData.startDate || !backendData.endDate || !backendData.pkwtSequence) {
+                            isComplete = false;
+                        }
+                    }
+                    backendData.isComplete = isComplete;
 
                     return backendData;
                 });
@@ -111,7 +141,7 @@ export function useContractSubmission(contractData: ContractData | null) {
 
             const response = await saveEmployeeData(nik, payload);
 
-            // Update local state with saved data + modal fields (startDate, endDate, pkwtSequence)
+            // Update local state with saved data + modal fields (startDate, endDate, pkwtSequence, keterangan)
             setNikDataList(prev =>
                 prev.map(item =>
                     item.nik === nik
@@ -123,6 +153,8 @@ export function useContractSubmission(contractData: ContractData | null) {
                             position: response.data.position || formData.position,
                             startDate: formData.startDate || item.startDate,
                             endDate: formData.endDate || item.endDate,
+                            pkwtSequence: formData.pkwtSequence || item.pkwtSequence,
+                            keterangan: formData.keterangan || item.keterangan,
                             isComplete: true,
                         }
                         : item
@@ -136,7 +168,7 @@ export function useContractSubmission(contractData: ContractData | null) {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [contractData]);
 
     // Save draft contract
     const saveDraft = useCallback(async () => {
@@ -152,7 +184,12 @@ export function useContractSubmission(contractData: ContractData | null) {
                     ? { employee_nik: contractData.niks[0] }
                     : { employees: contractData.niks.map(nik => {
                         const d = nikDataList.find(x => x.nik === nik);
-                        return { nik, start_date: d?.startDate || '', end_date: d?.endDate || '' };
+                        return { 
+                            nik, 
+                            start_date: d?.startDate || '', 
+                            end_date: d?.endDate || '',
+                            pkwt_sequence: d?.pkwtSequence || undefined,
+                        };
                     })}
                 ),
             };
@@ -164,7 +201,7 @@ export function useContractSubmission(contractData: ContractData | null) {
             setError(toUserMessage(err, 'Gagal menyimpan draf'));
             return null;
         }
-    }, [contractData]);
+    }, [contractData, nikDataList]);
 
     // Submit contract application
     const submitContract = useCallback(async (suratPermohonanFile?: File | null, draftPKWTFile?: File | null) => {
@@ -186,6 +223,30 @@ export function useContractSubmission(contractData: ContractData | null) {
         setError(null);
 
         try {
+            // AUTO-SAVE: Check for employees that don't exist in backend yet and save them
+            // We can identify them if they are 'isComplete' but haven't been 'saved' via saveNIKData
+            // However, a safer way is to just try saving all employees in the list that have complete data
+            // but for efficiency, we only save those that were imported and might not be in DB.
+            
+            const savePromises = nikDataList.map(async (nikData) => {
+                // We always try to save to ensure backend has the latest data from Excel/Form
+                const payload: any = {
+                    full_name: nikData.fullName,
+                    gender: nikData.gender,
+                    position: nikData.position,
+                    address: nikData.address,
+                };
+
+                if (contractData.companyId) {
+                    payload.company_id = contractData.companyId;
+                }
+
+                return saveEmployeeData(nikData.nik, payload);
+            });
+
+            // Wait for all employees to be saved/updated in backend
+            await Promise.all(savePromises);
+
             const suratPermohonanBase64 = await fileToBase64(suratPermohonanFile);
             const draftPKWTBase64 = await fileToBase64(draftPKWTFile);
 
@@ -202,6 +263,8 @@ export function useContractSubmission(contractData: ContractData | null) {
                             gender: nikData?.gender || undefined,
                             position: nikData?.position || undefined,
                             address: nikData?.address || undefined,
+                            pkwt_sequence: nikData?.pkwtSequence || undefined,
+                            keterangan: nikData?.keterangan || undefined,
                         };
                     }),
                     surat_permohonan_file_name: suratPermohonanFile.name,
@@ -214,11 +277,12 @@ export function useContractSubmission(contractData: ContractData | null) {
                 const payload = {
                     contract_type: 'PKWTT' as const,
                     employee_nik: contractData.niks[0],
-                    start_date: new Date().toISOString().split('T')[0],
+                    start_date: nikDataList[0]?.startDate || new Date().toISOString().split('T')[0],
                     full_name: nikDataList[0]?.fullName || undefined,
                     gender: nikDataList[0]?.gender || undefined,
                     position: nikDataList[0]?.position || undefined,
                     address: nikDataList[0]?.address || undefined,
+                    keterangan: nikDataList[0]?.keterangan || undefined,
                     surat_permohonan_file_name: suratPermohonanFile.name,
                     surat_permohonan_file_content_base64: suratPermohonanBase64,
                     draft_pkwt_file_name: draftPKWTFile.name,

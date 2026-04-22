@@ -237,6 +237,7 @@ export interface ContractApplicationPKWTRequest {
     position?: string;
     address?: string;
     pkwt_sequence?: string;
+    keterangan?: string;
   }>;
   surat_permohonan_file_name: string;
   surat_permohonan_file_content_base64: string;
@@ -252,6 +253,7 @@ export interface ContractApplicationPKWTTRequest {
   gender?: string;
   position?: string;
   address?: string;
+  keterangan?: string;
   surat_permohonan_file_name: string;
   surat_permohonan_file_content_base64: string;
   draft_pkwt_file_name: string;
@@ -311,6 +313,7 @@ export interface AdminContractApplicationPKWTRequest {
     position?: string;
     address?: string;
     pkwt_sequence?: string;
+    keterangan?: string;
   }>;
   surat_permohonan_file_name: string;
   surat_permohonan_file_content_base64: string;
@@ -327,6 +330,7 @@ export interface AdminContractApplicationPKWTTRequest {
   gender?: string;
   position?: string;
   address?: string;
+  keterangan?: string;
   surat_permohonan_file_name: string;
   surat_permohonan_file_content_base64: string;
   draft_pkwt_file_name: string;
@@ -628,6 +632,10 @@ export interface ContractEmployee {
   nik: string;
   full_name: string;
   data_complete: boolean; // true = Lengkap, false = Belum Lengkap
+  pkwt_sequence?: string | null;
+  keterangan?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
 }
 
 export interface GetContractEmployeesResponse {
@@ -794,6 +802,10 @@ export interface ApprovalEmployee {
   gender: string | null;
   position: string | null;
   previous_contract_count: number;
+  pkwt_sequence?: string | null;
+  keterangan?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
 }
 
 export interface ApprovalDetail {
@@ -1172,6 +1184,7 @@ export interface ContractDataForTemplate {
     start_date: string | null;
     end_date: string | null;
     pkwt_sequence: string | null;
+    keterangan: string | null;
   }>;
 }
 

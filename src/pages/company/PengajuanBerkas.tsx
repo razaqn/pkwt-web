@@ -143,7 +143,8 @@ export default function PengajuanBerkas() {
             startDate: selectedNIKData.startDate || '',
             endDate: selectedNIKData.endDate || '',
             address: selectedNIKData.address || '',
-            pkwtSequence: '',
+            pkwtSequence: selectedNIKData.pkwtSequence || '',
+            keterangan: selectedNIKData.keterangan || '',
         }
         : undefined;
 
@@ -431,6 +432,7 @@ export default function PengajuanBerkas() {
                 nik={selectedNIK || ''}
                 initialData={initialModalData}
                 loading={loading}
+                contractType={contractData.contractType}
             />
         </div>
     );

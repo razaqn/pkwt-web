@@ -9,7 +9,8 @@ export interface KelengkapanDataForm {
     startDate: string;
     endDate: string;
     address: string; // Kelurahan saja
-    pkwtSequence: string; // Roman numeral
+    pkwtSequence: string; // No PKWT
+    keterangan: string;
 }
 
 interface ModalKelengkapanDataProps {
@@ -19,6 +20,7 @@ interface ModalKelengkapanDataProps {
     nik: string;
     initialData?: KelengkapanDataForm;
     loading?: boolean;
+    contractType?: 'PKWT' | 'PKWTT';
 }
 
 export default function ModalKelengkapanData({
@@ -27,7 +29,8 @@ export default function ModalKelengkapanData({
     onSave,
     nik,
     initialData,
-    loading = false
+    loading = false,
+    contractType = 'PKWT'
 }: ModalKelengkapanDataProps) {
     const [formData, setFormData] = useState<KelengkapanDataForm>({
         fullName: '',
@@ -37,6 +40,7 @@ export default function ModalKelengkapanData({
         endDate: '',
         address: '',
         pkwtSequence: '',
+        keterangan: '',
     });
 
     const [errors, setErrors] = useState<Partial<Record<keyof KelengkapanDataForm, string>>>({});
@@ -48,13 +52,14 @@ export default function ModalKelengkapanData({
 
         const nextFormData: KelengkapanDataForm = initialData
             ? {
-                fullName: initialData.fullName,
-                gender: initialData.gender,
-                position: initialData.position,
-                startDate: initialData.startDate,
-                endDate: initialData.endDate,
-                address: initialData.address,
-                pkwtSequence: initialData.pkwtSequence,
+                fullName: initialData.fullName || '',
+                gender: initialData.gender || '',
+                position: initialData.position || '',
+                startDate: initialData.startDate || '',
+                endDate: initialData.endDate || '',
+                address: initialData.address || '',
+                pkwtSequence: initialData.pkwtSequence || '',
+                keterangan: initialData.keterangan || '',
             }
             : {
                 fullName: '',
@@ -64,6 +69,7 @@ export default function ModalKelengkapanData({
                 endDate: '',
                 address: '',
                 pkwtSequence: '',
+                keterangan: '',
             };
 
         // Defer state sync to avoid synchronous setState-in-effect warnings.
@@ -98,22 +104,25 @@ export default function ModalKelengkapanData({
         if (!formData.position.trim()) {
             newErrors.position = 'Jabatan harus diisi';
         }
-        if (!formData.startDate) {
-            newErrors.startDate = 'Tanggal mulai harus diisi';
-        }
-        if (!formData.endDate) {
-            newErrors.endDate = 'Tanggal berakhir harus diisi';
-        }
         if (!formData.address.trim()) {
             newErrors.address = 'Alamat (Kelurahan) harus diisi';
         }
-        if (!formData.pkwtSequence.trim()) {
-            newErrors.pkwtSequence = 'Keterangan PKWT harus diisi';
-        }
 
-        // Validate date range
-        if (formData.startDate && formData.endDate && formData.endDate < formData.startDate) {
-            newErrors.endDate = 'Tanggal berakhir harus setelah tanggal mulai';
+        if (contractType === 'PKWT') {
+            if (!formData.startDate) {
+                newErrors.startDate = 'Tanggal mulai harus diisi';
+            }
+            if (!formData.endDate) {
+                newErrors.endDate = 'Tanggal berakhir harus diisi';
+            }
+            if (!formData.pkwtSequence.trim()) {
+                newErrors.pkwtSequence = 'Nomor PKWT harus diisi';
+            }
+
+            // Validate date range
+            if (formData.startDate && formData.endDate && formData.endDate < formData.startDate) {
+                newErrors.endDate = 'Tanggal berakhir harus setelah tanggal mulai';
+            }
         }
 
         setErrors(newErrors);
@@ -223,40 +232,62 @@ export default function ModalKelengkapanData({
                                 </div>
                             </div>
 
-                            {/* Tanggal Mulai & Tanggal Berakhir (Side by side) */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Nomor PKWT Asli - Only for PKWT */}
+                            {contractType === 'PKWT' && (
                                 <div className="space-y-2">
-                                    <label htmlFor="startDate" className="block">
-                                        <span className="text-sm font-medium text-slate-700">Tanggal Mulai</span>
+                                    <label htmlFor="pkwtSequence" className="block">
+                                        <span className="text-sm font-medium text-slate-700">Nomor PKWT</span>
                                         <span className="text-red-500 ml-1">*</span>
                                     </label>
                                     <input
-                                        id="startDate"
-                                        type="date"
-                                        value={formData.startDate}
-                                        onChange={(e) => handleChange('startDate', e.target.value)}
+                                        id="pkwtSequence"
+                                        type="text"
+                                        value={formData.pkwtSequence}
+                                        onChange={(e) => handleChange('pkwtSequence', e.target.value)}
+                                        placeholder="Masukkan nomor PKWT asli"
                                         disabled={loading}
                                         className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
                                     />
-                                    {errors.startDate && <p className="text-sm text-red-600">{errors.startDate}</p>}
+                                    {errors.pkwtSequence && <p className="text-sm text-red-600">{errors.pkwtSequence}</p>}
                                 </div>
+                            )}
 
-                                <div className="space-y-2">
-                                    <label htmlFor="endDate" className="block">
-                                        <span className="text-sm font-medium text-slate-700">Tanggal Berakhir</span>
-                                        <span className="text-red-500 ml-1">*</span>
-                                    </label>
-                                    <input
-                                        id="endDate"
-                                        type="date"
-                                        value={formData.endDate}
-                                        onChange={(e) => handleChange('endDate', e.target.value)}
-                                        disabled={loading}
-                                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
-                                    />
-                                    {errors.endDate && <p className="text-sm text-red-600">{errors.endDate}</p>}
+                            {/* Tanggal Mulai & Tanggal Berakhir (Side by side) - Only for PKWT */}
+                            {contractType === 'PKWT' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label htmlFor="startDate" className="block">
+                                            <span className="text-sm font-medium text-slate-700">Tanggal Mulai</span>
+                                            <span className="text-red-500 ml-1">*</span>
+                                        </label>
+                                        <input
+                                            id="startDate"
+                                            type="date"
+                                            value={formData.startDate}
+                                            onChange={(e) => handleChange('startDate', e.target.value)}
+                                            disabled={loading}
+                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
+                                        />
+                                        {errors.startDate && <p className="text-sm text-red-600">{errors.startDate}</p>}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label htmlFor="endDate" className="block">
+                                            <span className="text-sm font-medium text-slate-700">Tanggal Berakhir</span>
+                                            <span className="text-red-500 ml-1">*</span>
+                                        </label>
+                                        <input
+                                            id="endDate"
+                                            type="date"
+                                            value={formData.endDate}
+                                            onChange={(e) => handleChange('endDate', e.target.value)}
+                                            disabled={loading}
+                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
+                                        />
+                                        {errors.endDate && <p className="text-sm text-red-600">{errors.endDate}</p>}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Alamat (Kelurahan) */}
                             <div className="space-y-2">
@@ -276,23 +307,20 @@ export default function ModalKelengkapanData({
                                 {errors.address && <p className="text-sm text-red-600">{errors.address}</p>}
                             </div>
 
-                            {/* Keterangan PKWT ke */}
+                            {/* Keterangan */}
                             <div className="space-y-2">
-                                <label htmlFor="pkwtSequence" className="block">
-                                    <span className="text-sm font-medium text-slate-700">Keterangan (PKWT ke-)</span>
-                                    <span className="text-red-500 ml-1">*</span>
+                                <label htmlFor="keterangan" className="block">
+                                    <span className="text-sm font-medium text-slate-700">Keterangan</span>
                                 </label>
-                                <input
-                                    id="pkwtSequence"
-                                    type="text"
-                                    value={formData.pkwtSequence}
-                                    onChange={(e) => handleChange('pkwtSequence', e.target.value)}
-                                    placeholder="Contoh: I, II, III"
+                                <textarea
+                                    id="keterangan"
+                                    rows={3}
+                                    value={formData.keterangan}
+                                    onChange={(e) => handleChange('keterangan', e.target.value)}
+                                    placeholder="Masukkan keterangan tambahan (opsional)"
                                     disabled={loading}
                                     className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
                                 />
-                                <p className="text-xs text-slate-500">Gunakan angka Romawi (I, II, III, IV, V). Angka biasa (1, 2, 3) akan dikonversi otomatis.</p>
-                                {errors.pkwtSequence && <p className="text-sm text-red-600">{errors.pkwtSequence}</p>}
                             </div>
 
                         </div>
