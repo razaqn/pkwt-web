@@ -8,8 +8,9 @@ export interface KelengkapanDataForm {
     position: string;
     startDate: string;
     endDate: string;
-    address: string; // Kelurahan saja
-    pkwtSequence: string; // No PKWT
+    address: string;
+    noPkwt: string;
+    pkwtSequence: string;
     keterangan: string;
 }
 
@@ -39,6 +40,7 @@ export default function ModalKelengkapanData({
         startDate: '',
         endDate: '',
         address: '',
+        noPkwt: '',
         pkwtSequence: '',
         keterangan: '',
     });
@@ -58,6 +60,7 @@ export default function ModalKelengkapanData({
                 startDate: initialData.startDate || '',
                 endDate: initialData.endDate || '',
                 address: initialData.address || '',
+                noPkwt: initialData.noPkwt || '',
                 pkwtSequence: initialData.pkwtSequence || '',
                 keterangan: initialData.keterangan || '',
             }
@@ -68,6 +71,7 @@ export default function ModalKelengkapanData({
                 startDate: '',
                 endDate: '',
                 address: '',
+                noPkwt: '',
                 pkwtSequence: '',
                 keterangan: '',
             };
@@ -115,8 +119,8 @@ export default function ModalKelengkapanData({
             if (!formData.endDate) {
                 newErrors.endDate = 'Tanggal berakhir harus diisi';
             }
-            if (!formData.pkwtSequence.trim()) {
-                newErrors.pkwtSequence = 'Nomor PKWT harus diisi';
+            if (!formData.noPkwt.trim()) {
+                newErrors.noPkwt = 'Nomor PKWT harus diisi';
             }
 
             // Validate date range
@@ -235,20 +239,20 @@ export default function ModalKelengkapanData({
                             {/* Nomor PKWT Asli - Only for PKWT */}
                             {contractType === 'PKWT' && (
                                 <div className="space-y-2">
-                                    <label htmlFor="pkwtSequence" className="block">
+                                    <label htmlFor="noPkwt" className="block">
                                         <span className="text-sm font-medium text-slate-700">Nomor PKWT</span>
                                         <span className="text-red-500 ml-1">*</span>
                                     </label>
                                     <input
-                                        id="pkwtSequence"
+                                        id="noPkwt"
                                         type="text"
-                                        value={formData.pkwtSequence}
-                                        onChange={(e) => handleChange('pkwtSequence', e.target.value)}
+                                        value={formData.noPkwt}
+                                        onChange={(e) => handleChange('noPkwt', e.target.value)}
                                         placeholder="Masukkan nomor PKWT asli"
                                         disabled={loading}
                                         className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-500"
                                     />
-                                    {errors.pkwtSequence && <p className="text-sm text-red-600">{errors.pkwtSequence}</p>}
+                                    {errors.noPkwt && <p className="text-sm text-red-600">{errors.noPkwt}</p>}
                                 </div>
                             )}
 

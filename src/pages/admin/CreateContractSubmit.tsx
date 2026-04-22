@@ -131,7 +131,8 @@ export default function CreateContractSubmit() {
                             gender: d?.gender || undefined,
                             position: d?.position || undefined,
                             address: d?.address || undefined,
-                            pkwt_sequence: d?.pkwtSequence || undefined,
+                            pkwt_sequence: undefined, // Let backend calculate this
+                            no_pkwt: d?.noPkwt || undefined,
                             keterangan: d?.keterangan || undefined,
                         };
                     }),
@@ -198,11 +199,12 @@ export default function CreateContractSubmit() {
     const initialModalData: KelengkapanDataForm | undefined = selectedNIKData
         ? {
             fullName: selectedNIKData.fullName || '',
-            gender: (selectedNIKData.gender as 'Laki-laki' | 'Perempuan' | '') || '',
+            gender: (selectedNIKData.gender as any) || '',
             position: selectedNIKData.position || '',
             startDate: selectedNIKData.startDate || '',
             endDate: selectedNIKData.endDate || '',
             address: selectedNIKData.address || '',
+            noPkwt: selectedNIKData.noPkwt || '',
             pkwtSequence: selectedNIKData.pkwtSequence || '',
             keterangan: selectedNIKData.keterangan || '',
         }

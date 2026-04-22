@@ -52,7 +52,7 @@ export default function TabelNIKPengajuan({ data, onEdit, loading = false }: Tab
                                     )}
                                 </td>
                                 <td className="px-4 py-3 text-slate-600">
-                                    {item.pkwtSequence || (
+                                    {item.noPkwt || (
                                         <span className="text-slate-400 italic">-</span>
                                     )}
                                 </td>

@@ -260,6 +260,8 @@ export default function AdminDetailKaryawan() {
                         <thead>
                             <tr className="border-b border-slate-200 bg-slate-50">
                                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">Judul Kontrak</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">No. PKWT</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">PKWT Ke-</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">Perusahaan</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">Tipe</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">Tanggal Mulai</th>
@@ -290,6 +292,8 @@ export default function AdminDetailKaryawan() {
                                                     </div>
                                                 ) : null}
                                             </td>
+                                            <td className="px-6 py-4 text-slate-700">{(contract as any).no_pkwt || '-'}</td>
+                                            <td className="px-6 py-4 text-slate-700">{(contract as any).pkwt_sequence || '-'}</td>
                                             <td className="px-6 py-4 text-slate-700">{contract.company_name}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${typeBadgeClass}`}>
@@ -317,7 +321,7 @@ export default function AdminDetailKaryawan() {
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-10">
+                                    <td colSpan={7} className="px-6 py-10">
                                         <EmptyState
                                             title="Belum ada riwayat kontrak"
                                             description="Kontrak untuk karyawan ini belum tercatat di sistem."

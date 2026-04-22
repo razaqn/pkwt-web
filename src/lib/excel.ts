@@ -14,7 +14,8 @@ export interface ParsedExcelRow {
     startDate?: string | null; // YYYY-MM-DD
     endDate?: string | null; // YYYY-MM-DD
     address?: string | null; // Kelurahan saja
-    pkwtSequence?: string | null; // Nomor PKWT Asli
+    noPkwt?: string | null; // Nomor Surat dari HRD
+    pkwtSequence?: string | null; // System counter (if any)
     keterangan?: string | null; // Kolom Ket
 }
 
@@ -124,7 +125,11 @@ function findColumnIndices(data: any[][]) {
     // Scan first 10 rows to find the main header
     for (let r = 0; r < Math.min(data.length, 10); r++) {
         const row = data[r].map(c => String(c || '').toLowerCase().trim());
-        if (row.includes('nama') && (row.includes('nik') || row.includes('no. pkwt') || row.includes('no pkwt'))) {
+        const hasNama = row.some(c => c.includes('nama'));
+        const hasNik = row.some(c => c.includes('nik'));
+        const hasPkwtNo = row.some(c => c.includes('pkwt') && (c.includes('no') || c.includes('nomor')));
+        
+        if (hasNama && (hasNik || hasPkwtNo)) {
             headerRowIndex = r;
             break;
         }
@@ -141,9 +146,8 @@ function findColumnIndices(data: any[][]) {
         if (val.includes('jabatan')) indices.jabatan = i;
         if (val.includes('alamat')) indices.alamat = i;
         if (val.includes('ket')) indices.ket = i;
-        if (val === 'nik') indices.nik = i;
-        if (val.includes('no.') && val.includes('pkwt')) indices.noPkwt = i;
-        if (val === 'no pkwt') indices.noPkwt = i;
+        if (val.includes('nik')) indices.nik = i;
+        if (val.includes('pkwt') && (val.includes('no') || val.includes('nomor'))) indices.noPkwt = i;
 
         // Nested headers for Gender
         if (val.includes('jenis kelamin') || val.includes('kelamin')) {
@@ -235,7 +239,8 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
             startDate: indices.tmtMulai !== -1 ? parseDateFlexible(row[indices.tmtMulai]) : null,
             endDate: indices.tmtAkhir !== -1 ? parseDateFlexible(row[indices.tmtAkhir]) : null,
             address: indices.alamat !== -1 ? String(row[indices.alamat] || '').trim() || null : null,
-            pkwtSequence: indices.noPkwt !== -1 ? String(row[indices.noPkwt] || '').trim() || null : null,
+            noPkwt: indices.noPkwt !== -1 ? String(row[indices.noPkwt] || '').trim() || null : null,
+            pkwtSequence: null,
             keterangan: indices.ket !== -1 ? String(row[indices.ket] || '').trim() || null : null,
         });
     }

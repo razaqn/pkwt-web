@@ -69,6 +69,7 @@ export function useContractSubmission(contractData: ContractData | null) {
                             position: backendData.position || imported.position || null,
                             startDate: imported.startDate || backendData.startDate || null,
                             endDate: imported.endDate || backendData.endDate || null,
+                            noPkwt: imported.noPkwt || backendData.noPkwt || null,
                             pkwtSequence: imported.pkwtSequence || backendData.pkwtSequence || null,
                             keterangan: imported.keterangan || backendData.keterangan || null,
                         };
@@ -80,7 +81,7 @@ export function useContractSubmission(contractData: ContractData | null) {
                         }
 
                         if (contractData.contractType === 'PKWT') {
-                            if (!mergedData.startDate || !mergedData.endDate || !mergedData.pkwtSequence) {
+                            if (!mergedData.startDate || !mergedData.endDate || !mergedData.noPkwt) {
                                 isComplete = false;
                             }
                         }
@@ -96,7 +97,7 @@ export function useContractSubmission(contractData: ContractData | null) {
                     }
 
                     if (contractData.contractType === 'PKWT') {
-                        if (!backendData.startDate || !backendData.endDate || !backendData.pkwtSequence) {
+                        if (!backendData.startDate || !backendData.endDate || !backendData.noPkwt) {
                             isComplete = false;
                         }
                     }
@@ -154,6 +155,7 @@ export function useContractSubmission(contractData: ContractData | null) {
                             startDate: formData.startDate || item.startDate,
                             endDate: formData.endDate || item.endDate,
                             pkwtSequence: formData.pkwtSequence || item.pkwtSequence,
+                            noPkwt: formData.noPkwt || item.noPkwt,
                             keterangan: formData.keterangan || item.keterangan,
                             isComplete: true,
                         }
@@ -262,10 +264,11 @@ export function useContractSubmission(contractData: ContractData | null) {
                             full_name: nikData?.fullName || undefined,
                             gender: nikData?.gender || undefined,
                             position: nikData?.position || undefined,
-                            address: nikData?.address || undefined,
-                            pkwt_sequence: nikData?.pkwtSequence || undefined,
-                            keterangan: nikData?.keterangan || undefined,
-                        };
+                            address: nikData?.address || '',
+                            pkwt_sequence: undefined, // Let backend calculate this
+                            no_pkwt: nikData?.noPkwt || '',
+                            keterangan: nikData?.keterangan || '',
+                            };
                     }),
                     surat_permohonan_file_name: suratPermohonanFile.name,
                     surat_permohonan_file_content_base64: suratPermohonanBase64,

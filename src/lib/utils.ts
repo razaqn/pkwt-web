@@ -38,6 +38,7 @@ export interface NIKData {
     position: string | null;
     startDate: string | null;
     endDate: string | null;
+    noPkwt?: string | null;
     pkwtSequence?: string | null;
     keterangan?: string | null;
     isComplete: boolean;
@@ -55,6 +56,7 @@ export function mapNIKResultToData(result: NIKCheckResult): NIKData {
         position: result.position,
         startDate: null,
         endDate: null,
+        noPkwt: null,
         pkwtSequence: null,
         keterangan: null,
         isComplete: result.is_complete,

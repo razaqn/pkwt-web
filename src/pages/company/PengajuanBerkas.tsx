@@ -138,11 +138,12 @@ export default function PengajuanBerkas() {
     const initialModalData: KelengkapanDataForm | undefined = selectedNIKData
         ? {
             fullName: selectedNIKData.fullName || '',
-            gender: (selectedNIKData.gender as 'Laki-laki' | 'Perempuan' | '') || '',
+            gender: (selectedNIKData.gender as any) || '',
             position: selectedNIKData.position || '',
             startDate: selectedNIKData.startDate || '',
             endDate: selectedNIKData.endDate || '',
             address: selectedNIKData.address || '',
+            noPkwt: selectedNIKData.noPkwt || '',
             pkwtSequence: selectedNIKData.pkwtSequence || '',
             keterangan: selectedNIKData.keterangan || '',
         }

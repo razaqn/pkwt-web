@@ -633,8 +633,8 @@ export interface ContractEmployee {
   full_name: string;
   data_complete: boolean; // true = Lengkap, false = Belum Lengkap
   pkwt_sequence?: string | null;
-  keterangan?: string | null;
-  start_date?: string | null;
+  no_pkwt?: string | null;
+  keterangan?: string | null;  start_date?: string | null;
   end_date?: string | null;
 }
 
@@ -803,8 +803,8 @@ export interface ApprovalEmployee {
   position: string | null;
   previous_contract_count: number;
   pkwt_sequence?: string | null;
-  keterangan?: string | null;
-  start_date?: string | null;
+  no_pkwt?: string | null;
+  keterangan?: string | null;  start_date?: string | null;
   end_date?: string | null;
 }
 
@@ -1301,4 +1301,4 @@ export async function adminDeleteUser(id: string): Promise<{ ok: boolean; messag
   return request(`${API_BASE}/api/users/${id}`, {
     method: 'DELETE',
   });
-}
+}
