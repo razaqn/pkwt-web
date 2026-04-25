@@ -43,6 +43,127 @@ const COLUMN_MAPPINGS = {
     pkwtSequence: ['no_pkwt', 'keterangan', 'pkwt_ke', 'sequence', 'pkwt_sequence'],
 };
 
+/** Max header rows to scan (templates with title + 2 header rows) */
+const MAX_HEADER_SCAN = 32;
+
+function cellStr(v: any): string | null {
+    if (v == null) return null;
+    const s = String(v).trim();
+    return s === '' ? null : s;
+}
+
+/**
+ * Build one label per column for the template row; prefers subheader row, then the row(s) above
+ * (handles "TMT Mulai" / "TMT Akhir" in row 3, "No" / "PKWT" in row 2).
+ */
+function buildMergedLabelArray(aoa: any[][], bottomRow: number, maxW: number): (string | null)[] {
+    const labels: (string | null)[] = [];
+    for (let c = 0; c < maxW; c++) {
+        const s =
+            cellStr(aoa[bottomRow]?.[c]) ||
+            (bottomRow > 0 ? cellStr(aoa[bottomRow - 1]?.[c]) : null) ||
+            (bottomRow > 1 ? cellStr(aoa[bottomRow - 2]?.[c]) : null);
+        labels.push(s);
+    }
+    return labels;
+}
+
+/**
+ * Unique object keys: empty cells get __col_{c}, duplicate labels get _{c} suffix
+ */
+function makeUniqueHeaderKeys(labels: (string | null)[], maxW: number): string[] {
+    const out: string[] = [];
+    const count = new Map<string, number>();
+    for (let c = 0; c < maxW; c++) {
+        const raw = labels[c] != null && String(labels[c]).trim() !== '' ? String(labels[c]).trim() : null;
+        let base = raw || `__col_${c}`;
+        const n = (count.get(base) || 0) + 1;
+        count.set(base, n);
+        const key = n === 1 ? base : `${base}_${c}`;
+        out.push(key);
+    }
+    return out;
+}
+
+/**
+ * Returns the best 0-based row index to treat as the "header bottom" (row where TMT subheaders often are),
+ * merged with rows above, and the corresponding header keys for sheet_to_json-style rows.
+ */
+function findBestHeaderWithMergedLabels(aoa: any[][]): {
+    headerBottomRow: number;
+    maxW: number;
+    headerKeys: string[];
+    usedFallback: boolean;
+} {
+    if (!aoa.length) {
+        return { headerBottomRow: 0, maxW: 1, headerKeys: ['__col_0'], usedFallback: true };
+    }
+    let maxW = 0;
+    for (const r of aoa) {
+        maxW = Math.max(maxW, r?.length || 0);
+    }
+    maxW = Math.max(1, maxW);
+
+    let bestH = 0;
+    let bestScore = -Infinity;
+    for (let h = 0; h < Math.min(MAX_HEADER_SCAN, aoa.length); h++) {
+        const labels = buildMergedLabelArray(aoa, h, maxW);
+        const headerKeys = makeUniqueHeaderKeys(labels, maxW);
+        const startC = findColumnName(headerKeys, COLUMN_MAPPINGS.startDate);
+        const endC = findColumnName(headerKeys, COLUMN_MAPPINGS.endDate);
+        const nikC = findColumnName(headerKeys, COLUMN_MAPPINGS.nik);
+
+        if (startC && endC && startC === endC) {
+            continue; // TMT baca 1 kolom (merge) — abaikan baris kandidat ini
+        }
+        let score = 0;
+        if (nikC) score += 4;
+        if (startC) score += 3;
+        if (endC) score += 3;
+        if (startC && endC && startC !== endC) score += 20;
+        if (score > bestScore) {
+            bestScore = score;
+            bestH = h;
+        }
+    }
+
+    if (bestScore === -Infinity) {
+        const labels = buildMergedLabelArray(aoa, 0, maxW);
+        return {
+            headerBottomRow: 0,
+            maxW,
+            headerKeys: makeUniqueHeaderKeys(labels, maxW),
+            usedFallback: true,
+        };
+    }
+
+    const labels = buildMergedLabelArray(aoa, bestH, maxW);
+    return {
+        headerBottomRow: bestH,
+        maxW,
+        headerKeys: makeUniqueHeaderKeys(labels, maxW),
+        usedFallback: false,
+    };
+}
+
+function buildDataRowsAsObjects(
+    aoa: any[][],
+    headerBottomRow: number,
+    maxW: number,
+    headerKeys: string[]
+): any[] {
+    const json: any[] = [];
+    for (let r = headerBottomRow + 1; r < aoa.length; r++) {
+        const row: Record<string, any> = {};
+        for (let c = 0; c < maxW; c++) {
+            const key = headerKeys[c] ?? `__col_${c}`;
+            row[key] = aoa[r]?.[c] ?? null;
+        }
+        json.push(row);
+    }
+    return json;
+}
+
 /**
  * Normalize column name for case-insensitive matching
  */
@@ -338,24 +459,37 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
 
     const worksheet = workbook.Sheets[sheetName];
 
-    // Convert sheet to JSON
-    const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet, {
-        raw: false, // Get formatted values
-        defval: null, // Default value for empty cells
-    });
+    // 2D array: supports multi-row headers (judul, merge "PKWT", lalu TMT Mulai / TMT Akhir)
+    const aoa: any[][] = XLSX.utils.sheet_to_json(worksheet, {
+        header: 1,
+        raw: false,
+        defval: null,
+    }) as any[][];
+
+    if (!aoa.length) {
+        throw new Error('File Excel kosong atau tidak memiliki data');
+    }
+
+    const { headerBottomRow, maxW, headerKeys, usedFallback } = findBestHeaderWithMergedLabels(aoa);
+    const jsonData: any[] = buildDataRowsAsObjects(aoa, headerBottomRow, maxW, headerKeys);
 
     if (jsonData.length === 0) {
         throw new Error('File Excel kosong atau tidak memiliki data');
     }
 
-    // Check row limit
     if (jsonData.length > MAX_EXCEL_ROWS) {
         throw new Error(`File memiliki terlalu banyak baris. Maksimal ${MAX_EXCEL_ROWS} baris, file Anda memiliki ${jsonData.length} baris`);
     }
 
-    // Get headers from first row
-    const headers = Object.keys(jsonData[0]);
-    console.debug('[excel] detected headers', headers);
+    if (usedFallback) {
+        warnings.push(
+            'Tidak menemukan baris header ideal (TMT Mulai / TMT Akhir di kolom berbeda). ' +
+                'Menggunakan baris teratas. Pastikan baris 1 tabel memuat header unik, atau sederhanakan jadi satu baris header penuh.'
+        );
+    }
+
+    const headers = headerKeys;
+    console.debug('[excel] header row (0-based)', headerBottomRow, 'headers', headers);
 
     // Find column names
     const nikColumn = findColumnName(headers, COLUMN_MAPPINGS.nik);
@@ -376,15 +510,25 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
         warnings.push('Kolom NIK tidak ditemukan. Pastikan NIK diisi manual di form setelah impor');
     }
 
+    if (startDateColumn && endDateColumn && startDateColumn === endDateColumn) {
+        warnings.push(
+            'Kolom TMT Mulai / tanggal mulai dan TMT Akhir / tanggal akhir terpetakan ke header yang sama. ' +
+                'Cek file (merge, nama kolom ganda) atau sederhanakan jadi satu baris header penuh.'
+        );
+    }
+
     // Parse rows
     const parsedRows: ParsedExcelRow[] = [];
     const seenNIKs = new Set<string>();
     const duplicateNIKs: string[] = [];
     const invalidNIKs: Array<{ row: number; nik: string; error: string }> = [];
+    let sameDateRowWarnings = 0;
+    const MAX_SAME_DATE_WARNINGS = 5;
 
     for (let i = 0; i < jsonData.length; i++) {
         const row = jsonData[i];
-        const rowNumber = i + 2; // Excel rows are 1-indexed, header is row 1
+        // 1-based Excel row: setelah baris header bawah, baris data pertama = headerBottomRow + 2
+        const rowNumber = headerBottomRow + 2 + i;
 
         // Extract NIK (optional — may not exist in template)
         let nik: string | undefined;
@@ -395,7 +539,8 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
             let cellText: string | undefined;
             let cellType: string | undefined;
             if (nikColumnIndex >= 0) {
-                const cellAddress = XLSX.utils.encode_cell({ c: nikColumnIndex, r: i + 1 });
+                const dataRow0Based = headerBottomRow + 1 + i; // 0-based sheet row
+                const cellAddress = XLSX.utils.encode_cell({ c: nikColumnIndex, r: dataRow0Based });
                 const cell = worksheet[cellAddress];
                 if (cell && typeof cell.w === 'string') {
                     cellText = cell.w;
@@ -472,6 +617,19 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
             address: addressColumn && row[addressColumn] ? String(row[addressColumn]).trim() : null,
             pkwtSequence: rawSequence ? normalizePkwtSequence(rawSequence) : null,
         };
+
+        if (
+            sameDateRowWarnings < MAX_SAME_DATE_WARNINGS &&
+            parsedRow.startDate &&
+            parsedRow.endDate &&
+            parsedRow.startDate === parsedRow.endDate
+        ) {
+            sameDateRowWarnings += 1;
+            warnings.push(
+                `Baris ${rowNumber}: tgl mulai dan tgl akhir sama (${parsedRow.startDate}). ` +
+                    'Periksa isi/merge, atau isi kembali di form.'
+            );
+        }
 
         parsedRows.push(parsedRow);
     }
