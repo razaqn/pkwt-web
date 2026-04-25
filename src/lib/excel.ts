@@ -14,7 +14,9 @@ export interface ParsedExcelRow {
     startDate?: string | null; // YYYY-MM-DD
     endDate?: string | null; // YYYY-MM-DD
     address?: string | null; // Kelurahan saja
-    pkwtSequence?: string | null; // Roman numeral (I, II, III, dst)
+    noPkwt?: string | null; // Nomor Surat dari HRD
+    pkwtSequence?: string | null; // System counter (if any)
+    keterangan?: string | null; // Kolom Ket
 }
 
 export interface ParseExcelResult {
@@ -226,226 +228,155 @@ function findColumnName(
  */
 function normalizeNIKValue(nikValue: any, cellText?: string): string {
     if (nikValue === null || nikValue === undefined) return '';
-
-    // NOTE: avoid naming helpers with `use*` to prevent React Hooks lint false-positives.
-    const parseText = (text: string | undefined | null) => {
-        if (!text) return null;
-        const trimmed = text.trim();
-        if (!trimmed) return null;
-
-        // Prefer expanding scientific notation purely from string representation
-        const expanded = expandScientificNotation(trimmed);
-        if (expanded) return expanded;
-
-        // Fallback: keep only digits from the text (handles commas/spaces)
-        const digitsOnly = trimmed.replace(/[^0-9]/g, '');
-        return digitsOnly || trimmed;
-    };
-
-    // If we have formatted text from the cell, try to use it first (most accurate)
-    const fromCellText = parseText(cellText);
-    if (fromCellText) return fromCellText;
-
-    // If value is already a number, avoid scientific notation
-    if (typeof nikValue === 'number') {
-        const str = nikValue.toString();
-
-        if (str.includes('e') || str.includes('E')) {
-            const expanded = expandScientificNotation(str);
-            if (expanded) return expanded;
+    const str = String(nikValue).trim();
+    
+    // Handle scientific notation (e.g. 3.27E+15)
+    if (str.toLowerCase().includes('e+')) {
+        try {
+            return BigInt(Math.floor(Number(str))).toString();
+        } catch (e) {
+            return str.replace(/[^0-9]/g, '');
         }
-
-        if (str.includes('.')) {
-            return Math.round(nikValue).toString();
-        }
-
-        return str;
     }
-
-    if (typeof nikValue === 'string') {
-        const trimmed = nikValue.trim();
-
-        // If Excel exported as scientific notation in string form
-        const expanded = expandScientificNotation(trimmed);
-        if (expanded) return expanded;
-
-        return trimmed;
-    }
-
-    // Fallback for other types
-    return String(nikValue).trim();
+    
+    return str.replace(/[^0-9]/g, '');
 }
 
-// Exported for testing to ensure numeric/scientific NIKs are normalized properly
-export const normalizeNIKValueForTest = normalizeNIKValue;
-
 /**
- * Validate NIK format (should be 16 digits)
+ * Relaxed NIK validation: must be numeric, length can be anything.
  */
 export function validateNIKFormat(nik: string): { valid: boolean; error?: string } {
-    if (!nik || typeof nik !== 'string') {
-        return { valid: false, error: 'NIK kosong atau tidak valid' };
-    }
-
-    const trimmedNIK = nik.trim();
-
-    if (trimmedNIK.length === 0) {
-        return { valid: false, error: 'NIK kosong' };
-    }
-
-    // Check if NIK is numeric (allow leading zeros)
-    if (!/^\d+$/.test(trimmedNIK)) {
-        return { valid: false, error: 'NIK harus berupa angka' };
-    }
-
-    // Check length (standard Indonesian NIK is 16 digits)
-    if (trimmedNIK.length !== 16) {
-        return { valid: false, error: `NIK harus 16 digit (saat ini: ${trimmedNIK.length})` };
-    }
-
+    if (!nik) return { valid: false, error: 'NIK kosong' };
+    const trimmed = nik.trim();
+    if (!/^\d+$/.test(trimmed)) return { valid: false, error: 'NIK harus berupa angka' };
     return { valid: true };
 }
 
 /**
- * Normalize gender value to 'Laki-laki' or 'Perempuan'
- * Accepts: L/Laki/Male → Laki-laki, P/Perempuan/Female → Perempuan
- */
-function normalizeGender(value: string): 'Laki-laki' | 'Perempuan' | null {
-    const lower = value.toLowerCase().trim();
-    if (['l', 'laki', 'laki-laki', 'male', 'm', 'pria'].includes(lower)) {
-        return 'Laki-laki';
-    }
-    if (['p', 'perempuan', 'female', 'f', 'wanita'].includes(lower)) {
-        return 'Perempuan';
-    }
-    return null;
-}
-
-/**
- * Resolve gender from separate L/P columns (PKWT template format)
- * Returns 'Laki-laki' if L column has value, 'Perempuan' if P column has value
- */
-function resolveGenderFromLP(
-    row: Record<string, any>,
-    genderLColumn: string | null,
-    genderPColumn: string | null
-): 'Laki-laki' | 'Perempuan' | null {
-    const hasL = genderLColumn && row[genderLColumn] != null && String(row[genderLColumn]).trim() !== '';
-    const hasP = genderPColumn && row[genderPColumn] != null && String(row[genderPColumn]).trim() !== '';
-
-    if (hasL && !hasP) return 'Laki-laki';
-    if (hasP && !hasL) return 'Perempuan';
-    if (hasL && hasP) return null; // Ambiguous — both filled
-    return null;
-}
-
-/**
- * Normalize PKWT sequence to Roman numeral
- * Accepts: "1" → "I", "2" → "II", "I" → "I", "II" → "II", etc.
- */
-function normalizePkwtSequence(value: string): string | null {
-    const trimmed = value.trim().toUpperCase();
-
-    // Already a Roman numeral (I, II, III, IV, V)
-    if (/^I{1,3}V?$|^V$/.test(trimmed)) {
-        return trimmed;
-    }
-
-    // Numeric input — convert to Roman
-    const num = parseInt(trimmed, 10);
-    if (isNaN(num) || num < 1 || num > 5) return null;
-
-    const romanMap: Record<number, string> = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V' };
-    return romanMap[num];
-}
-
-/**
- * Parse date from various formats to ISO YYYY-MM-DD
- * Supports: dd/mm/yyyy, dd-mm-yyyy, yyyy-mm-dd, Excel serial dates
+ * Improved Date Parser for Excel formats like 12/12/26 or 12-12-2026.
+ * Returns ISO string YYYY-MM-DD.
  */
 export function parseDateFlexible(value: any): string | null {
     if (!value) return null;
 
-    // If already a Date object
     if (value instanceof Date) {
-        return formatDateToISO(value);
+        if (isNaN(value.getTime())) return null;
+        const year = value.getFullYear();
+        const month = String(value.getMonth() + 1).padStart(2, '0');
+        const day = String(value.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
-    // If it's a number (Excel serial date)
+    // Excel Serial Date (Number)
     if (typeof value === 'number') {
-        const date = XLSX.SSF.parse_date_code(value);
-        if (date) {
-            return `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')}`;
-        }
-        return null;
+        try {
+            // Excel dates are number of days since Dec 30, 1899
+            const date = new Date(Math.round((value - 25569) * 864e5));
+            if (!isNaN(date.getTime())) return date.toISOString().split('T')[0];
+        } catch (e) { return null; }
     }
 
-    // If it's a string
     if (typeof value === 'string') {
         const trimmed = value.trim();
+        if (!trimmed) return null;
 
-        // Try ISO format (yyyy-mm-dd)
-        if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-            const date = new Date(trimmed);
-            if (!isNaN(date.getTime())) {
-                return trimmed;
-            }
-        }
+        // Try dd/mm/yy or dd-mm-yy or dd/mm/yyyy
+        const match = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
+        if (match) {
+            let day = parseInt(match[1], 10);
+            let month = parseInt(match[2], 10);
+            let year = parseInt(match[3], 10);
 
-        // Try dd/mm/yyyy or dd-mm-yyyy
-        const ddmmyyyyMatch = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
-        if (ddmmyyyyMatch) {
-            const day = parseInt(ddmmyyyyMatch[1], 10);
-            const month = parseInt(ddmmyyyyMatch[2], 10);
-            const year = parseInt(ddmmyyyyMatch[3], 10);
+            // Handle 2-digit year (assume 20xx)
+            if (year < 100) year += 2000;
 
-            // Basic validation
-            if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+            const date = new Date(year, month - 1, day);
+            if (!isNaN(date.getTime()) && date.getFullYear() === year) {
                 return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             }
         }
 
-        // Try parsing as generic date string
-        const date = new Date(trimmed);
-        if (!isNaN(date.getTime())) {
-            return formatDateToISO(date);
-        }
+        // Try ISO
+        const isoMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (isoMatch) return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
     }
 
     return null;
 }
 
 /**
- * Format Date object to ISO YYYY-MM-DD
+ * Dynamically find column indices from 2D array data.
+ * Handles nested headers by scanning multiple rows if necessary.
  */
-function formatDateToISO(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+function findColumnIndices(data: any[][]) {
+    const indices: Record<string, number> = {
+        no: -1, nama: -1, genderL: -1, genderP: -1, noPkwt: -1, jabatan: -1, tmtMulai: -1, tmtAkhir: -1, alamat: -1, ket: -1, nik: -1
+    };
+
+    let headerRowIndex = -1;
+
+    // Scan first 10 rows to find the main header
+    for (let r = 0; r < Math.min(data.length, 10); r++) {
+        const row = data[r].map(c => String(c || '').toLowerCase().trim());
+        const hasNama = row.some(c => c.includes('nama'));
+        const hasNik = row.some(c => c.includes('nik'));
+        const hasPkwtNo = row.some(c => c.includes('pkwt') && (c.includes('no') || c.includes('nomor')));
+        
+        if (hasNama && (hasNik || hasPkwtNo)) {
+            headerRowIndex = r;
+            break;
+        }
+    }
+
+    if (headerRowIndex === -1) return { indices, dataStartRow: -1 };
+
+    const mainHeader = data[headerRowIndex].map(c => String(c || '').toLowerCase().trim());
+    const subHeader = data[headerRowIndex + 1] ? data[headerRowIndex + 1].map(c => String(c || '').toLowerCase().trim()) : [];
+
+    mainHeader.forEach((val, i) => {
+        if (val === 'no') indices.no = i;
+        if (val.includes('nama')) indices.nama = i;
+        if (val.includes('jabatan')) indices.jabatan = i;
+        if (val.includes('alamat')) indices.alamat = i;
+        if (val.includes('ket')) indices.ket = i;
+        if (val.includes('nik')) indices.nik = i;
+        if (val.includes('pkwt') && (val.includes('no') || val.includes('nomor'))) indices.noPkwt = i;
+
+        // Nested headers for Gender
+        if (val.includes('jenis kelamin') || val.includes('kelamin')) {
+            // Check current column or next columns in subHeader
+            if (val.includes(' l')) indices.genderL = i;
+            else if (val.includes(' p')) indices.genderP = i;
+            else {
+                if (subHeader[i] === 'l') indices.genderL = i;
+                if (subHeader[i+1] === 'p') indices.genderP = i+1;
+            }
+        }
+        
+        // Nested headers for PKWT TMT
+        if (val === 'pkwt') {
+            if (subHeader[i]?.includes('tmt mulai')) indices.tmtMulai = i;
+            if (subHeader[i+1]?.includes('tmt akhir')) indices.tmtAkhir = i;
+        }
+    });
+
+    // Final fallback for NIK if not found by exact match
+    if (indices.nik === -1) indices.nik = mainHeader.findIndex(v => v.includes('nik'));
+
+    // Check if subHeader actually exists by looking for known subheader keywords
+    const subHeaderStr = subHeader.join(' ');
+    const hasSubHeader = subHeaderStr.includes('tmt mulai') || subHeaderStr.includes('tmt akhir') || subHeader.includes('l') || subHeader.includes('p');
+
+    return { indices, dataStartRow: hasSubHeader ? headerRowIndex + 2 : headerRowIndex + 1 };
 }
 
 /**
- * Parse Excel file and extract rows
+ * Main parser function.
  */
 export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
     const warnings: string[] = [];
+    if (file.size > MAX_FILE_SIZE_BYTES) throw new Error(`File terlalu besar (Maks ${MAX_FILE_SIZE_MB}MB)`);
 
-    console.debug('[excel] parsing file', { name: file.name, size: file.size });
-
-    // Validate file size
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-        const sizeMB = (file.size / 1024 / 1024).toFixed(2);
-        throw new Error(`File terlalu besar. Maksimal ${MAX_FILE_SIZE_MB}MB, file Anda ${sizeMB}MB`);
-    }
-
-    // Validate file type
-    const extension = file.name.split('.').pop()?.toLowerCase();
-    if (!['xlsx', 'xls', 'csv'].includes(extension || '')) {
-        throw new Error('Format file tidak didukung. Gunakan .xlsx, .xls, atau .csv');
-    }
-
-    // Read file as array buffer
     const arrayBuffer = await file.arrayBuffer();
 
     // Parse workbook
@@ -588,28 +519,16 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
             }
         }
 
-        // If no NIK column at all, generate a placeholder (user must fill NIK manually in form)
-        if (!nik) {
-            const fullName = fullNameColumn && row[fullNameColumn] ? String(row[fullNameColumn]).trim() : '';
-            nik = `TEMP_${rowNumber}_${fullName || i}`;
-            warnings.push(`Baris ${rowNumber}: NIK tidak ada, menggunakan ID sementara. Isi NIK manual di form.`);
-        }
-
-        // Resolve gender: prefer explicit gender column, fall back to L/P columns
+        // Gender Resolution
         let gender: 'Laki-laki' | 'Perempuan' | null = null;
-        if (genderColumn && row[genderColumn]) {
-            gender = normalizeGender(String(row[genderColumn]).trim());
-        }
-        if (!gender && (genderLColumn || genderPColumn)) {
-            gender = resolveGenderFromLP(row, genderLColumn, genderPColumn);
-        }
+        const valL = indices.genderL !== -1 ? String(row[indices.genderL] || '').trim().toLowerCase() : '';
+        const valP = indices.genderP !== -1 ? String(row[indices.genderP] || '').trim().toLowerCase() : '';
+        if (valL && !valP) gender = 'Laki-laki';
+        else if (valP && !valL) gender = 'Perempuan';
 
-        // Extract optional fields
-        const rawSequence = pkwtSequenceColumn && row[pkwtSequenceColumn] ? String(row[pkwtSequenceColumn]).trim() : null;
-
-        const parsedRow: ParsedExcelRow = {
+        parsedRows.push({
             nik,
-            fullName: fullNameColumn && row[fullNameColumn] ? String(row[fullNameColumn]).trim() : null,
+            fullName: indices.nama !== -1 ? String(row[indices.nama] || '').trim() || null : null,
             gender,
             position: positionColumn && row[positionColumn] ? String(row[positionColumn]).trim() : null,
             startDate: startDateColumn ? parseDateFlexible(row[startDateColumn]) : null,
@@ -641,19 +560,13 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
         warnings.push(`${invalidNIKs.length} NIK tidak valid: ${errorMsg}${invalidNIKs.length > 3 ? '...' : ''}`);
     }
 
-    if (parsedRows.length === 0) {
-        throw new Error('Tidak ada baris yang valid setelah parsing. Periksa format file Excel Anda');
-    }
+    if (parsedRows.length === 0) throw new Error('Tidak ada data valid yang ditemukan.');
 
-    return {
-        rows: parsedRows,
-        warnings,
-        fileName: file.name,
-    };
+    return { rows: parsedRows, warnings, fileName: file.name };
 }
 
 /**
- * Map Excel rows to PKWT format (array of NIKEntry with imported data)
+ * Map to UI format.
  */
 export function mapExcelRowsToPKWT(
     parsedRows: ParsedExcelRow[],
@@ -666,59 +579,31 @@ export function mapExcelRowsToPKWT(
 
     for (const row of parsedRows) {
         if (!row.nik) continue;
-
-        // Check for duplicates with existing entries
         if (existingNIKSet.has(row.nik)) {
             duplicates.push(row.nik);
             continue;
         }
 
-        // Add to NIK array
         niks.push({
             id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
             nik: row.nik,
         });
 
-        // Store additional data for merging later
-        importedData[row.nik] = {
-            fullName: row.fullName,
-            gender: row.gender,
-            position: row.position,
-            startDate: row.startDate,
-            endDate: row.endDate,
-            address: row.address,
-            pkwtSequence: row.pkwtSequence,
-        };
+        importedData[row.nik] = { ...row };
     }
 
     return { niks, importedData, duplicates };
 }
 
 /**
- * Map Excel rows to PKWTT format (single NIK from first row)
- * NOTE: PKWTT now auto-populates from existing PKWT data via checkNIKs API.
- * This function is kept for backward compatibility but may be unused.
+ * Map to PKWTT (Single).
  */
-export function mapExcelRowsToPKWTT(
-    parsedRows: ParsedExcelRow[]
-): { nik: string; importedData: Partial<ParsedExcelRow>; multipleRowsWarning: boolean } {
-    if (parsedRows.length === 0) {
-        throw new Error('Tidak ada data untuk diimpor');
-    }
-
-    const firstRow = parsedRows[0];
-    const multipleRowsWarning = parsedRows.length > 1;
-
+export function mapExcelRowsToPKWTT(parsedRows: ParsedExcelRow[]) {
+    if (parsedRows.length === 0) throw new Error('Tidak ada data');
+    const first = parsedRows[0];
     return {
-        nik: firstRow.nik ?? '',
-        importedData: {
-            fullName: firstRow.fullName,
-            gender: firstRow.gender,
-            position: firstRow.position,
-            startDate: firstRow.startDate,
-            address: firstRow.address,
-            pkwtSequence: firstRow.pkwtSequence,
-        },
-        multipleRowsWarning,
+        nik: first.nik ?? '',
+        importedData: { ...first },
+        multipleRowsWarning: parsedRows.length > 1,
     };
 }

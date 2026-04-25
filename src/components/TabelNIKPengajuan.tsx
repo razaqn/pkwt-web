@@ -26,11 +26,13 @@ export default function TabelNIKPengajuan({ data, onEdit, loading = false }: Tab
                             <th className="px-4 py-3 text-left font-medium text-slate-700">No</th>
                             <th className="px-4 py-3 text-left font-medium text-slate-700">NIK</th>
                             <th className="px-4 py-3 text-left font-medium text-slate-700">Nama Lengkap</th>
+                            <th className="px-4 py-3 text-left font-medium text-slate-700">No. PKWT</th>
                             <th className="px-4 py-3 text-left font-medium text-slate-700">Kelamin</th>
                             <th className="px-4 py-3 text-left font-medium text-slate-700">Jabatan</th>
                             <th className="px-4 py-3 text-left font-medium text-slate-700">Alamat</th>
                             <th className="px-4 py-3 text-left font-medium text-slate-700">Tgl Mulai</th>
                             <th className="px-4 py-3 text-left font-medium text-slate-700">Tgl Berakhir</th>
+                            <th className="px-4 py-3 text-left font-medium text-slate-700">Ket</th>
                             <th className="px-4 py-3 text-left font-medium text-slate-700">Status</th>
                             <th className="px-4 py-3 text-center font-medium text-slate-700">Aksi</th>
                         </tr>
@@ -50,6 +52,11 @@ export default function TabelNIKPengajuan({ data, onEdit, loading = false }: Tab
                                     )}
                                 </td>
                                 <td className="px-4 py-3 text-slate-600">
+                                    {item.noPkwt || (
+                                        <span className="text-slate-400 italic">-</span>
+                                    )}
+                                </td>
+                                <td className="px-4 py-3 text-slate-600">
                                     {item.gender || (
                                         <span className="text-slate-400 italic">-</span>
                                     )}
@@ -66,11 +73,16 @@ export default function TabelNIKPengajuan({ data, onEdit, loading = false }: Tab
                                         <span className="text-slate-400 italic">Belum diisi</span>
                                     )}
                                 </td>
-                                <td className="px-4 py-3 text-slate-600">
+                                <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
                                     {item.startDate || <span className="text-slate-400 italic">-</span>}
                                 </td>
-                                <td className="px-4 py-3 text-slate-600">
+                                <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
                                     {item.endDate || <span className="text-slate-400 italic">-</span>}
+                                </td>
+                                <td className="px-4 py-3 text-slate-600">
+                                    <div className="max-w-[150px] truncate whitespace-pre-wrap" title={item.keterangan || ''}>
+                                        {item.keterangan || '-'}
+                                    </div>
                                 </td>
                                 <td className="px-4 py-3">
                                     {item.isComplete ? (

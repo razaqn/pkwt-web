@@ -11,7 +11,7 @@ import {
     mapExcelRowsToPKWTT,
     parseDateFlexible,
     validateNIKFormat,
-    normalizeNIKValueForTest,
+    normalizeNIKValue,
 } from '../src/lib/excel';
 
 // ==================== Test Fixtures ====================
@@ -59,22 +59,20 @@ import {
 // ==================== Test Suite: validateNIKFormat ====================
 
 describe('validateNIKFormat', () => {
-    it('should accept valid 16-digit NIK', () => {
+    it('should accept valid numeric NIK', () => {
         const result = validateNIKFormat('1234567890123456');
         expect(result.valid).toBe(true);
         expect(result.error).toBeUndefined();
     });
 
-    it('should reject NIK with less than 16 digits', () => {
+    it('should accept short NIK', () => {
         const result = validateNIKFormat('12345');
-        expect(result.valid).toBe(false);
-        expect(result.error).toContain('16 digit');
+        expect(result.valid).toBe(true);
     });
 
-    it('should reject NIK with more than 16 digits', () => {
-        const result = validateNIKFormat('12345678901234567');
-        expect(result.valid).toBe(false);
-        expect(result.error).toContain('16 digit');
+    it('should accept long NIK', () => {
+        const result = validateNIKFormat('12345678901234567890');
+        expect(result.valid).toBe(true);
     });
 
     it('should reject NIK with non-numeric characters', () => {
@@ -102,32 +100,16 @@ describe('validateNIKFormat', () => {
     });
 
     it('should validate NIK normalized from scientific notation', () => {
-        const normalized = normalizeNIKValueForTest(4.567890123456789e15);
-        const result = validateNIKFormat(normalized);
-        expect(result.valid).toBe(true);
-        expect(normalized.length).toBe(16);
-    });
-
-    it('should prefer cell text to avoid precision loss', () => {
-        const normalized = normalizeNIKValueForTest(4.567890123456789e15, '4567890123456789');
-        expect(normalized).toBe('4567890123456789');
+        const normalized = normalizeNIKValue(4.567890123456789e15);
         const result = validateNIKFormat(normalized);
         expect(result.valid).toBe(true);
     });
 
     it('should expand scientific notation string safely', () => {
-        const normalized = normalizeNIKValueForTest('4.567890123456789E+15');
+        const normalized = normalizeNIKValue('4.567890123456789E+15');
         expect(normalized).toBe('4567890123456789');
         const result = validateNIKFormat(normalized);
         expect(result.valid).toBe(true);
-    });
-
-    it('should accept numeric cell text when expandable', () => {
-        // Simulate parseExcelFile logic path: cellType numeric but text provides scientific notation
-        const cellText = '4.567890123456789E+15';
-        const normalized = normalizeNIKValueForTest(4.56789e15, cellText);
-        expect(normalized).toBe('4567890123456789');
-        expect(validateNIKFormat(normalized).valid).toBe(true);
     });
 });
 

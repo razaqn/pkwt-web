@@ -46,6 +46,9 @@ export default function ApprovalEmployeeTable({ employees, onViewDetail }: Appro
                                     Kelamin
                                 </th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
+                                    No. PKWT
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
                                     Jabatan
                                 </th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
@@ -77,6 +80,9 @@ export default function ApprovalEmployeeTable({ employees, onViewDetail }: Appro
                                         <td className="px-4 py-4 text-slate-700">{employee.nik}</td>
                                         <td className="px-4 py-4 text-slate-700">
                                             {employee.gender || '-'}
+                                        </td>
+                                        <td className="px-4 py-4 text-slate-700">
+                                            {employee.no_pkwt || '-'}
                                         </td>
                                         <td className="px-4 py-4 text-slate-700">
                                             {employee.position || '-'}

@@ -45,10 +45,12 @@ function todayIndonesian(): string {
 
 function buildEmployeeTable(employees: ApprovalEmployee[]): Table {
   const headerCells: ITableCellOptions[] = [
-    { children: [new Paragraph({ children: [new TextRun({ text: 'No', bold: true, size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 8, type: WidthType.PERCENTAGE }, shading: { fill: 'E8F5E9' } },
-    { children: [new Paragraph({ children: [new TextRun({ text: 'NIK', bold: true, size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 22, type: WidthType.PERCENTAGE }, shading: { fill: 'E8F5E9' } },
-    { children: [new Paragraph({ children: [new TextRun({ text: 'Nama Lengkap', bold: true, size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 30, type: WidthType.PERCENTAGE }, shading: { fill: 'E8F5E9' } },
-    { children: [new Paragraph({ children: [new TextRun({ text: 'Alamat', bold: true, size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 25, type: WidthType.PERCENTAGE }, shading: { fill: 'E8F5E9' } },
+    { children: [new Paragraph({ children: [new TextRun({ text: 'No', bold: true, size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 5, type: WidthType.PERCENTAGE }, shading: { fill: 'E8F5E9' } },
+    { children: [new Paragraph({ children: [new TextRun({ text: 'NIK', bold: true, size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 15, type: WidthType.PERCENTAGE }, shading: { fill: 'E8F5E9' } },
+    { children: [new Paragraph({ children: [new TextRun({ text: 'Nama Lengkap', bold: true, size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 20, type: WidthType.PERCENTAGE }, shading: { fill: 'E8F5E9' } },
+    { children: [new Paragraph({ children: [new TextRun({ text: 'No. PKWT', bold: true, size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 15, type: WidthType.PERCENTAGE }, shading: { fill: 'E8F5E9' } },
+    { children: [new Paragraph({ children: [new TextRun({ text: 'PKWT Ke-', bold: true, size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 10, type: WidthType.PERCENTAGE }, shading: { fill: 'E8F5E9' } },
+    { children: [new Paragraph({ children: [new TextRun({ text: 'Alamat', bold: true, size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 20, type: WidthType.PERCENTAGE }, shading: { fill: 'E8F5E9' } },
     { children: [new Paragraph({ children: [new TextRun({ text: 'Jabatan', bold: true, size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 15, type: WidthType.PERCENTAGE }, shading: { fill: 'E8F5E9' } },
   ];
 
@@ -59,10 +61,12 @@ function buildEmployeeTable(employees: ApprovalEmployee[]): Table {
 
   const dataRows = employees.map((emp, idx) => {
     const cells: ITableCellOptions[] = [
-      { children: [new Paragraph({ children: [new TextRun({ text: String(idx + 1), size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 8, type: WidthType.PERCENTAGE } },
-      { children: [new Paragraph({ children: [new TextRun({ text: emp.nik, size: 20 })] })], width: { size: 22, type: WidthType.PERCENTAGE } },
-      { children: [new Paragraph({ children: [new TextRun({ text: emp.full_name, size: 20 })] })], width: { size: 30, type: WidthType.PERCENTAGE } },
-      { children: [new Paragraph({ children: [new TextRun({ text: emp.address || '-', size: 20 })] })], width: { size: 25, type: WidthType.PERCENTAGE } },
+      { children: [new Paragraph({ children: [new TextRun({ text: String(idx + 1), size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 5, type: WidthType.PERCENTAGE } },
+      { children: [new Paragraph({ children: [new TextRun({ text: emp.nik, size: 20 })] })], width: { size: 15, type: WidthType.PERCENTAGE } },
+      { children: [new Paragraph({ children: [new TextRun({ text: emp.full_name, size: 20 })] })], width: { size: 20, type: WidthType.PERCENTAGE } },
+      { children: [new Paragraph({ children: [new TextRun({ text: emp.no_pkwt || '-', size: 20 })] })], width: { size: 15, type: WidthType.PERCENTAGE } },
+      { children: [new Paragraph({ children: [new TextRun({ text: emp.pkwt_sequence || '-', size: 20 })], alignment: AlignmentType.CENTER })], width: { size: 10, type: WidthType.PERCENTAGE } },
+      { children: [new Paragraph({ children: [new TextRun({ text: emp.address || '-', size: 20 })] })], width: { size: 20, type: WidthType.PERCENTAGE } },
       { children: [new Paragraph({ children: [new TextRun({ text: emp.position || '-', size: 20 })] })], width: { size: 15, type: WidthType.PERCENTAGE } },
     ];
     return new TableRow({

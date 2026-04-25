@@ -113,8 +113,8 @@ export default function FormKontrak() {
 
         if (!pkwttData.nik.trim()) {
             newErrors.niks = 'NIK harus diisi';
-        } else if (!/^[0-9]{16}$/.test(pkwttData.nik.trim())) {
-            newErrors.niks = 'NIK harus 16 digit angka';
+        } else if (!/^[0-9]+$/.test(pkwttData.nik.trim())) {
+            newErrors.niks = 'NIK harus berupa angka';
         }
 
         if (!pkwttData.fullName?.trim()) {
