@@ -45,6 +45,8 @@ export interface LatestContract {
   contract_type: 'PKWT' | 'PKWTT';
   file_id: string | null;
   company_name: string;
+  employee_start_date?: string | null;
+  employee_end_date?: string | null;
 }
 
 export interface Employee {
@@ -137,10 +139,13 @@ export interface Contract {
   id: string;
   title: string;
   start_date: string | null; // YYYY-MM-DD
+  end_date?: string | null; // YYYY-MM-DD
   duration_months: number | null;
   contract_type: 'PKWT' | 'PKWTT';
   file_id: string | null;
   company_name: string; // Company name for contract history
+  employee_start_date?: string | null;
+  employee_end_date?: string | null;
 }
 
 export interface EmployeeDetail {
@@ -1301,4 +1306,85 @@ export async function adminDeleteUser(id: string): Promise<{ ok: boolean; messag
   return request(`${API_BASE}/api/users/${id}`, {
     method: 'DELETE',
   });
+}
+
+// ============================================================
+// BPJS API
+// ============================================================
+
+export interface BPJSRecord {
+  id: string;
+  submission_id: string;
+  nik: string;
+  nama: string;
+  tanggal_lahir?: string;
+  jenis_kelamin?: 'Laki-laki' | 'Perempuan';
+  kecamatan?: string;
+  desa?: string;
+  jenis_pekerjaan?: string;
+  biaya_iuran_apbd?: string;
+  jenis_kepesertaan?: string;
+  status_kepesertaan?: string;
+  keterangan?: string;
+  created_at: string;
+  updated_at: string;
+  creator_name?: string;
+}
+
+export interface ListBPJSResponse {
+  ok: boolean;
+  data: BPJSRecord[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+  };
+}
+
+export async function adminListBpjsRecords(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  creatorId?: string;
+}): Promise<ListBPJSResponse> {
+  const queryParams = new URLSearchParams();
+  if (params.page) queryParams.append('page', String(params.page));
+  if (params.limit) queryParams.append('limit', String(params.limit));
+  if (params.search) queryParams.append('search', params.search);
+  if (params.creatorId) queryParams.append('creatorId', params.creatorId);
+
+  return request(`${API_BASE}/api/bpjs/records?${queryParams.toString()}`);
+}
+
+export async function adminExportBpjsRecords(params: {
+  search?: string;
+  creatorId?: string;
+}): Promise<void> {
+  const queryParams = new URLSearchParams();
+  if (params.search) queryParams.append('search', params.search);
+  if (params.creatorId) queryParams.append('creatorId', params.creatorId);
+
+  const token = localStorage.getItem('token');
+  const url = `${API_BASE}/api/admin/bpjs/export?${queryParams.toString()}`;
+
+  // Use a hidden anchor tag to trigger download with auth token
+  // Since browser downloads don't easily send headers, the backend should ideally 
+  // support token in query param for export or we use fetch + blob
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  
+  if (!response.ok) throw new Error('Export failed');
+  
+  const blob = await response.blob();
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = downloadUrl;
+  a.download = `bpjs_export_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(downloadUrl);
 }

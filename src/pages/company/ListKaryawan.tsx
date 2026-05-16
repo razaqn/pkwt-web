@@ -13,25 +13,48 @@ const ITEMS_PER_PAGE = 7;
 
 // Transform API data to component data format
 function transformEmployeeToKaryawan(employee: any): Karyawan {
+    const latest = employee.latest_contract;
+    const sisaWaktu = latest?.contract_type === 'PKWTT' 
+        ? -1 // PKWTT means indefinite
+        : calculateRemainingWeeks(
+            latest?.employee_start_date || latest?.start_date, 
+            latest?.duration_months,
+            latest?.employee_end_date
+        );
+
     return {
         id: employee.id,
         namaLengkap: employee.full_name,
         nik: employee.nik,
         alamat: employee.address,
-        kontrakSekarang: employee.latest_contract?.title || '-',
-        sisaWaktuKontrak: calculateRemainingWeeks(employee.latest_contract?.start_date, employee.latest_contract?.duration_months),
+        kontrakSekarang: latest?.title || '-',
+        sisaWaktuKontrak: sisaWaktu,
     };
 }
 
-// Calculate remaining weeks from start date and duration
-function calculateRemainingWeeks(startDate: string | undefined, durationMonths: number | null | undefined): number {
-    if (!startDate || !durationMonths) return 0;
+// Calculate remaining weeks from dates or duration
+function calculateRemainingWeeks(
+    startDate: string | undefined, 
+    durationMonths: number | null | undefined,
+    endDate?: string | null
+): number {
+    let end: Date;
 
-    const start = new Date(startDate);
-    const end = new Date(start);
-    end.setMonth(end.getMonth() + durationMonths);
+    if (endDate) {
+        end = new Date(endDate);
+    } else if (startDate && durationMonths) {
+        const start = new Date(startDate);
+        end = new Date(start);
+        end.setMonth(end.getMonth() + durationMonths);
+    } else {
+        return 0;
+    }
 
     const now = new Date();
+    // Set hours to 0 to only compare dates
+    now.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+
     const diffMs = end.getTime() - now.getTime();
     const diffWeeks = Math.ceil(diffMs / (1000 * 60 * 60 * 24 * 7));
 

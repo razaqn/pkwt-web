@@ -19,6 +19,7 @@ import LandingConfigPage from './pages/admin/LandingConfig';
 import AdminTemplatesPage from './pages/admin/Templates';
 import DocumentTemplatesPage from './pages/admin/DocumentTemplates';
 import DocumentTemplateEditorPage from './pages/admin/DocumentTemplateEditor';
+import ListBPJSAdmin from './pages/admin/ListBPJS';
 import ListPetugasBPJS from './pages/admin/ListPetugasBPJS';
 import ListKaryawan from './pages/company/ListKaryawan';
 import DetailKaryawan from './pages/company/DetailKaryawan';
@@ -71,6 +72,7 @@ function App() {
           {/* Legacy company-only guide page (disabled; replaced by public /pkwt and /pkwtt) */}
           {/* <Route path="/welcome" element={<RequireAuth><AppLayout><Welcome /></AppLayout></RequireAuth>} /> */}
           <Route path="/admin/list-employees" element={<RequireAuth><AppLayout><ListEmployees /></AppLayout></RequireAuth>} />
+          <Route path="/admin/list-bpjs" element={<RequireRole roles={['disnaker', 'super_admin']}><AppLayout><ListBPJSAdmin /></AppLayout></RequireRole>} />
           <Route path="/admin/petugas-bpjs" element={<RequireAuth><AppLayout><ListPetugasBPJS /></AppLayout></RequireAuth>} />
           <Route path="/admin/detail-karyawan/:id" element={<RequireAuth><AppLayout><AdminDetailKaryawan /></AppLayout></RequireAuth>} />
           <Route path="/admin/list-companies" element={<RequireAuth><AppLayout><ListCompanies /></AppLayout></RequireAuth>} />

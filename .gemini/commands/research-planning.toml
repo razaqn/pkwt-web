@@ -1,0 +1,7 @@
+description = "Do Research before planning"
+prompt = """
+terimakasih. sekarang bantu saya untuk lakukan audit dan perbaikan serta update. pertama kamu harus research kodebase dulu (FE dan BE), setelah itu cek databasenya menggunakan MySQL CLI command (usn root pw tidak ada).
+setelah research itu kamu harus buat planning untuk implementasi. pastikan planningnya meliputi penanganan edge case yang mungkin terjadi dan pencegahan bug di kode. untuk interaksi dengan database pakai MySQL CLI. buat plan yang lengkap, kalau ada hal yang belum jelas tanyakan kembali. pastikan diakhir lakukan typecheck dan lint test, dan untuk verifiaksi akhir jalankan build fe dan be-nya.
+
+{{args}}
+"""

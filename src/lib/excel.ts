@@ -226,7 +226,7 @@ function findColumnName(
  * Handles Excel numeric/exponential formats so we don't fail validation
  * when Excel renders 16-digit IDs as scientific notation.
  */
-function normalizeNIKValue(nikValue: any, cellText?: string): string {
+export function normalizeNIKValue(nikValue: any): string {
     if (nikValue === null || nikValue === undefined) return '';
     const str = String(nikValue).trim();
     
@@ -302,72 +302,6 @@ export function parseDateFlexible(value: any): string | null {
     }
 
     return null;
-}
-
-/**
- * Dynamically find column indices from 2D array data.
- * Handles nested headers by scanning multiple rows if necessary.
- */
-function findColumnIndices(data: any[][]) {
-    const indices: Record<string, number> = {
-        no: -1, nama: -1, genderL: -1, genderP: -1, noPkwt: -1, jabatan: -1, tmtMulai: -1, tmtAkhir: -1, alamat: -1, ket: -1, nik: -1
-    };
-
-    let headerRowIndex = -1;
-
-    // Scan first 10 rows to find the main header
-    for (let r = 0; r < Math.min(data.length, 10); r++) {
-        const row = data[r].map(c => String(c || '').toLowerCase().trim());
-        const hasNama = row.some(c => c.includes('nama'));
-        const hasNik = row.some(c => c.includes('nik'));
-        const hasPkwtNo = row.some(c => c.includes('pkwt') && (c.includes('no') || c.includes('nomor')));
-        
-        if (hasNama && (hasNik || hasPkwtNo)) {
-            headerRowIndex = r;
-            break;
-        }
-    }
-
-    if (headerRowIndex === -1) return { indices, dataStartRow: -1 };
-
-    const mainHeader = data[headerRowIndex].map(c => String(c || '').toLowerCase().trim());
-    const subHeader = data[headerRowIndex + 1] ? data[headerRowIndex + 1].map(c => String(c || '').toLowerCase().trim()) : [];
-
-    mainHeader.forEach((val, i) => {
-        if (val === 'no') indices.no = i;
-        if (val.includes('nama')) indices.nama = i;
-        if (val.includes('jabatan')) indices.jabatan = i;
-        if (val.includes('alamat')) indices.alamat = i;
-        if (val.includes('ket')) indices.ket = i;
-        if (val.includes('nik')) indices.nik = i;
-        if (val.includes('pkwt') && (val.includes('no') || val.includes('nomor'))) indices.noPkwt = i;
-
-        // Nested headers for Gender
-        if (val.includes('jenis kelamin') || val.includes('kelamin')) {
-            // Check current column or next columns in subHeader
-            if (val.includes(' l')) indices.genderL = i;
-            else if (val.includes(' p')) indices.genderP = i;
-            else {
-                if (subHeader[i] === 'l') indices.genderL = i;
-                if (subHeader[i+1] === 'p') indices.genderP = i+1;
-            }
-        }
-        
-        // Nested headers for PKWT TMT
-        if (val === 'pkwt') {
-            if (subHeader[i]?.includes('tmt mulai')) indices.tmtMulai = i;
-            if (subHeader[i+1]?.includes('tmt akhir')) indices.tmtAkhir = i;
-        }
-    });
-
-    // Final fallback for NIK if not found by exact match
-    if (indices.nik === -1) indices.nik = mainHeader.findIndex(v => v.includes('nik'));
-
-    // Check if subHeader actually exists by looking for known subheader keywords
-    const subHeaderStr = subHeader.join(' ');
-    const hasSubHeader = subHeaderStr.includes('tmt mulai') || subHeaderStr.includes('tmt akhir') || subHeader.includes('l') || subHeader.includes('p');
-
-    return { indices, dataStartRow: hasSubHeader ? headerRowIndex + 2 : headerRowIndex + 1 };
 }
 
 /**
@@ -499,7 +433,7 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
                         continue;
                     }
                 } else {
-                    nik = normalizeNIKValue(nikValue, cellText);
+                    nik = normalizeNIKValue(nikValue);
                 }
 
                 // Validate NIK format
@@ -521,20 +455,27 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
 
         // Gender Resolution
         let gender: 'Laki-laki' | 'Perempuan' | null = null;
-        const valL = indices.genderL !== -1 ? String(row[indices.genderL] || '').trim().toLowerCase() : '';
-        const valP = indices.genderP !== -1 ? String(row[indices.genderP] || '').trim().toLowerCase() : '';
-        if (valL && !valP) gender = 'Laki-laki';
-        else if (valP && !valL) gender = 'Perempuan';
+        if (genderColumn && row[genderColumn]) {
+            const val = String(row[genderColumn]).trim().toLowerCase();
+            if (['l', 'lk', 'laki', 'laki-laki', 'pria', 'male'].includes(val)) gender = 'Laki-laki';
+            if (['p', 'pr', 'perempuan', 'wanita', 'female'].includes(val)) gender = 'Perempuan';
+        } else {
+            const valL = genderLColumn && row[genderLColumn] ? String(row[genderLColumn]).trim().toLowerCase() : '';
+            const valP = genderPColumn && row[genderPColumn] ? String(row[genderPColumn]).trim().toLowerCase() : '';
+            if (valL && !valP) gender = 'Laki-laki';
+            else if (valP && !valL) gender = 'Perempuan';
+        }
 
-        parsedRows.push({
+        const parsedRow: ParsedExcelRow = {
             nik,
-            fullName: indices.nama !== -1 ? String(row[indices.nama] || '').trim() || null : null,
+            fullName: fullNameColumn && row[fullNameColumn] ? String(row[fullNameColumn]).trim() : null,
             gender,
             position: positionColumn && row[positionColumn] ? String(row[positionColumn]).trim() : null,
             startDate: startDateColumn ? parseDateFlexible(row[startDateColumn]) : null,
             endDate: endDateColumn ? parseDateFlexible(row[endDateColumn]) : null,
             address: addressColumn && row[addressColumn] ? String(row[addressColumn]).trim() : null,
-            pkwtSequence: rawSequence ? normalizePkwtSequence(rawSequence) : null,
+            noPkwt: pkwtSequenceColumn && String(row[pkwtSequenceColumn]).toLowerCase().includes('pkwt') ? String(row[pkwtSequenceColumn]).trim() : null,
+            keterangan: pkwtSequenceColumn && !String(row[pkwtSequenceColumn]).toLowerCase().includes('pkwt') ? String(row[pkwtSequenceColumn]).trim() : null,
         };
 
         if (
