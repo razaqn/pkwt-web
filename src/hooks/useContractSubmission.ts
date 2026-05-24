@@ -105,7 +105,6 @@ export function useContractSubmission(contractData: ContractData | null) {
 
                     return backendData;
                 });
-
                 setNikDataList(nikData);
             } catch (err: any) {
                 if (isMounted) {
@@ -179,9 +178,14 @@ export function useContractSubmission(contractData: ContractData | null) {
         setError(null);
 
         try {
+            const draftStartDate =
+                contractData.contractType === 'PKWTT'
+                    ? (nikDataList[0]?.startDate || contractData.importedData?.[contractData.niks[0]]?.startDate || new Date().toISOString().split('T')[0])
+                    : new Date().toISOString().split('T')[0];
+
             const draftPayload: SaveDraftRequest = {
                 contract_type: contractData.contractType,
-                start_date: new Date().toISOString().split('T')[0],
+                start_date: draftStartDate,
                 ...(contractData.contractType === 'PKWTT'
                     ? { employee_nik: contractData.niks[0] }
                     : { employees: contractData.niks.map(nik => {

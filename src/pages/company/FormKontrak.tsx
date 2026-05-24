@@ -214,6 +214,7 @@ export default function FormKontrak() {
                             gender: pkwttData.gender,
                             position: pkwttData.position,
                             address: pkwttData.address,
+                            startDate: pkwttData.startDate,
                         },
                     },
                 },

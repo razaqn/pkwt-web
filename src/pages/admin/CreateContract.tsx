@@ -178,6 +178,7 @@ export default function CreateContract() {
                             gender: pkwttData.gender,
                             position: pkwttData.position,
                             address: pkwttData.address,
+                            startDate: pkwttData.startDate,
                         },
                     },
                 },

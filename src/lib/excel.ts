@@ -42,7 +42,9 @@ const COLUMN_MAPPINGS = {
     startDate: ['tmt_mulai', 'tanggal_mulai', 'start_date', 'tanggalmulai'],
     endDate: ['tmt_akhir', 'tanggal_berakhir', 'end_date', 'tanggalberakhir'],
     address: ['alamat', 'address'], // Kelurahan saja
-    pkwtSequence: ['no_pkwt', 'keterangan', 'pkwt_ke', 'sequence', 'pkwt_sequence'],
+    noPkwt: ['no_pkwt', 'no_pkwt_hrd', 'no_pkwt_asli', 'no_pkwt_internal', 'nomor_pkwt', 'no_surat_pkwt'],
+    keterangan: ['keterangan', 'ket'],
+    pkwtSequence: ['pkwt_ke', 'sequence', 'pkwt_sequence'],
 };
 
 /** Max header rows to scan (templates with title + 2 header rows) */
@@ -161,16 +163,29 @@ function buildDataRowsAsObjects(
             const key = headerKeys[c] ?? `__col_${c}`;
             row[key] = aoa[r]?.[c] ?? null;
         }
+        row.__rowNumber = r + 1;
         json.push(row);
     }
     return json;
+}
+
+function hasMeaningfulImportData(row: Record<string, any>, columns: Array<string | null>): boolean {
+    return columns.some((column) => {
+        if (!column) return false;
+        const value = row[column];
+        return value !== null && value !== undefined && String(value).trim() !== '';
+    });
 }
 
 /**
  * Normalize column name for case-insensitive matching
  */
 function normalizeColumnName(name: string): string {
-    return name.toLowerCase().trim().replace(/\s+/g, '_');
+    return name
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
 }
 
 /**
@@ -338,14 +353,6 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
     const { headerBottomRow, maxW, headerKeys, usedFallback } = findBestHeaderWithMergedLabels(aoa);
     const jsonData: any[] = buildDataRowsAsObjects(aoa, headerBottomRow, maxW, headerKeys);
 
-    if (jsonData.length === 0) {
-        throw new Error('File Excel kosong atau tidak memiliki data');
-    }
-
-    if (jsonData.length > MAX_EXCEL_ROWS) {
-        throw new Error(`File memiliki terlalu banyak baris. Maksimal ${MAX_EXCEL_ROWS} baris, file Anda memiliki ${jsonData.length} baris`);
-    }
-
     if (usedFallback) {
         warnings.push(
             'Tidak menemukan baris header ideal (TMT Mulai / TMT Akhir di kolom berbeda). ' +
@@ -354,8 +361,6 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
     }
 
     const headers = headerKeys;
-    console.debug('[excel] header row (0-based)', headerBottomRow, 'headers', headers);
-
     // Find column names
     const nikColumn = findColumnName(headers, COLUMN_MAPPINGS.nik);
     const hasNikColumn = nikColumn !== null;
@@ -369,7 +374,34 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
     const startDateColumn = findColumnName(headers, COLUMN_MAPPINGS.startDate);
     const endDateColumn = findColumnName(headers, COLUMN_MAPPINGS.endDate);
     const addressColumn = findColumnName(headers, COLUMN_MAPPINGS.address);
+    const noPkwtColumn = findColumnName(headers, COLUMN_MAPPINGS.noPkwt);
+    const keteranganColumn = findColumnName(headers, COLUMN_MAPPINGS.keterangan);
     const pkwtSequenceColumn = findColumnName(headers, COLUMN_MAPPINGS.pkwtSequence);
+
+    const dataRows = jsonData.filter((row) =>
+        hasMeaningfulImportData(row, [
+            nikColumn,
+            fullNameColumn,
+            genderColumn,
+            genderLColumn,
+            genderPColumn,
+            positionColumn,
+            startDateColumn,
+            endDateColumn,
+            addressColumn,
+            noPkwtColumn,
+            keteranganColumn,
+            pkwtSequenceColumn,
+        ])
+    );
+
+    if (dataRows.length === 0) {
+        throw new Error('File Excel kosong atau tidak memiliki data');
+    }
+
+    if (dataRows.length > MAX_EXCEL_ROWS) {
+        throw new Error(`File memiliki terlalu banyak baris. Maksimal ${MAX_EXCEL_ROWS} baris, file Anda memiliki ${dataRows.length} baris`);
+    }
 
     if (!hasNikColumn) {
         warnings.push('Kolom NIK tidak ditemukan. Pastikan NIK diisi manual di form setelah impor');
@@ -390,10 +422,10 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
     let sameDateRowWarnings = 0;
     const MAX_SAME_DATE_WARNINGS = 5;
 
-    for (let i = 0; i < jsonData.length; i++) {
-        const row = jsonData[i];
+    for (let i = 0; i < dataRows.length; i++) {
+        const row = dataRows[i];
         // 1-based Excel row: setelah baris header bawah, baris data pertama = headerBottomRow + 2
-        const rowNumber = headerBottomRow + 2 + i;
+        const rowNumber = Number(row.__rowNumber) || headerBottomRow + 2 + i;
 
         // Extract NIK (optional — may not exist in template)
         let nik: string | undefined;
@@ -474,8 +506,9 @@ export async function parseExcelFile(file: File): Promise<ParseExcelResult> {
             startDate: startDateColumn ? parseDateFlexible(row[startDateColumn]) : null,
             endDate: endDateColumn ? parseDateFlexible(row[endDateColumn]) : null,
             address: addressColumn && row[addressColumn] ? String(row[addressColumn]).trim() : null,
-            noPkwt: pkwtSequenceColumn && String(row[pkwtSequenceColumn]).toLowerCase().includes('pkwt') ? String(row[pkwtSequenceColumn]).trim() : null,
-            keterangan: pkwtSequenceColumn && !String(row[pkwtSequenceColumn]).toLowerCase().includes('pkwt') ? String(row[pkwtSequenceColumn]).trim() : null,
+            noPkwt: noPkwtColumn && row[noPkwtColumn] ? String(row[noPkwtColumn]).trim() : null,
+            keterangan: keteranganColumn && row[keteranganColumn] ? String(row[keteranganColumn]).trim() : null,
+            pkwtSequence: pkwtSequenceColumn && row[pkwtSequenceColumn] ? String(row[pkwtSequenceColumn]).trim() : null,
         };
 
         if (

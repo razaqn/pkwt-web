@@ -118,9 +118,9 @@ export default function CreateContractSubmit() {
             const draftPKWTBase64 = await fileToBase64(fileDraftPKWT);
 
             if (contractData.contractType === 'PKWT') {
-                await adminSubmitContractApplication({
+                const payload = {
                     company_id: contractData.companyId,
-                    contract_type: 'PKWT',
+                    contract_type: 'PKWT' as const,
                     employees: contractData.niks.map(nik => {
                         const d = nikDataList.find(x => x.nik === nik);
                         return {
@@ -140,11 +140,12 @@ export default function CreateContractSubmit() {
                     surat_permohonan_file_content_base64: suratPermohonanBase64,
                     draft_pkwt_file_name: fileDraftPKWT.name,
                     draft_pkwt_file_content_base64: draftPKWTBase64,
-                });
+                };
+                await adminSubmitContractApplication(payload);
             } else {
-                await adminSubmitContractApplication({
+                const payload = {
                     company_id: contractData.companyId,
-                    contract_type: 'PKWTT',
+                    contract_type: 'PKWTT' as const,
                     employee_nik: contractData.niks[0],
                     start_date: nikDataList[0]?.startDate || new Date().toISOString().split('T')[0],
                     full_name: nikDataList[0]?.fullName || undefined,
@@ -156,7 +157,8 @@ export default function CreateContractSubmit() {
                     surat_permohonan_file_content_base64: suratPermohonanBase64,
                     draft_pkwt_file_name: fileDraftPKWT.name,
                     draft_pkwt_file_content_base64: draftPKWTBase64,
-                });
+                };
+                await adminSubmitContractApplication(payload);
             }
 
             await dialog.alert({

@@ -242,6 +242,7 @@ export interface ContractApplicationPKWTRequest {
     position?: string;
     address?: string;
     pkwt_sequence?: string;
+    no_pkwt?: string;
     keterangan?: string;
   }>;
   surat_permohonan_file_name: string;
@@ -318,6 +319,7 @@ export interface AdminContractApplicationPKWTRequest {
     position?: string;
     address?: string;
     pkwt_sequence?: string;
+    no_pkwt?: string;
     keterangan?: string;
   }>;
   surat_permohonan_file_name: string;

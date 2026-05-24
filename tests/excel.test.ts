@@ -6,9 +6,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import * as XLSX from 'xlsx';
 import {
     mapExcelRowsToPKWT,
     mapExcelRowsToPKWTT,
+    parseExcelFile,
     parseDateFlexible,
     validateNIKFormat,
     normalizeNIKValue,
@@ -158,6 +160,69 @@ describe('parseDateFlexible', () => {
 // ==================== Test Suite: parseExcelFile ====================
 
 describe('parseExcelFile', () => {
+    it('should parse nested PKWT headers with No. PKWT and Ket columns', async () => {
+        const aoa = [
+            ['', '', '', '', 'PENCATATAN PERJANJIAN KERJA WAKTU TERTENTU (PKWT)'],
+            [],
+            ['No', 'Nama', 'Jenis Kelamin', '', 'No. PKWT', 'Jabatan', 'PKWT', '', 'Alamat', 'Ket', 'NIK'],
+            ['', '', 'L', 'P', '', '', 'TMT Mulai', 'TMT Akhir', '', '', ''],
+            ['1', 'manusia tua', 'L', '', 'asda/2213/adas', 'test', '12/12/2026', '12/12/2027', 'rumah', '-', '3275031103050011'],
+            ['2', 'orang baru', '', 'p', 'dasdawd/asdaw21/adas', 'office', '11/11/2026', '11/11/2027', 'rumah ku', '-', '3275031103050012'],
+        ];
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+        const buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+        const file = new File([buf], 'nested-pkwt.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        const result = await parseExcelFile(file);
+
+        expect(result.rows).toHaveLength(2);
+        expect(result.rows[0].nik).toBe('3275031103050011');
+        expect(result.rows[0].fullName).toBe('manusia tua');
+        expect(result.rows[0].gender).toBe('Laki-laki');
+        expect(result.rows[0].noPkwt).toBe('asda/2213/adas');
+        expect(result.rows[0].keterangan).toBe('-');
+        expect(result.rows[0].startDate).toBe('2026-12-12');
+        expect(result.rows[0].endDate).toBe('2027-12-12');
+
+        expect(result.rows[1].nik).toBe('3275031103050012');
+        expect(result.rows[1].fullName).toBe('orang baru');
+        expect(result.rows[1].gender).toBe('Perempuan');
+        expect(result.rows[1].noPkwt).toBe('dasdawd/asdaw21/adas');
+        expect(result.rows[1].keterangan).toBe('-');
+        expect(result.rows[1].startDate).toBe('2026-11-11');
+        expect(result.rows[1].endDate).toBe('2027-11-11');
+    });
+
+    it('should ignore formatted template rows that only contain row numbers', async () => {
+        const aoa = [
+            ['', '', '', '', 'PENCATATAN PERJANJIAN KERJA WAKTU TERTENTU (PKWT)'],
+            [],
+            ['No', 'Nama', 'Jenis Kelamin', '', 'No. PKWT', 'Jabatan', 'PKWT', '', 'Alamat', 'Ket', 'NIK'],
+            ['', '', 'L', 'P', '', '', 'TMT Mulai', 'TMT Akhir', '', '', ''],
+            ['1', 'manusia tua', 'L', '', 'asda/2213/adas', 'test', '12/12/2026', '12/12/2027', 'rumah', '-', '3275031103050011'],
+            ['2', 'orang baru', '', 'p', 'dasdawd/asdaw21/adas', 'office', '11/11/2026', '11/11/2027', 'rumah ku', '-', '3275031103050012'],
+        ];
+
+        for (let i = 3; i <= 996; i++) {
+            aoa.push([String(i), '', '', '', '', '', '', '', '', '', '']);
+        }
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+        const buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+        const file = new File([buf], 'formatted-template-pkwt.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        const result = await parseExcelFile(file);
+
+        expect(result.rows).toHaveLength(2);
+        expect(result.rows[0].nik).toBe('3275031103050011');
+        expect(result.rows[1].nik).toBe('3275031103050012');
+    });
+
     it('should parse valid XLSX file with required NIK column', async () => {
         // Manual test: Load valid-pkwt.xlsx
         // const file = new File([...], 'valid-pkwt.xlsx');
